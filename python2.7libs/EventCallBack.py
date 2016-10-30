@@ -1,13 +1,8 @@
 import hou
+import nodeDefaultSetting
 
-def setUpCallback(node):
-    node.addEventCallback((hou.nodeEventType.ChildCreated,), onNodeChange)
+settings = nodeDefaultSetting.setting
 
-def onNodeChange(**kwargs):
-    childNode = kwargs["child_node"]
-    setUpCallback(childNode)
-    setClr(childNode)
-    print childNode.name()
 
 def allSubChildren(node):
     yield node
@@ -15,16 +10,41 @@ def allSubChildren(node):
         for n in allSubChildren(child_node):
             yield n
 
+
+def setUpCallback(node):
+    node.addEventCallback((hou.nodeEventType.ChildCreated,), onNodeCreated)
+
+def onNodeCreated(**kwargs):
+    childNode = kwargs["child_node"]
+    setUpCallback(childNode)
+    #setDefaults(childNode)
+    print childNode.name()
+
+
 ####################################
 
-def setClr(node):
-    if node.type().name() == "attribwrangle":
-        attribClr = hou.Color((1.0,0.8,0))
-        node.setColor(attribClr)
+def setDefaults(node):
+    for defaultSetting in settings:
+        if defaultSetting["node"] == node.type().name():
+            setClr(node, defaultSetting)
+            setVals(node, defaultSetting)
+
+def setClr(node, defaultSetting):
+    node.setColor(hou.Color(defaultSetting["color"]))
+
+def setVals(node, defaultSetting):
+    i=0
+    for parm in defaultSetting["parmnames"]:
+        print parm
+        node.parm(parm).set(defaultSetting["setparms"][i])
+        i+=1
 
 ####################################
 
 def execute(node):
-    for node in allSubChildren(node):
-        node.removeAllEventCallbacks()
-        setUpCallback(node)
+    for eachNode in allSubChildren(node):
+        eachNode.removeAllEventCallbacks()
+        setUpCallback(eachNode)
+
+    #hou.node("/").removeAllEventCallbacks()
+    #hou.node("/obj").removeAllEventCallbacks()

@@ -7,11 +7,11 @@
 
   <toolshelf name="kaTools" label="kaTools">
     <memberTool name="connect"/>
+    <memberTool name="gotToCam"/>
+    <memberTool name="changeUpdateMode"/>
     <memberTool name="add_event_when_created"/>
     <memberTool name="sanity_check"/>
-    <memberTool name="changeUpdateMode"/>
     <memberTool name="copyRamp"/>
-    <memberTool name="gotToCam"/>
     <memberTool name="subnet"/>
   </toolshelf>
 
