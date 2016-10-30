@@ -14,7 +14,7 @@ def allSubChildren(node):
     for child_node in node.children():
         for n in allSubChildren(child_node):
             yield n
-            
+
 ####################################
 
 def setClr(node):
