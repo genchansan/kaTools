@@ -5,7 +5,1296 @@
  Note, that two definitions of the same element are not allowed in
  a single file. -->
 
-  <shelfSetEdit name="shelf_set_1" fileLocation="C:/PROGRA~1/SIDEEF~1/HOUDIN~1.480/houdini/toolbar\ShelfDefinitions.shelf">
-    <addMemberToolshelf name="kaTools" inPosition="13"/>
-  </shelfSetEdit>
+  <toolshelf name="kaTools" label="kaTools">
+    <memberTool name="connect"/>
+    <memberTool name="subnet"/>
+    <memberTool name="add_event_when_created"/>
+    <memberTool name="sanity_check"/>
+    <memberTool name="subnet0"/>
+    <memberTool name="tool_1"/>
+  </toolshelf>
+
+  <tool name="add_event_when_created" label="add_event_when_created" icon="PLASMA_App">
+    <script scriptType="python"><![CDATA[def setUpCallback(node):
+    node.addEventCallback((hou.nodeEventType.ChildCreated,), onNodeChange)
+
+def onNodeChange(**kwargs):
+    childNode = kwargs["child_node"]
+    setUpCallback(childNode)
+    setClr(childNode)
+    print childNode.name()
+
+def allSubChildren(node):
+    yield node
+    for child_node in node.children():
+        for n in allSubChildren(child_node):
+            yield n
+
+####################################
+
+def setClr(node):
+    if node.type().name() == "attribwrangle":
+        attribClr = hou.Color((1.0,0.8,0))
+        node.setColor(attribClr)
+
+####################################
+
+
+for node in allSubChildren(hou.node("/")):
+    node.removeAllEventCallbacks()
+    setUpCallback(node)]]></script>
+  </tool>
+
+  <tool name="sanity_check" label="sanity_check" icon="PLASMA_App">
+    <script scriptType="python"><![CDATA[def allSubChildren(node):
+    yield node
+    for child_node in node.children():
+        for n in allSubChildren(child_node):
+            yield n
+
+####################################
+
+def checkErrors(node):
+    warning = node.errors()
+    if warning != "":
+        print node.name(), "->", warning
+
+
+def checkWarnings(node):
+    warning = node.warnings()
+    if warning != "":
+        print node.name(), "->", warning
+
+
+def checkMessages(node):
+    warning = node.messages()
+    if warning != "":
+        print node.name(), "->", warning
+
+####################################
+
+for node in allSubChildren(hou.node("/")):
+    checkErrors(node)
+    checkWarnings(node)
+    checkMessages(node)]]></script>
+  </tool>
+
+  <tool name="subnet0" label="subnet1" icon="SOP_subnet">
+    <helpURL>operator:Sop/subnet</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/subnet</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputnode = None
+inputindex = -1
+inputnode = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputnode = pane_node.node(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputnode = pane_node.node(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputnode is None:
+            inputnode = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+    if not autoplace and not pane.autoPlaceNodes() and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputnode is None:
+            pos = pane.selectPosition(inputnode, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputnode, outputindex,
+                                      outputnode, inputindex)
+    if pos is None and pane.autoPlaceNodes():
+        pos = pane.cursorPosition()
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('subnet'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r'''
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script: Thursday October 27, 00:56 2016
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_subnet1 (Sop/subnet)
+set _obj_geo1_subnet1 = `run("opadd -e -n -v subnet subnet1")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_subnet1
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1
+opexprlanguage -s hscript $_obj_geo1_subnet1
+opcf $_obj_geo1_subnet1
+
+# Node $_obj_geo1_subnet1_solver1 (Sop/solver)
+set _obj_geo1_subnet1_solver1 = `run("opadd -e -n -v solver solver1")`
+oplocate -x `$arg2 + 1` -y `$arg3 + -1.6855499999999992` $_obj_geo1_subnet1_solver1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_solver1
+opexprlanguage -s hscript $_obj_geo1_subnet1_solver1
+opuserdata -n '___Version___' -v '' $_obj_geo1_subnet1_solver1
+
+# Node $_obj_geo1_subnet1_attribvop1 (Sop/attribvop)
+set _obj_geo1_subnet1_attribvop1 = `run("opadd -e -n -v attribvop attribvop1")`
+oplocate -x `$arg2 + 1` -y `$arg3 + 1.9798500000000008` $_obj_geo1_subnet1_attribvop1
+opspareds '    parm {   name    "bindgroup"     baseparm        label   "Group"         export  none    bindselector points "Modify Points"         "Select the points to affect and press Enter to complete."      0 1 0xffffffff 0 bindgrouptype 0     }     parm {   name    "bindgrouptype"         baseparm        label   "Group Type"    export  none     }     parm {   name    "bindclass"     baseparm        label   "Run Over"      export  none     }     parm {   name    "vex_numcount"  baseparm        label   "Number Count"  export  none     }     parm {   name    "vex_threadjobsize"     baseparm        label   "Thread Job Size"       export  none     }     group {  name    "stdswitcher3"  label   "Vex Setup"     parm {      name        "vexsrc"            baseparm        label       "Vex Source"        export      all     }       parm {      name        "shoppath"          baseparm        label       "Shop Path"         export      all     }       parm {      name        "script"            baseparm        label       "Script"            export      all     }       parm {      name        "clear"             baseparm        label       "Re-load VEX Functions"             export      all     }       parm {      name        "vop_compiler"      baseparm        label       "Compiler"          export      none    }       parm {      name        "vop_forcecompile"          baseparm        label       "Force Compile"             export      none    }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_multithread"           baseparm        label       "Enable Multithreading"             export      none    }     }      group {    name    "stdswitcher3_1"        label   "Attribute Bindings"    parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }     }      parm {     name    "ptnum"         label   "Point Number"  type    integer         invisible       default { "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "vtxnum"        label   "Vertex Number"         type    integer         invisible       default { "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "primnum"       label   "Primitive Number"      type    integer         invisible       default { "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "id"    label   "Id"    type    integer         invisible       default { "-1" }        range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "numpt"         label   "Number of Points"      type    integer         invisible       default { "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "numvtx"        label   "Number of Vertices"    type    integer         invisible       default { "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "numprim"       label   "Number of Prims"       type    integer         invisible       default { "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "Time"  label   "Time"  type    float   invisible       default { "0" }         range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "TimeInc"       label   "Time Inc"      type    float   invisible       default { "0" }         range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "Frame"         label   "Frame"         type    float   invisible       default { "0" }         range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "life"  label   "Life"  type    float   invisible       default { "0" }         range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "age"   label   "Age"   type    float   invisible       default { "0" }         range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput2"      label   "Second Input"  type    string  invisible       default { "" }  range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput3"      label   "Third Input"   type    string  invisible       default { "" }  range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput4"      label   "Fourth Input"  type    string  invisible       default { "" }  range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput1"      label   "First Input"   type    string  invisible       default { "" }  range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "uv"    label   "UV"    type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "P"     label   "P"     type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "v"     label   "Velocity"      type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "force"         label   "Force"         type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "Cd"    label   "Cd"    type    float   invisible       size    3       default { "1" "1" "1" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "N"     label   "N"     type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "basis"         label   "Noise Type"    type    string  default { "simplex" }   menu    {           "sine"      "Sinusoid"          "perlin"    "Perlin"            "pperlin"   "Periodic Perlin"           "simplex"   "Simplex (Improved Perlin)"         "sparse"    "Sparse Convolution"        "flow"      "Flow"      "pflow"     "Periodic Flow"             "worleyFA"  "Worley (cellular) F1"      "worleyFB"  "Worley (cellular) F2-F1"           "alligator" "Alligator"     }       range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "freq"  label   "Frequency"     type    float   size    4       default { "1" "1" "1" "1" }     range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "offset"        label   "Offset"        type    float   size    4       default { "0" "0" "0" "0" }     range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "period"        label   "Period"        type    float   size    4       default { "1" "1" "1" "1" }     hidewhen        "{ basis != pperlin basis != pflow }"   range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     groupsimple {         name    "folder1"       label   "Fractal"       parm {      name        "fractal"           label       "Fractal"           type        string      default     { "none" }          menu        {               "none"  "None"          "fBm"   "Standard (fBm)"                "mfT"   "Terrain"               "hmfT"  "Hybrid Terrain"            }       range       { 0 1 }             export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }       parm {      name        "oct"       label       "Max Octaves"       type        float       default     { "8" }             hidewhen    "{ fractal == none } { fractal == none }"           range       { 0 16 }            export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }       parm {      name        "lac"       label       "Lacunarity"        type        float       default     { "2.01234" }       hidewhen    "{ fractal == none }"       range       { 0 4 }             export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }       parm {      name        "rough"             label       "Roughness"         type        float       default     { "0.5" }           hidewhen    "{ fractal == none }"       range       { 0 1 }             export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }     }      groupsimple {      name    "folder2"       label   "Warping"       parm {      name        "dolwarp"           label       "Enable Lattice Warp"       type        toggle      default     { "off" }           range       { 0 1 }             export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }       parm {      name        "accuml"            label       "Accumulate Lattice Warp"           type        toggle      default     { "off" }           hidewhen    "{ dolwarp == 0 } { fractal == none }"      range       { 0 1 }             export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }       parm {      name        "disp"      label       "Lattice Warp"      type        float       joinnext        default     { "0" }             hidewhen    "{ dolwarp == 0 }"          range       { -0.5 0.5 }        export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }       parm {      name        "dispfreq"          label       "Freq"      type        float       default     { "1" }             hidewhen    "{ dolwarp == 0 }"          range       { 0 1 }             export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }       parm {      name        "dogwarp"           label       "Enable Gradient Warp"      type        toggle      default     { "off" }           range       { 0 1 }             export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }       parm {      name        "accumg"            label       "Accumulate Gradient Warp"          type        toggle      default     { "off" }           hidewhen    "{ dogwarp == 0 } { fractal == none }"      range       { 0 1 }             export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }       parm {      name        "gflow"             label       "Gradient Warp"             type        float       default     { "0" }             hidewhen    "{ dogwarp == 0 }"          range       { -0.5 0.5 }        export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }       parm {      name        "flowrot"           label       "Flow Rotation"             type        float       default     { "0" }             hidewhen    "{ basis != flow basis != pflow }"          range       { 0 1 }             export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }     }      groupsimple {      name    "folder0_1"     label   "Output Correction"     parm {      name        "cc_fold"           label       "Fold"      type        toggle      default     { "off" }           range       { 0 1 }             export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }       parm {      name        "cc_dobias"         label       "Do Bias"           type        toggle      default     { "off" }           disablewhen "{ docc == 0 }"             range       { 0 1 }             export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }       parm {      name        "cc_bias"           label       "Bias"      type        float       size        3           default     { "0.5" "0.5" "0.5" }       hidewhen    "{ cc_dobias == 0 }"        range       { 0 10 }            export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }       parm {      name        "cc_dogain"         label       "Do Gain"           type        toggle      default     { "off" }           range       { 0 1 }             export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }       parm {      name        "cc_gain"           label       "Gain"      type        float       size        3           default     { "0.5" "0.5" "0.5" }       hidewhen    "{ cc_dogain == 0 }"        range       { 0 10 }            export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }       parm {      name        "cc_inv"            label       "Complement"        type        toggle      default     { "off" }           range       { 0 1 }             export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }       parm {      name        "cc_dorng"          label       "Output Range (Clamped)"            type        toggle      default     { "off" }           range       { 0 1 }             export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }       parm {      name        "cc_rnglo"          label       "New Minimum"       type        float       size        3           default     { "0" "0" "0" }             hidewhen    "{ cc_dorng == 0 }"         range       { 0 10 }            export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }       parm {      name        "cc_rnghi"          label       "New Maximum"       type        float       size        3           default     { "1" "1" "1" }             hidewhen    "{ cc_dorng == 0 }"         range       { 0 10 }            export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }       parm {      name        "cc_amp"            label       "Final Amplitude"           type        float       size        3           default     { "1" "1" "1" }             range       { 0 10 }            export      none        parmtag     { "parmvop" "1" }           parmtag     { "shaderparmcontexts" "cvex" }         }     }      parm {     name    "fscale"        label   "Filter Scale"  type    float   default { "1" }         range   { 0 2 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     } ' $_obj_geo1_subnet1_attribvop1
+opparm $_obj_geo1_subnet1_attribvop1  bindings ( 0 ) groupbindings ( 0 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_subnet1_attribvop1 freq2
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("freq1")' $_obj_geo1_subnet1_attribvop1/freq2
+chadd -t 0 0 $_obj_geo1_subnet1_attribvop1 freq3
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("freq1")' $_obj_geo1_subnet1_attribvop1/freq3
+chblockend
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1 freq ( 3 freq2 freq3 1 ) cc_dorng ( on ) cc_rnglo ( -1 -0.29999999999999999 -1 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_attribvop1
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1
+opcf $_obj_geo1_subnet1_attribvop1
+
+# Node $_obj_geo1_subnet1_attribvop1_geometryvopglobal1 (Vop/geometryvopglobal::2.0)
+set _obj_geo1_subnet1_attribvop1_geometryvopglobal1 = `run("opadd -e -n -v geometryvopglobal::2.0 geometryvopglobal1")`
+oplocate -x `$arg2 + 1.9057900000000001` -y `$arg3 + 1.97631` $_obj_geo1_subnet1_attribvop1_geometryvopglobal1
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_geometryvopglobal1
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_geometryvopglobal1
+opuserdata -n '___Version___' -v '' $_obj_geo1_subnet1_attribvop1_geometryvopglobal1
+
+# Node $_obj_geo1_subnet1_attribvop1_geometryvopoutput1 (Vop/geometryvopoutput)
+set _obj_geo1_subnet1_attribvop1_geometryvopoutput1 = `run("opadd -e -n -v geometryvopoutput geometryvopoutput1")`
+oplocate -x `$arg2 + 9.64696` -y `$arg3 + 4.3767100000000001` $_obj_geo1_subnet1_attribvop1_geometryvopoutput1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_geometryvopoutput1
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_geometryvopoutput1
+opuserdata -n '___Version___' -v '' $_obj_geo1_subnet1_attribvop1_geometryvopoutput1
+
+# Node $_obj_geo1_subnet1_attribvop1_unifiednoise1 (Vop/unifiednoise::2.0)
+set _obj_geo1_subnet1_attribvop1_unifiednoise1 = `run("opadd -e -n -v unifiednoise::2.0 unifiednoise1")`
+oplocate -x `$arg2 + 5.3133100000000004` -y `$arg3 + 0.046710000000000002` $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opparm $_obj_geo1_subnet1_attribvop1_unifiednoise1 signature ( v3 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opuserdata -n '___Version___' -v '' $_obj_geo1_subnet1_attribvop1_unifiednoise1
+
+# Node $_obj_geo1_subnet1_attribvop1_add1 (Vop/add)
+set _obj_geo1_subnet1_attribvop1_add1 = `run("opadd -e -n -v add add1")`
+oplocate -x `$arg2 + 7.3047599999999999` -y `$arg3 + 4.6591100000000001` $_obj_geo1_subnet1_attribvop1_add1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_add1
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_add1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_add1
+
+# Node $_obj_geo1_subnet1_attribvop1_basis (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_basis = `run("opadd -e -n -v parameter basis")`
+oplocate -x `$arg2 + 0.51330799999999999` -y `$arg3 + 5.6467099999999997` $_obj_geo1_subnet1_attribvop1_basis
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_basis parmname ( basis ) parmlabel ( 'Noise Type' ) parmtype ( string ) stringdef ( simplex ) exportcontext ( cvex ) providemenu ( on ) menuchoices ( 'sine "Sinusoid" perlin "Perlin" pperlin "Periodic Perlin" simplex "Simplex (Improved Perlin)" sparse "Sparse Convolution" flow "Flow" pflow "Periodic Flow" worleyFA "Worley (cellular) F1" worleyFB "Worley (cellular) F2-F1" alligator "Alligator" ' )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_basis
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_basis
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_basis
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_basis
+
+# Node $_obj_geo1_subnet1_attribvop1_freq (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_freq = `run("opadd -e -n -v parameter freq")`
+oplocate -x `$arg2 + 0.61330799999999996` -y `$arg3 + 5.4467100000000004` $_obj_geo1_subnet1_attribvop1_freq
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_freq parmname ( freq ) parmlabel ( Frequency ) parmtype ( float4 ) float4def ( 1 1 1 1 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_freq
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_freq
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_freq
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_freq
+
+# Node $_obj_geo1_subnet1_attribvop1_offset (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_offset = `run("opadd -e -n -v parameter offset")`
+oplocate -x `$arg2 + 0.71330800000000005` -y `$arg3 + 5.2467100000000002` $_obj_geo1_subnet1_attribvop1_offset
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_offset parmname ( offset ) parmlabel ( Offset ) parmtype ( float4 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_offset
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_offset
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_offset
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_offset
+
+# Node $_obj_geo1_subnet1_attribvop1_period (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_period = `run("opadd -e -n -v parameter period")`
+oplocate -x `$arg2 + 0.81330800000000003` -y `$arg3 + 5.04671` $_obj_geo1_subnet1_attribvop1_period
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_period parmname ( period ) parmlabel ( Period ) parmtype ( float4 ) float4def ( 1 1 1 1 ) exportcontext ( cvex ) hidewhen ( '{ basis != pperlin basis != pflow }' )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_period
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_period
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_period
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_period
+
+# Node $_obj_geo1_subnet1_attribvop1_fractal (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_fractal = `run("opadd -e -n -v parameter fractal")`
+oplocate -x `$arg2 + 0.91330800000000001` -y `$arg3 + 4.8467099999999999` $_obj_geo1_subnet1_attribvop1_fractal
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_fractal parmname ( fractal ) parmlabel ( Fractal ) parmtype ( string ) stringdef ( none ) exportcontext ( cvex ) providemenu ( on ) menuchoices ( 'none "None" fBm "Standard (fBm)" mfT "Terrain" hmfT "Hybrid Terrain" ' )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_fractal
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_fractal
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_fractal
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_fractal
+
+# Node $_obj_geo1_subnet1_attribvop1_oct (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_oct = `run("opadd -e -n -v parameter oct")`
+oplocate -x `$arg2 + 1.0133099999999999` -y `$arg3 + 4.6467099999999997` $_obj_geo1_subnet1_attribvop1_oct
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_oct parmname ( oct ) parmlabel ( 'Max Octaves' ) floatdef ( 8 ) rangeflt ( 0 16 ) exportcontext ( cvex ) hidewhen ( '{ fractal == none } { fractal == none }' )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_oct
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_oct
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_oct
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_oct
+
+# Node $_obj_geo1_subnet1_attribvop1_lac (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_lac = `run("opadd -e -n -v parameter lac")`
+oplocate -x `$arg2 + 1.11331` -y `$arg3 + 4.4467100000000004` $_obj_geo1_subnet1_attribvop1_lac
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_lac parmname ( lac ) parmlabel ( Lacunarity ) floatdef ( 2.01234 ) rangeflt ( 0 4 ) exportcontext ( cvex ) hidewhen ( '{ fractal == none }' )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_lac
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_lac
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_lac
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_lac
+
+# Node $_obj_geo1_subnet1_attribvop1_dolwarp (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_dolwarp = `run("opadd -e -n -v parameter dolwarp")`
+oplocate -x `$arg2 + 1.2133100000000001` -y `$arg3 + 4.2467100000000002` $_obj_geo1_subnet1_attribvop1_dolwarp
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_dolwarp parmname ( dolwarp ) parmlabel ( 'Enable Lattice Warp' ) parmtype ( toggle ) rangeint ( 0 1 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_dolwarp
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_dolwarp
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_dolwarp
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_dolwarp
+
+# Node $_obj_geo1_subnet1_attribvop1_accuml (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_accuml = `run("opadd -e -n -v parameter accuml")`
+oplocate -x `$arg2 + 1.31331` -y `$arg3 + 4.04671` $_obj_geo1_subnet1_attribvop1_accuml
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_accuml parmname ( accuml ) parmlabel ( 'Accumulate Lattice Warp' ) parmtype ( toggle ) rangeint ( 0 1 ) exportcontext ( cvex ) hidewhen ( '{ dolwarp == 0 } { fractal == none }' )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_accuml
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_accuml
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_accuml
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_accuml
+
+# Node $_obj_geo1_subnet1_attribvop1_disp (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_disp = `run("opadd -e -n -v parameter disp")`
+oplocate -x `$arg2 + 1.4133100000000001` -y `$arg3 + 3.8467099999999999` $_obj_geo1_subnet1_attribvop1_disp
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_disp parmname ( disp ) parmlabel ( 'Lattice Warp' ) rangeflt ( -0.5 0.5 ) exportcontext ( cvex ) joinnext ( on ) hidewhen ( '{ dolwarp == 0 }' )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_disp
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_disp
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_disp
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_disp
+
+# Node $_obj_geo1_subnet1_attribvop1_dispfreq (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_dispfreq = `run("opadd -e -n -v parameter dispfreq")`
+oplocate -x `$arg2 + 1.5133099999999999` -y `$arg3 + 3.6467100000000001` $_obj_geo1_subnet1_attribvop1_dispfreq
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_dispfreq parmname ( dispfreq ) parmlabel ( Freq ) floatdef ( 1 ) exportcontext ( cvex ) hidewhen ( '{ dolwarp == 0 }' )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_dispfreq
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_dispfreq
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_dispfreq
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_dispfreq
+
+# Node $_obj_geo1_subnet1_attribvop1_dogwarp (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_dogwarp = `run("opadd -e -n -v parameter dogwarp")`
+oplocate -x `$arg2 + 1.61331` -y `$arg3 + 3.4467099999999999` $_obj_geo1_subnet1_attribvop1_dogwarp
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_dogwarp parmname ( dogwarp ) parmlabel ( 'Enable Gradient Warp' ) parmtype ( toggle ) rangeint ( 0 1 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_dogwarp
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_dogwarp
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_dogwarp
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_dogwarp
+
+# Node $_obj_geo1_subnet1_attribvop1_accumg (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_accumg = `run("opadd -e -n -v parameter accumg")`
+oplocate -x `$arg2 + 1.7133100000000001` -y `$arg3 + 3.2467100000000002` $_obj_geo1_subnet1_attribvop1_accumg
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_accumg parmname ( accumg ) parmlabel ( 'Accumulate Gradient Warp' ) parmtype ( toggle ) rangeint ( 0 1 ) exportcontext ( cvex ) hidewhen ( '{ dogwarp == 0 } { fractal == none }' )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_accumg
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_accumg
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_accumg
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_accumg
+
+# Node $_obj_geo1_subnet1_attribvop1_gflow (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_gflow = `run("opadd -e -n -v parameter gflow")`
+oplocate -x `$arg2 + 1.81331` -y `$arg3 + 3.04671` $_obj_geo1_subnet1_attribvop1_gflow
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_gflow parmname ( gflow ) parmlabel ( 'Gradient Warp' ) rangeflt ( -0.5 0.5 ) exportcontext ( cvex ) hidewhen ( '{ dogwarp == 0 }' )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_gflow
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_gflow
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_gflow
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_gflow
+
+# Node $_obj_geo1_subnet1_attribvop1_flowrot (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_flowrot = `run("opadd -e -n -v parameter flowrot")`
+oplocate -x `$arg2 + 1.9133100000000001` -y `$arg3 + 2.8467099999999999` $_obj_geo1_subnet1_attribvop1_flowrot
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_flowrot parmname ( flowrot ) parmlabel ( 'Flow Rotation' ) exportcontext ( cvex ) hidewhen ( '{ basis != flow basis != pflow }' )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_flowrot
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_flowrot
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_flowrot
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_flowrot
+
+# Node $_obj_geo1_subnet1_attribvop1_rough (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_rough = `run("opadd -e -n -v parameter rough")`
+oplocate -x `$arg2 + 2.0133100000000002` -y `$arg3 + 2.6467100000000001` $_obj_geo1_subnet1_attribvop1_rough
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_rough parmname ( rough ) parmlabel ( Roughness ) floatdef ( 0.5 ) exportcontext ( cvex ) hidewhen ( '{ fractal == none }' )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_rough
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_rough
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_rough
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_rough
+
+# Node $_obj_geo1_subnet1_attribvop1_cc_fold (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_cc_fold = `run("opadd -e -n -v parameter cc_fold")`
+oplocate -x `$arg2 + 2.2133099999999999` -y `$arg3 + 2.2467100000000002` $_obj_geo1_subnet1_attribvop1_cc_fold
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_cc_fold parmname ( cc_fold ) parmlabel ( Fold ) parmtype ( toggle ) rangeint ( 0 1 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_cc_fold
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_cc_fold
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_cc_fold
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_cc_fold
+
+# Node $_obj_geo1_subnet1_attribvop1_cc_dobias (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_cc_dobias = `run("opadd -e -n -v parameter cc_dobias")`
+oplocate -x `$arg2 + 2.31331` -y `$arg3 + 2.04671` $_obj_geo1_subnet1_attribvop1_cc_dobias
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_cc_dobias parmname ( cc_dobias ) parmlabel ( 'Do Bias' ) parmtype ( toggle ) rangeint ( 0 1 ) exportcontext ( cvex ) disablewhen ( '{ docc == 0 }' )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_cc_dobias
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_cc_dobias
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_cc_dobias
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_cc_dobias
+
+# Node $_obj_geo1_subnet1_attribvop1_cc_bias (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_cc_bias = `run("opadd -e -n -v parameter cc_bias")`
+oplocate -x `$arg2 + 2.4133100000000001` -y `$arg3 + 1.8467100000000001` $_obj_geo1_subnet1_attribvop1_cc_bias
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_cc_bias parmname ( cc_bias ) parmlabel ( Bias ) parmtype ( float3 ) float3def ( 0.5 0.5 0.5 ) exportcontext ( cvex ) hidewhen ( '{ cc_dobias == 0 }' )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_cc_bias
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_cc_bias
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_cc_bias
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_cc_bias
+
+# Node $_obj_geo1_subnet1_attribvop1_cc_dogain (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_cc_dogain = `run("opadd -e -n -v parameter cc_dogain")`
+oplocate -x `$arg2 + 2.5133100000000002` -y `$arg3 + 1.6467099999999999` $_obj_geo1_subnet1_attribvop1_cc_dogain
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_cc_dogain parmname ( cc_dogain ) parmlabel ( 'Do Gain' ) parmtype ( toggle ) rangeint ( 0 1 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_cc_dogain
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_cc_dogain
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_cc_dogain
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_cc_dogain
+
+# Node $_obj_geo1_subnet1_attribvop1_cc_gain (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_cc_gain = `run("opadd -e -n -v parameter cc_gain")`
+oplocate -x `$arg2 + 2.6133099999999998` -y `$arg3 + 1.4467099999999999` $_obj_geo1_subnet1_attribvop1_cc_gain
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_cc_gain parmname ( cc_gain ) parmlabel ( Gain ) parmtype ( float3 ) float3def ( 0.5 0.5 0.5 ) exportcontext ( cvex ) hidewhen ( '{ cc_dogain == 0 }' )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_cc_gain
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_cc_gain
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_cc_gain
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_cc_gain
+
+# Node $_obj_geo1_subnet1_attribvop1_cc_inv (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_cc_inv = `run("opadd -e -n -v parameter cc_inv")`
+oplocate -x `$arg2 + 2.7133099999999999` -y `$arg3 + 1.24671` $_obj_geo1_subnet1_attribvop1_cc_inv
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_cc_inv parmname ( cc_inv ) parmlabel ( Complement ) parmtype ( toggle ) rangeint ( 0 1 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_cc_inv
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_cc_inv
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_cc_inv
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_cc_inv
+
+# Node $_obj_geo1_subnet1_attribvop1_cc_dorng (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_cc_dorng = `run("opadd -e -n -v parameter cc_dorng")`
+oplocate -x `$arg2 + 2.81331` -y `$arg3 + 1.04671` $_obj_geo1_subnet1_attribvop1_cc_dorng
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_cc_dorng parmname ( cc_dorng ) parmlabel ( 'Output Range (Clamped)' ) parmtype ( toggle ) rangeint ( 0 1 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_cc_dorng
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_cc_dorng
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_cc_dorng
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_cc_dorng
+
+# Node $_obj_geo1_subnet1_attribvop1_cc_rnglo (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_cc_rnglo = `run("opadd -e -n -v parameter cc_rnglo")`
+oplocate -x `$arg2 + 2.9133100000000001` -y `$arg3 + 0.84670999999999996` $_obj_geo1_subnet1_attribvop1_cc_rnglo
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_cc_rnglo parmname ( cc_rnglo ) parmlabel ( 'New Minimum' ) parmtype ( float3 ) exportcontext ( cvex ) hidewhen ( '{ cc_dorng == 0 }' )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_cc_rnglo
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_cc_rnglo
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_cc_rnglo
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_cc_rnglo
+
+# Node $_obj_geo1_subnet1_attribvop1_cc_rnghi (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_cc_rnghi = `run("opadd -e -n -v parameter cc_rnghi")`
+oplocate -x `$arg2 + 3.0133100000000002` -y `$arg3 + 0.64671000000000001` $_obj_geo1_subnet1_attribvop1_cc_rnghi
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_cc_rnghi parmname ( cc_rnghi ) parmlabel ( 'New Maximum' ) parmtype ( float3 ) float3def ( 1 1 1 ) exportcontext ( cvex ) hidewhen ( '{ cc_dorng == 0 }' )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_cc_rnghi
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_cc_rnghi
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_cc_rnghi
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_cc_rnghi
+
+# Node $_obj_geo1_subnet1_attribvop1_cc_amp (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_cc_amp = `run("opadd -e -n -v parameter cc_amp")`
+oplocate -x `$arg2 + 3.1133099999999998` -y `$arg3 + 0.44671` $_obj_geo1_subnet1_attribvop1_cc_amp
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_cc_amp parmname ( cc_amp ) parmlabel ( 'Final Amplitude' ) parmtype ( float3 ) float3def ( 1 1 1 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_cc_amp
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_cc_amp
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_cc_amp
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_cc_amp
+
+# Node $_obj_geo1_subnet1_attribvop1_fscale (Vop/parameter)
+set _obj_geo1_subnet1_attribvop1_fscale = `run("opadd -e -n -v parameter fscale")`
+oplocate -x `$arg2 + 3.31331` -y `$arg3 + 0.046710000000000002` $_obj_geo1_subnet1_attribvop1_fscale
+opparm -V 15.5.480 $_obj_geo1_subnet1_attribvop1_fscale parmname ( fscale ) parmlabel ( 'Filter Scale' ) floatdef ( 1 ) rangeflt ( 0 2 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_subnet1_attribvop1_fscale
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_subnet1_attribvop1_fscale
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribvop1_fscale
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_attribvop1_fscale
+opcf ..
+
+# Node $_obj_geo1_subnet1_attribwrangle1 (Sop/attribwrangle)
+set _obj_geo1_subnet1_attribwrangle1 = `run("opadd -e -n -v attribwrangle attribwrangle1")`
+oplocate -x `$arg2 + 4.7758000000000003` -y `$arg3 + 0.31421000000000099` $_obj_geo1_subnet1_attribwrangle1
+opparm $_obj_geo1_subnet1_attribwrangle1  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_subnet1_attribwrangle1 snippet ( 'if(@P.y<0)@P.y=0;' )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_attribwrangle1
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribwrangle1
+opuserdata -n '___Version___' -v '' $_obj_geo1_subnet1_attribwrangle1
+
+# Node $_obj_geo1_subnet1_dopnet1 (Sop/dopnet)
+set _obj_geo1_subnet1_dopnet1 = `run("opadd -e -n -v dopnet dopnet1")`
+oplocate -x `$arg2 + -6.5662699999999994` -y `$arg3 + -7.1204000000000001` $_obj_geo1_subnet1_dopnet1
+opparm $_obj_geo1_subnet1_dopnet1  numobj ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_subnet1_dopnet1 timestep
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("timescale")/(ch("substep")*$FPS)' $_obj_geo1_subnet1_dopnet1/timestep
+chadd -t 0 0 $_obj_geo1_subnet1_dopnet1 timeoffset
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '(ch("startframe")-1)/$FPS' $_obj_geo1_subnet1_dopnet1/timeoffset
+chblockend
+opparm -V 15.5.480 $_obj_geo1_subnet1_dopnet1 objname1 ( * )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_dopnet1
+opexprlanguage -s hscript $_obj_geo1_subnet1_dopnet1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_dopnet1
+opcf $_obj_geo1_subnet1_dopnet1
+
+# Node $_obj_geo1_subnet1_dopnet1_popgrains1 (Dop/popgrains)
+set _obj_geo1_subnet1_dopnet1_popgrains1 = `run("opadd -e -n -v popgrains popgrains1")`
+oplocate -x `$arg2 + -0.19624` -y `$arg3 + 3.9209999999999998` $_obj_geo1_subnet1_dopnet1_popgrains1
+opparm $_obj_geo1_subnet1_dopnet1_popgrains1 particlesep ( 1 ) iterations ( 80 ) repulsionweight ( 0 ) repulsionstiffness ( 1000 ) attractionweight ( 1 ) attractionstiffness ( 1000 ) constraintweight ( 1 ) explicitcollide ( on ) targetstiffness ( 100 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_dopnet1_popgrains1
+opexprlanguage -s hscript $_obj_geo1_subnet1_dopnet1_popgrains1
+opuserdata -n '___Version___' -v '' $_obj_geo1_subnet1_dopnet1_popgrains1
+opuserdata -n '___toolcount___' -v '2' $_obj_geo1_subnet1_dopnet1_popgrains1
+opuserdata -n '___toolid___' -v 'dynamics_popgrains' $_obj_geo1_subnet1_dopnet1_popgrains1
+
+# Node $_obj_geo1_subnet1_dopnet1_popsolver1 (Dop/popsolver::2.0)
+set _obj_geo1_subnet1_dopnet1_popsolver1 = `run("opadd -e -n -v popsolver::2.0 popsolver1")`
+oplocate -x `$arg2 + -1.4552499999999999` -y `$arg3 + 0.47142499999999998` $_obj_geo1_subnet1_dopnet1_popsolver1
+opparm $_obj_geo1_subnet1_dopnet1_popsolver1 substeps ( 4 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_dopnet1_popsolver1
+opexprlanguage -s hscript $_obj_geo1_subnet1_dopnet1_popsolver1
+opuserdata -n '___Version___' -v '' $_obj_geo1_subnet1_dopnet1_popsolver1
+opuserdata -n '___toolcount___' -v '1' $_obj_geo1_subnet1_dopnet1_popsolver1
+opuserdata -n '___toolid___' -v 'dynamics_poplocation' $_obj_geo1_subnet1_dopnet1_popsolver1
+
+# Node $_obj_geo1_subnet1_dopnet1_groundplane1 (Dop/groundplane)
+set _obj_geo1_subnet1_dopnet1_groundplane1 = `run("opadd -e -n -v groundplane groundplane1")`
+oplocate -x `$arg2 + -5.4088500000000002` -y `$arg3 + 3.8411200000000001` $_obj_geo1_subnet1_dopnet1_groundplane1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_dopnet1_groundplane1
+opexprlanguage -s hscript $_obj_geo1_subnet1_dopnet1_groundplane1
+opuserdata -n '___Version___' -v '' $_obj_geo1_subnet1_dopnet1_groundplane1
+opuserdata -n '___toolcount___' -v '1' $_obj_geo1_subnet1_dopnet1_groundplane1
+opuserdata -n '___toolid___' -v 'dop_groundplane' $_obj_geo1_subnet1_dopnet1_groundplane1
+
+# Node $_obj_geo1_subnet1_dopnet1_popgrains2 (Dop/popgrains)
+set _obj_geo1_subnet1_dopnet1_popgrains2 = `run("opadd -e -n -v popgrains popgrains2")`
+oplocate -x `$arg2 + 2.0300699999999998` -y `$arg3 + 2.3479899999999998` $_obj_geo1_subnet1_dopnet1_popgrains2
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_dopnet1_popgrains2
+opexprlanguage -s hscript $_obj_geo1_subnet1_dopnet1_popgrains2
+opuserdata -n '___Version___' -v '' $_obj_geo1_subnet1_dopnet1_popgrains2
+opuserdata -n '___toolcount___' -v '2' $_obj_geo1_subnet1_dopnet1_popgrains2
+opuserdata -n '___toolid___' -v 'dynamics_popgrains' $_obj_geo1_subnet1_dopnet1_popgrains2
+opcf ..
+
+# Node $_obj_geo1_subnet1_attribwrangle2 (Sop/attribwrangle)
+set _obj_geo1_subnet1_attribwrangle2 = `run("opadd -e -n -v attribwrangle attribwrangle2")`
+oplocate -x `$arg2 + -8.273340000000001` -y `$arg3 + -3.4863` $_obj_geo1_subnet1_attribwrangle2
+opspareds '    group {  name    "folder1"       label   "Code"          parm {      name        "group"             baseparm        label       "Group"             export      none        bindselector points "Modify Points"                 "Select the points to affect and press Enter to complete."              0 1 0xffffffff 0 grouptype 0    }       parm {      name        "grouptype"         baseparm        label       "Group Type"        export      none    }       parm {      name        "class"             baseparm        label       "Run Over"          export      none    }       parm {      name        "vex_numcount"      baseparm        label       "Number Count"      export      none    }       parm {      name        "vex_threadjobsize"         baseparm        label       "Thread Job Size"           export      none    }       parm {      name        "snippet"           baseparm        label       "VEXpression"       export      all     }       parm {      name        "exportlist"        baseparm        label       "Attributes to Create"      export      none    }       parm {      name        "vex_strict"        baseparm        label       "Enforce Prototypes"        export      none    }     }      group {    name    "folder1_1"     label   "Bindings"      parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }     }      parm {     name    "val"   label   "Val"   type    float   default { "0" }         range   { 0 1 }         export  none     } ' $_obj_geo1_subnet1_attribwrangle2
+opparm $_obj_geo1_subnet1_attribwrangle2  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_subnet1_attribwrangle2 snippet ( '@pscale*=ch("val");' ) val ( 3 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b on $_obj_geo1_subnet1_attribwrangle2
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribwrangle2
+opuserdata -n '___Version___' -v '' $_obj_geo1_subnet1_attribwrangle2
+
+# Node $_obj_geo1_subnet1_attribwrangle3 (Sop/attribwrangle)
+set _obj_geo1_subnet1_attribwrangle3 = `run("opadd -e -n -v attribwrangle attribwrangle3")`
+oplocate -x `$arg2 + -8.2733299999999996` -y `$arg3 + -4.2428999999999988` $_obj_geo1_subnet1_attribwrangle3
+opparm $_obj_geo1_subnet1_attribwrangle3  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_subnet1_attribwrangle3 snippet ( 'v@targetP=@P;' )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_attribwrangle3
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribwrangle3
+opuserdata -n '___Version___' -v '' $_obj_geo1_subnet1_attribwrangle3
+
+# Node $_obj_geo1_subnet1_attribwrangle4 (Sop/attribwrangle)
+set _obj_geo1_subnet1_attribwrangle4 = `run("opadd -e -n -v attribwrangle attribwrangle4")`
+oplocate -x `$arg2 + -2.1148299999999995` -y `$arg3 + -2.6161999999999992` $_obj_geo1_subnet1_attribwrangle4
+opparm $_obj_geo1_subnet1_attribwrangle4  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_subnet1_attribwrangle4 snippet ( '@P = v@opinput1_P;' )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_attribwrangle4
+opexprlanguage -s hscript $_obj_geo1_subnet1_attribwrangle4
+opuserdata -n '___Version___' -v '' $_obj_geo1_subnet1_attribwrangle4
+opcf ..
+opcf $_obj_geo1_subnet1
+opcf $_obj_geo1_subnet1_attribvop1
+oporder -e geometryvopglobal1 geometryvopoutput1 unifiednoise1 add1 basis freq offset period fractal oct lac dolwarp accuml disp dispfreq dogwarp accumg gflow flowrot rough cc_fold cc_dobias cc_bias cc_dogain cc_gain cc_inv cc_dorng cc_rnglo cc_rnghi cc_amp fscale
+opcf ..
+opcf $_obj_geo1_subnet1_dopnet1
+
+# Node $_obj_geo1_subnet1_dopnet1_output (Dop/output)
+set _obj_geo1_subnet1_dopnet1_output = `run("opadd -e -n -v output output")`
+oplocate -x `$arg2 + -3.4320499999999998` -y `$arg3 + -2.7664800000000001` $_obj_geo1_subnet1_dopnet1_output
+chblockbegin
+chadd -t 0 0 $_obj_geo1_subnet1_dopnet1_output f1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_subnet1_dopnet1_output/f1
+chadd -t 0 0 $_obj_geo1_subnet1_dopnet1_output f2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_subnet1_dopnet1_output/f2
+chblockend
+opparm $_obj_geo1_subnet1_dopnet1_output
+opset -d on -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_dopnet1_output
+opexprlanguage -s hscript $_obj_geo1_subnet1_dopnet1_output
+opuserdata -n '___Version___' -v '' $_obj_geo1_subnet1_dopnet1_output
+
+# Node $_obj_geo1_subnet1_dopnet1_popobject1 (Dop/popobject)
+set _obj_geo1_subnet1_dopnet1_popobject1 = `run("opadd -e -n -v popobject popobject1")`
+oplocate -x `$arg2 + -2.7825000000000002` -y `$arg3 + 2.53288` $_obj_geo1_subnet1_dopnet1_popobject1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_subnet1_dopnet1_popobject1 createframe
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch(opcreator(".")+"/startframe")' $_obj_geo1_subnet1_dopnet1_popobject1/createframe
+chblockend
+opparm $_obj_geo1_subnet1_dopnet1_popobject1 initial_geo ( ../../null1/ )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_dopnet1_popobject1
+opexprlanguage -s hscript $_obj_geo1_subnet1_dopnet1_popobject1
+opuserdata -n '___Version___' -v '' $_obj_geo1_subnet1_dopnet1_popobject1
+opuserdata -n '___toolcount___' -v '2' $_obj_geo1_subnet1_dopnet1_popobject1
+opuserdata -n '___toolid___' -v 'dynamics_poplocation' $_obj_geo1_subnet1_dopnet1_popobject1
+
+# Node $_obj_geo1_subnet1_dopnet1_gravity1 (Dop/gravity)
+set _obj_geo1_subnet1_dopnet1_gravity1 = `run("opadd -e -n -v gravity gravity1")`
+oplocate -x `$arg2 + -3.4320499999999998` -y `$arg3 + -1.6369800000000001` $_obj_geo1_subnet1_dopnet1_gravity1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_subnet1_dopnet1_gravity1 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_subnet1_dopnet1_gravity1/activation
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_dopnet1_gravity1
+opexprlanguage -s hscript $_obj_geo1_subnet1_dopnet1_gravity1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_dopnet1_gravity1
+
+# Node $_obj_geo1_subnet1_dopnet1_staticsolver1 (Dop/staticsolver)
+set _obj_geo1_subnet1_dopnet1_staticsolver1 = `run("opadd -e -n -v staticsolver staticsolver1")`
+oplocate -x `$arg2 + -5.4088500000000002` -y `$arg3 + 2.7116199999999999` $_obj_geo1_subnet1_dopnet1_staticsolver1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_dopnet1_staticsolver1
+opexprlanguage -s hscript $_obj_geo1_subnet1_dopnet1_staticsolver1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_dopnet1_staticsolver1
+
+# Node $_obj_geo1_subnet1_dopnet1_merge1 (Dop/merge)
+set _obj_geo1_subnet1_dopnet1_merge1 = `run("opadd -e -n -v merge merge1")`
+oplocate -x `$arg2 + -3.4320499999999998` -y `$arg3 + -0.50747500000000001` $_obj_geo1_subnet1_dopnet1_merge1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_subnet1_dopnet1_merge1 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_subnet1_dopnet1_merge1/activation
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_dopnet1_merge1
+opexprlanguage -s hscript $_obj_geo1_subnet1_dopnet1_merge1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_dopnet1_merge1
+
+# Node $_obj_geo1_subnet1_dopnet1_merge2 (Dop/merge)
+set _obj_geo1_subnet1_dopnet1_merge2 = `run("opadd -e -n -v merge merge2")`
+oplocate -x `$arg2 + -0.19624` -y `$arg3 + 1.3298099999999999` $_obj_geo1_subnet1_dopnet1_merge2
+chblockbegin
+chadd -t 0 0 $_obj_geo1_subnet1_dopnet1_merge2 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_subnet1_dopnet1_merge2/activation
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_dopnet1_merge2
+opexprlanguage -s hscript $_obj_geo1_subnet1_dopnet1_merge2
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_dopnet1_merge2
+opuserdata -n '___toolcount___' -v '8' $_obj_geo1_subnet1_dopnet1_merge2
+opuserdata -n '___toolid___' -v 'dynamics_popgrainstrand' $_obj_geo1_subnet1_dopnet1_merge2
+oporder -e output popgrains1 popsolver1 popobject1 gravity1 groundplane1 staticsolver1 merge1 merge2 popgrains2
+opcf ..
+
+# Node $_obj_geo1_subnet1_circle1 (Sop/circle)
+set _obj_geo1_subnet1_circle1 = `run("opadd -e -n -v circle circle1")`
+oplocate -x `$arg2 + 1` -y `$arg3 + 4.7470000000000008` $_obj_geo1_subnet1_circle1
+opparm -V 15.5.480 $_obj_geo1_subnet1_circle1 type ( poly ) divs ( 24 ) arc ( openarc )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_circle1
+opexprlanguage -s hscript $_obj_geo1_subnet1_circle1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_circle1
+
+# Node $_obj_geo1_subnet1_fuse1 (Sop/fuse)
+set _obj_geo1_subnet1_fuse1 = `run("opadd -e -n -v fuse fuse1")`
+oplocate -x `$arg2 + 1` -y `$arg3 + 4.0184100000000003` $_obj_geo1_subnet1_fuse1
+opparm -V 15.5.480 $_obj_geo1_subnet1_fuse1 grouppropagation ( union ) accurate ( off )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_fuse1
+opexprlanguage -s hscript $_obj_geo1_subnet1_fuse1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_fuse1
+
+# Node $_obj_geo1_subnet1_facet1 (Sop/facet)
+set _obj_geo1_subnet1_facet1 = `run("opadd -e -n -v facet facet1")`
+oplocate -x `$arg2 + 1` -y `$arg3 + -0.25132999999999939` $_obj_geo1_subnet1_facet1
+opparm -V 15.5.480 $_obj_geo1_subnet1_facet1 postnml ( on )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_facet1
+opexprlanguage -s hscript $_obj_geo1_subnet1_facet1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_facet1
+
+# Node $_obj_geo1_subnet1_polywire1 (Sop/polywire)
+set _obj_geo1_subnet1_polywire1 = `run("opadd -e -n -v polywire polywire1")`
+oplocate -x `$arg2 + -2.1148299999999995` -y `$arg3 + -4.0262999999999991` $_obj_geo1_subnet1_polywire1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_subnet1_polywire1 radius
+chkey -t 0 -v 0.10000000000000001 -m 0 -a 0 -A 0 -T a  -F 'ch("../solver1/d/s/attribwrangle1/val")*3' $_obj_geo1_subnet1_polywire1/radius
+chadd -t 0 0 $_obj_geo1_subnet1_polywire1 segscale1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '1.0 / $NSEG' $_obj_geo1_subnet1_polywire1/segscale1
+chadd -t 0 0 $_obj_geo1_subnet1_polywire1 segscale2
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F '1.0 - 1.0 / $NSEG' $_obj_geo1_subnet1_polywire1/segscale2
+chblockend
+opparm -V 15.5.480 $_obj_geo1_subnet1_polywire1 radius ( radius ) div ( 12 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_polywire1
+opexprlanguage -s hscript $_obj_geo1_subnet1_polywire1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_polywire1
+
+# Node $_obj_geo1_subnet1_facet2 (Sop/facet)
+set _obj_geo1_subnet1_facet2 = `run("opadd -e -n -v facet facet2")`
+oplocate -x `$arg2 + 1` -y `$arg3 + -3.9855` $_obj_geo1_subnet1_facet2
+opparm -V 15.5.480 $_obj_geo1_subnet1_facet2 postnml ( on )
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_facet2
+opexprlanguage -s hscript $_obj_geo1_subnet1_facet2
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_facet2
+
+# Node $_obj_geo1_subnet1_vdbfrompolygons1 (Sop/vdbfrompolygons)
+set _obj_geo1_subnet1_vdbfrompolygons1 = `run("opadd -e -n -v vdbfrompolygons vdbfrompolygons1")`
+oplocate -x `$arg2 + 1` -y `$arg3 + -5.1922999999999995` $_obj_geo1_subnet1_vdbfrompolygons1
+opparm $_obj_geo1_subnet1_vdbfrompolygons1  numattrib ( 0 )
+opparm -V 15.5.480 $_obj_geo1_subnet1_vdbfrompolygons1 voxelsize ( 0.0050000000000000001 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_vdbfrompolygons1
+opexprlanguage -s hscript $_obj_geo1_subnet1_vdbfrompolygons1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_vdbfrompolygons1
+
+# Node $_obj_geo1_subnet1_convertvdb1 (Sop/convertvdb)
+set _obj_geo1_subnet1_convertvdb1 = `run("opadd -e -n -v convertvdb convertvdb1")`
+oplocate -x `$arg2 + 1` -y `$arg3 + -7.604099999999999` $_obj_geo1_subnet1_convertvdb1
+opparm -V 15.5.480 $_obj_geo1_subnet1_convertvdb1 conversion ( poly ) sharpenfeatures ( on ) edgetolerance ( 0.10000000000000001 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_convertvdb1
+opexprlanguage -s hscript $_obj_geo1_subnet1_convertvdb1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_convertvdb1
+
+# Node $_obj_geo1_subnet1_vdbrenormalizesdf1 (Sop/vdbrenormalizesdf)
+set _obj_geo1_subnet1_vdbrenormalizesdf1 = `run("opadd -e -n -v vdbrenormalizesdf vdbrenormalizesdf1")`
+oplocate -x `$arg2 + 1` -y `$arg3 + -6.5648999999999997` $_obj_geo1_subnet1_vdbrenormalizesdf1
+opparm -V 15.5.480 $_obj_geo1_subnet1_vdbrenormalizesdf1 iterations ( 10 ) accuracy ( 'hj weno' )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b on $_obj_geo1_subnet1_vdbrenormalizesdf1
+opexprlanguage -s hscript $_obj_geo1_subnet1_vdbrenormalizesdf1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_vdbrenormalizesdf1
+
+# Node $_obj_geo1_subnet1_vdbsmoothsdf1 (Sop/vdbsmoothsdf)
+set _obj_geo1_subnet1_vdbsmoothsdf1 = `run("opadd -e -n -v vdbsmoothsdf vdbsmoothsdf1")`
+oplocate -x `$arg2 + 1` -y `$arg3 + -5.936399999999999` $_obj_geo1_subnet1_vdbsmoothsdf1
+opparm -V 15.5.480 $_obj_geo1_subnet1_vdbsmoothsdf1 operation ( meancurvature )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b on $_obj_geo1_subnet1_vdbsmoothsdf1
+opexprlanguage -s hscript $_obj_geo1_subnet1_vdbsmoothsdf1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_vdbsmoothsdf1
+
+# Node $_obj_geo1_subnet1_sphere3 (Sop/sphere)
+set _obj_geo1_subnet1_sphere3 = `run("opadd -e -n -v sphere sphere3")`
+oplocate -x `$arg2 + 4.7758000000000003` -y `$arg3 + 1.235100000000001` $_obj_geo1_subnet1_sphere3
+opparm -V 15.5.480 $_obj_geo1_subnet1_sphere3 type ( polymesh ) freq ( 10 ) rows ( 70 ) cols ( 128 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_sphere3
+opexprlanguage -s hscript $_obj_geo1_subnet1_sphere3
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_sphere3
+
+# Node $_obj_geo1_subnet1_facet5 (Sop/facet)
+set _obj_geo1_subnet1_facet5 = `run("opadd -e -n -v facet facet5")`
+oplocate -x `$arg2 + 3.2683200000000001` -y `$arg3 + -1.1698699999999995` $_obj_geo1_subnet1_facet5
+opparm -V 15.5.480 $_obj_geo1_subnet1_facet5 postnml ( on )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_facet5
+opexprlanguage -s hscript $_obj_geo1_subnet1_facet5
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_facet5
+
+# Node $_obj_geo1_subnet1_resample1 (Sop/resample)
+set _obj_geo1_subnet1_resample1 = `run("opadd -e -n -v resample resample1")`
+oplocate -x `$arg2 + 1` -y `$arg3 + 3.0069200000000009` $_obj_geo1_subnet1_resample1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_resample1
+opexprlanguage -s hscript $_obj_geo1_subnet1_resample1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_resample1
+
+# Node $_obj_geo1_subnet1_subdivide1 (Sop/subdivide)
+set _obj_geo1_subnet1_subdivide1 = `run("opadd -e -n -v subdivide subdivide1")`
+oplocate -x `$arg2 + 1` -y `$arg3 + -3.2891999999999992` $_obj_geo1_subnet1_subdivide1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b on $_obj_geo1_subnet1_subdivide1
+opexprlanguage -s hscript $_obj_geo1_subnet1_subdivide1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_subdivide1
+
+# Node $_obj_geo1_subnet1_tetrahedralize1 (Sop/tetrahedralize)
+set _obj_geo1_subnet1_tetrahedralize1 = `run("opadd -e -n -v tetrahedralize tetrahedralize1")`
+oplocate -x `$arg2 + -2.48794` -y `$arg3 + -5.8485999999999994` $_obj_geo1_subnet1_tetrahedralize1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_tetrahedralize1
+opexprlanguage -s hscript $_obj_geo1_subnet1_tetrahedralize1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_tetrahedralize1
+
+# Node $_obj_geo1_subnet1_fuse2 (Sop/fuse)
+set _obj_geo1_subnet1_fuse2 = `run("opadd -e -n -v fuse fuse2")`
+oplocate -x `$arg2 + -2.979444` -y `$arg3 + -1.6953499999999995` $_obj_geo1_subnet1_fuse2
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_fuse2
+opexprlanguage -s hscript $_obj_geo1_subnet1_fuse2
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_fuse2
+
+# Node $_obj_geo1_subnet1_null1 (Sop/null)
+set _obj_geo1_subnet1_null1 = `run("opadd -e -n -v null null1")`
+oplocate -x `$arg2 + -8.2733299999999996` -y `$arg3 + -4.8272999999999993` $_obj_geo1_subnet1_null1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_null1
+opexprlanguage -s hscript $_obj_geo1_subnet1_null1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_null1
+
+# Node $_obj_geo1_subnet1_timeshift1 (Sop/timeshift)
+set _obj_geo1_subnet1_timeshift1 = `run("opadd -e -n -v timeshift timeshift1")`
+oplocate -x `$arg2 + -2.979444` -y `$arg3 + -0.38344999999999985` $_obj_geo1_subnet1_timeshift1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_subnet1_timeshift1 time
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_subnet1_timeshift1/time
+chadd -t 0 0 $_obj_geo1_subnet1_timeshift1 frange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_subnet1_timeshift1/frange1
+chadd -t 0 0 $_obj_geo1_subnet1_timeshift1 frange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_subnet1_timeshift1/frange2
+chadd -t 0 0 $_obj_geo1_subnet1_timeshift1 trange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_subnet1_timeshift1/trange1
+chadd -t 0 0 $_obj_geo1_subnet1_timeshift1 trange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_subnet1_timeshift1/trange2
+chblockend
+opparm -V 15.5.480 $_obj_geo1_subnet1_timeshift1 frame ( 24 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_timeshift1
+opexprlanguage -s hscript $_obj_geo1_subnet1_timeshift1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_timeshift1
+
+# Node $_obj_geo1_subnet1_copy1 (Sop/copy)
+set _obj_geo1_subnet1_copy1 = `run("opadd -e -n -v copy copy1")`
+oplocate -x `$arg2 + -10.168710000000001` -y `$arg3 + -5.2359999999999989` $_obj_geo1_subnet1_copy1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_copy1
+opexprlanguage -s hscript $_obj_geo1_subnet1_copy1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_copy1
+
+# Node $_obj_geo1_subnet1_sphere1 (Sop/sphere)
+set _obj_geo1_subnet1_sphere1 = `run("opadd -e -n -v sphere sphere1")`
+oplocate -x `$arg2 + -11.100480000000001` -y `$arg3 + -3.7112999999999996` $_obj_geo1_subnet1_sphere1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_sphere1
+opexprlanguage -s hscript $_obj_geo1_subnet1_sphere1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_sphere1
+
+# Node $_obj_geo1_subnet1_resample2 (Sop/resample)
+set _obj_geo1_subnet1_resample2 = `run("opadd -e -n -v resample resample2")`
+oplocate -x `$arg2 + -2.979444` -y `$arg3 + -1.1006299999999989` $_obj_geo1_subnet1_resample2
+opparm -V 15.5.480 $_obj_geo1_subnet1_resample2 length ( 0.029999999999999999 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_resample2
+opexprlanguage -s hscript $_obj_geo1_subnet1_resample2
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_resample2
+
+# Node $_obj_geo1_subnet1_tetrahedralize2 (Sop/tetrahedralize)
+set _obj_geo1_subnet1_tetrahedralize2 = `run("opadd -e -n -v tetrahedralize tetrahedralize2")`
+oplocate -x `$arg2 + -4.5970999999999993` -y `$arg3 + -2.196299999999999` $_obj_geo1_subnet1_tetrahedralize2
+opparm -V 15.5.480 $_obj_geo1_subnet1_tetrahedralize2 output ( polyline )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_tetrahedralize2
+opexprlanguage -s hscript $_obj_geo1_subnet1_tetrahedralize2
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_tetrahedralize2
+
+# Node $_obj_geo1_subnet1_resample3 (Sop/resample)
+set _obj_geo1_subnet1_resample3 = `run("opadd -e -n -v resample resample3")`
+oplocate -x `$arg2 + -4.5970999999999993` -y `$arg3 + -2.9562999999999988` $_obj_geo1_subnet1_resample3
+opparm -V 15.5.480 $_obj_geo1_subnet1_resample3 edge ( on )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b on $_obj_geo1_subnet1_resample3
+opexprlanguage -s hscript $_obj_geo1_subnet1_resample3
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_resample3
+
+# Node $_obj_geo1_subnet1_fuse3 (Sop/fuse)
+set _obj_geo1_subnet1_fuse3 = `run("opadd -e -n -v fuse fuse3")`
+oplocate -x `$arg2 + -4.5970999999999993` -y `$arg3 + -3.7153999999999989` $_obj_geo1_subnet1_fuse3
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b on $_obj_geo1_subnet1_fuse3
+opexprlanguage -s hscript $_obj_geo1_subnet1_fuse3
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_fuse3
+
+# Node $_obj_geo1_subnet1_measure1 (Sop/measure)
+set _obj_geo1_subnet1_measure1 = `run("opadd -e -n -v measure measure1")`
+oplocate -x `$arg2 + -4.5970999999999993` -y `$arg3 + -4.3035999999999994` $_obj_geo1_subnet1_measure1
+opparm -V 15.5.480 $_obj_geo1_subnet1_measure1 override ( on ) attribname ( restlength )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_measure1
+opexprlanguage -s hscript $_obj_geo1_subnet1_measure1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_measure1
+
+# Node $_obj_geo1_subnet1_dopimport1 (Sop/dopimport)
+set _obj_geo1_subnet1_dopimport1 = `run("opadd -e -n -v dopimport dopimport1")`
+oplocate -x `$arg2 + -6.4862599999999997` -y `$arg3 + -8.4024000000000001` $_obj_geo1_subnet1_dopimport1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_subnet1_dopimport1 integrateovertime
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '1/$FPS' $_obj_geo1_subnet1_dopimport1/integrateovertime
+chblockend
+opparm -V 15.5.480 $_obj_geo1_subnet1_dopimport1 doppath ( /obj/geo1/subnet1/dopnet1 ) objpattern ( popobject1 ) importstyle ( fetch ) geodatapath ( Geometry )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_dopimport1
+opexprlanguage -s hscript $_obj_geo1_subnet1_dopimport1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_dopimport1
+
+# Node $_obj_geo1_subnet1_smooth1 (Sop/smooth)
+set _obj_geo1_subnet1_smooth1 = `run("opadd -e -n -v smooth smooth1")`
+oplocate -x `$arg2 + -2.1148299999999995` -y `$arg3 + -3.3711000000000002` $_obj_geo1_subnet1_smooth1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_subnet1_smooth1
+opexprlanguage -s hscript $_obj_geo1_subnet1_smooth1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_subnet1_smooth1
+oporder -e solver1 attribvop1 attribwrangle1 dopnet1 attribwrangle2 attribwrangle3 attribwrangle4 circle1 fuse1 facet1 polywire1 facet2 vdbfrompolygons1 convertvdb1 vdbrenormalizesdf1 vdbsmoothsdf1 sphere3 facet5 resample1 subdivide1 tetrahedralize1 fuse2 null1 timeshift1 copy1 sphere1 resample2 tetrahedralize2 resample3 fuse3 measure1 dopimport1 smooth1
+opcf ..
+opset -p on $_obj_geo1_subnet1
+
+opcf $arg1
+opcf $_obj_geo1_subnet1
+opwire -n $_obj_geo1_subnet1_facet1 -0 $_obj_geo1_subnet1_solver1
+opwire -n $_obj_geo1_subnet1_facet5 -1 $_obj_geo1_subnet1_solver1
+opwire -n $_obj_geo1_subnet1_resample1 -0 $_obj_geo1_subnet1_attribvop1
+opcf $_obj_geo1_subnet1_attribvop1
+opwire -n $_obj_geo1_subnet1_attribvop1_unifiednoise1 -0 $_obj_geo1_subnet1_attribvop1_geometryvopoutput1
+opwire -n $_obj_geo1_subnet1_attribvop1_geometryvopglobal1 -0 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_basis -1 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_freq -2 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_offset -3 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_period -4 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_fractal -5 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_oct -6 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_lac -7 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_dolwarp -8 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_accuml -9 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_disp -10 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_dispfreq -11 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_dogwarp -12 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_accumg -13 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_gflow -14 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_flowrot -15 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_rough -16 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_cc_fold -18 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_cc_dobias -19 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_cc_bias -20 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_cc_dogain -21 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_cc_gain -22 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_cc_inv -23 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_cc_dorng -24 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_cc_rnglo -25 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_cc_rnghi -26 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_cc_amp -27 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_fscale -29 $_obj_geo1_subnet1_attribvop1_unifiednoise1
+opwire -n $_obj_geo1_subnet1_attribvop1_geometryvopglobal1 -0 $_obj_geo1_subnet1_attribvop1_add1
+opwire -n $_obj_geo1_subnet1_attribvop1_unifiednoise1 -1 $_obj_geo1_subnet1_attribvop1_add1
+opcf ..
+opwire -n $_obj_geo1_subnet1_sphere3 -0 $_obj_geo1_subnet1_attribwrangle1
+opcf $_obj_geo1_subnet1_dopnet1
+opwire -n $_obj_geo1_subnet1_dopnet1_gravity1 -0 $_obj_geo1_subnet1_dopnet1_output
+opwire -n $_obj_geo1_subnet1_dopnet1_popobject1 -0 $_obj_geo1_subnet1_dopnet1_popsolver1
+opwire -n $_obj_geo1_subnet1_dopnet1_merge2 -2 $_obj_geo1_subnet1_dopnet1_popsolver1
+opwire -n $_obj_geo1_subnet1_dopnet1_merge1 -0 $_obj_geo1_subnet1_dopnet1_gravity1
+opwire -n $_obj_geo1_subnet1_dopnet1_groundplane1 -0 $_obj_geo1_subnet1_dopnet1_staticsolver1
+opwire -n $_obj_geo1_subnet1_dopnet1_staticsolver1 -0 $_obj_geo1_subnet1_dopnet1_merge1
+opwire -n $_obj_geo1_subnet1_dopnet1_popsolver1 -1 $_obj_geo1_subnet1_dopnet1_merge1
+opwire -n $_obj_geo1_subnet1_dopnet1_popgrains1 -0 $_obj_geo1_subnet1_dopnet1_merge2
+opcf ..
+opwire -n $_obj_geo1_subnet1_measure1 -0 $_obj_geo1_subnet1_attribwrangle2
+opwire -n $_obj_geo1_subnet1_attribwrangle2 -0 $_obj_geo1_subnet1_attribwrangle3
+opwire -n $_obj_geo1_subnet1_fuse2 -0 $_obj_geo1_subnet1_attribwrangle4
+opwire -n $_obj_geo1_subnet1_dopimport1 -1 $_obj_geo1_subnet1_attribwrangle4
+opwire -n $_obj_geo1_subnet1_circle1 -0 $_obj_geo1_subnet1_fuse1
+opwire -n $_obj_geo1_subnet1_attribvop1 -0 $_obj_geo1_subnet1_facet1
+opwire -n $_obj_geo1_subnet1_smooth1 -0 $_obj_geo1_subnet1_polywire1
+opwire -n $_obj_geo1_subnet1_subdivide1 -0 $_obj_geo1_subnet1_facet2
+opwire -n $_obj_geo1_subnet1_facet2 -0 $_obj_geo1_subnet1_vdbfrompolygons1
+opwire -n $_obj_geo1_subnet1_vdbrenormalizesdf1 -0 $_obj_geo1_subnet1_convertvdb1
+opwire -n $_obj_geo1_subnet1_vdbsmoothsdf1 -0 $_obj_geo1_subnet1_vdbrenormalizesdf1
+opwire -n $_obj_geo1_subnet1_vdbfrompolygons1 -0 $_obj_geo1_subnet1_vdbsmoothsdf1
+opwire -n $_obj_geo1_subnet1_attribwrangle1 -0 $_obj_geo1_subnet1_facet5
+opwire -n $_obj_geo1_subnet1_fuse1 -0 $_obj_geo1_subnet1_resample1
+opwire -n $_obj_geo1_subnet1_polywire1 -0 $_obj_geo1_subnet1_subdivide1
+opwire -n $_obj_geo1_subnet1_facet2 -0 $_obj_geo1_subnet1_tetrahedralize1
+opwire -n $_obj_geo1_subnet1_resample2 -0 $_obj_geo1_subnet1_fuse2
+opwire -n $_obj_geo1_subnet1_attribwrangle3 -0 $_obj_geo1_subnet1_null1
+opwire -n $_obj_geo1_subnet1_solver1 -0 $_obj_geo1_subnet1_timeshift1
+opwire -n $_obj_geo1_subnet1_sphere1 -0 $_obj_geo1_subnet1_copy1
+opwire -n $_obj_geo1_subnet1_null1 -1 $_obj_geo1_subnet1_copy1
+opwire -n $_obj_geo1_subnet1_timeshift1 -0 $_obj_geo1_subnet1_resample2
+opwire -n $_obj_geo1_subnet1_fuse2 -0 $_obj_geo1_subnet1_tetrahedralize2
+opwire -n $_obj_geo1_subnet1_tetrahedralize2 -0 $_obj_geo1_subnet1_resample3
+opwire -n $_obj_geo1_subnet1_resample3 -0 $_obj_geo1_subnet1_fuse3
+opwire -n $_obj_geo1_subnet1_fuse3 -0 $_obj_geo1_subnet1_measure1
+opwire -n $_obj_geo1_subnet1_attribwrangle4 -0 $_obj_geo1_subnet1_smooth1
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_subnet1
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_subnet1
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="tool_1" label="New Tool" icon="PLASMA_App">
+    <script scriptType="python"><![CDATA[import EventCallBack
+
+]]></script>
+  </tool>
+
+  <tool name="connect" label="Connect" icon="PLASMA_App">
+    <script scriptType="python"><![CDATA[import math
+
+
+limit = len(hou.selectedNodes())
+
+
+
+
+
+yPos = []
+
+
+for aNode in hou.selectedNodes():
+
+
+    yPos.append([aNode.position()[1], aNode])
+
+
+    yPos = sorted(yPos)
+
+
+for i in xrange(len(yPos) - 1):
+
+
+    yPos[i][1].setInput(0,yPos[i+1][1])
+
+
+for yNode in hou.selectedNodes():
+
+
+    yFit = math.floor(yNode.position()[0])
+
+
+    mean = (yNode.position()[1]) - (yFit) / (limit)]]></script>
+  </tool>
+
+  <tool name="subnet" label="remesh_for_deforming_geo" icon="SOP_subnet">
+    <helpURL>operator:Sop/subnet</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/subnet</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputnode = None
+inputindex = -1
+inputnode = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputnode = pane_node.node(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputnode = pane_node.node(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputnode is None:
+            inputnode = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+    if not autoplace and not pane.autoPlaceNodes() and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputnode is None:
+            pos = pane.selectPosition(inputnode, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputnode, outputindex,
+                                      outputnode, inputindex)
+    if pos is None and pane.autoPlaceNodes():
+        pos = pane.cursorPosition()
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('subnet'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r'''
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script: Monday October 03, 20:31 2016
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_sphere_remesh_for_deforming_geo (Sop/subnet)
+set _obj_sphere_remesh_for_deforming_geo = `run("opadd -e -n -v subnet remesh_for_deforming_geo")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_sphere_remesh_for_deforming_geo
+opspareds '    parm {   name    "label1"        baseparm        label   "Input #1 Label"        invisible       export  dialog     }     parm {         name    "label2"        baseparm        label   "Input #2 Label"        invisible       export  dialog     }     parm {         name    "label3"        baseparm        label   "Input #3 Label"        invisible       export  dialog     }     parm {         name    "label4"        baseparm        label   "Input #4 Label"        invisible       export  dialog     }     parm {         name    "remesh_frame"  label   "remesh_frame"  type    float   default { "1" }         range   { 0 10 }        export  none    parmtag { "autoscope" "0000000000000000" }     }     parm {     name    "target_edge"   label   "Target Edge Length"    type    float   default { "0.03" }      range   { 0.001! 1 }    export  none    parmtag { "autoscope" "0000000000000000" }     } ' $_obj_sphere_remesh_for_deforming_geo
+opcolor -c 0.86699998378753662 0 0 $_obj_sphere_remesh_for_deforming_geo
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_sphere_remesh_for_deforming_geo
+opexprlanguage -s hscript $_obj_sphere_remesh_for_deforming_geo
+opcf $_obj_sphere_remesh_for_deforming_geo
+
+# Node $_obj_sphere_remesh_for_deforming_geo_remesh1 (Sop/remesh)
+set _obj_sphere_remesh_for_deforming_geo_remesh1 = `run("opadd -e -n -v remesh remesh1")`
+oplocate -x `$arg2 + 1` -y `$arg3 + 3.4905300000000001` $_obj_sphere_remesh_for_deforming_geo_remesh1
+opparm $_obj_sphere_remesh_for_deforming_geo_remesh1  lfs_ramp ( 2 )
+chblockbegin
+chadd -t 0 0 $_obj_sphere_remesh_for_deforming_geo_remesh1 target_edge
+chkey -t 0 -v 0.029999999999999999 -m 0 -a 0 -A 0 -T a  -F 'ch("../target_edge")' $_obj_sphere_remesh_for_deforming_geo_remesh1/target_edge
+chblockend
+opparm -V 15.5.480 $_obj_sphere_remesh_for_deforming_geo_remesh1 target_edge ( target_edge ) lfs_ramp1c ( 0 0 1 ) lfs_ramp2pos ( 1 ) lfs_ramp2c ( 1 0 0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_sphere_remesh_for_deforming_geo_remesh1
+opexprlanguage -s hscript $_obj_sphere_remesh_for_deforming_geo_remesh1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_sphere_remesh_for_deforming_geo_remesh1
+
+# Node $_obj_sphere_remesh_for_deforming_geo_timeshift1 (Sop/timeshift)
+set _obj_sphere_remesh_for_deforming_geo_timeshift1 = `run("opadd -e -n -v timeshift timeshift1")`
+oplocate -x `$arg2 + 1` -y `$arg3 + 4.7469999999999999` $_obj_sphere_remesh_for_deforming_geo_timeshift1
+chblockbegin
+chadd -t 0 0 $_obj_sphere_remesh_for_deforming_geo_timeshift1 frame
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../remesh_frame")' $_obj_sphere_remesh_for_deforming_geo_timeshift1/frame
+chadd -t 0 0 $_obj_sphere_remesh_for_deforming_geo_timeshift1 time
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_sphere_remesh_for_deforming_geo_timeshift1/time
+chadd -t 0 0 $_obj_sphere_remesh_for_deforming_geo_timeshift1 frange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_sphere_remesh_for_deforming_geo_timeshift1/frange1
+chadd -t 0 0 $_obj_sphere_remesh_for_deforming_geo_timeshift1 frange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_sphere_remesh_for_deforming_geo_timeshift1/frange2
+chadd -t 0 0 $_obj_sphere_remesh_for_deforming_geo_timeshift1 trange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_sphere_remesh_for_deforming_geo_timeshift1/trange1
+chadd -t 0 0 $_obj_sphere_remesh_for_deforming_geo_timeshift1 trange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_sphere_remesh_for_deforming_geo_timeshift1/trange2
+chblockend
+opparm -V 15.5.480 $_obj_sphere_remesh_for_deforming_geo_timeshift1 frame ( frame )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_sphere_remesh_for_deforming_geo_timeshift1
+opexprlanguage -s hscript $_obj_sphere_remesh_for_deforming_geo_timeshift1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_sphere_remesh_for_deforming_geo_timeshift1
+
+# Node $_obj_sphere_remesh_for_deforming_geo_ray1 (Sop/ray)
+set _obj_sphere_remesh_for_deforming_geo_ray1 = `run("opadd -e -n -v ray ray1")`
+oplocate -x `$arg2 + 1` -y `$arg3 + 2.1069899999999997` $_obj_sphere_remesh_for_deforming_geo_ray1
+chblockbegin
+chadd -t 0 0 $_obj_sphere_remesh_for_deforming_geo_ray1 dirx
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F @N.x $_obj_sphere_remesh_for_deforming_geo_ray1/dirx
+chadd -t 0 0 $_obj_sphere_remesh_for_deforming_geo_ray1 diry
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F @N.y $_obj_sphere_remesh_for_deforming_geo_ray1/diry
+chadd -t 0 0 $_obj_sphere_remesh_for_deforming_geo_ray1 dirz
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F @N.z $_obj_sphere_remesh_for_deforming_geo_ray1/dirz
+chblockend
+opparm -V 15.5.480 $_obj_sphere_remesh_for_deforming_geo_ray1 method ( minimum ) useprimnumattrib ( on ) useprimuvwattrib ( on )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_sphere_remesh_for_deforming_geo_ray1
+opexprlanguage -s hscript $_obj_sphere_remesh_for_deforming_geo_ray1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_sphere_remesh_for_deforming_geo_ray1
+
+# Node $_obj_sphere_remesh_for_deforming_geo_null1 (Sop/null)
+set _obj_sphere_remesh_for_deforming_geo_null1 = `run("opadd -e -n -v null null1")`
+oplocate -x `$arg2 + 3.5997370000000002` -y `$arg3 + 3.4905300000000001` $_obj_sphere_remesh_for_deforming_geo_null1
+opcolor -c 0.60000002384185791 0.60000002384185791 1 $_obj_sphere_remesh_for_deforming_geo_null1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_sphere_remesh_for_deforming_geo_null1
+opexprlanguage -s hscript $_obj_sphere_remesh_for_deforming_geo_null1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_sphere_remesh_for_deforming_geo_null1
+
+# Node $_obj_sphere_remesh_for_deforming_geo_null2 (Sop/null)
+set _obj_sphere_remesh_for_deforming_geo_null2 = `run("opadd -e -n -v null null2")`
+oplocate -x `$arg2 + 6.1990769999999999` -y `$arg3 + 3.4905300000000001` $_obj_sphere_remesh_for_deforming_geo_null2
+opcolor -c 0.60000002384185791 0.60000002384185791 1 $_obj_sphere_remesh_for_deforming_geo_null2
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_sphere_remesh_for_deforming_geo_null2
+opexprlanguage -s hscript $_obj_sphere_remesh_for_deforming_geo_null2
+opuserdata -n '___Version___' -v '15.5.480' $_obj_sphere_remesh_for_deforming_geo_null2
+
+# Node $_obj_sphere_remesh_for_deforming_geo_attribinterpolate1 (Sop/attribinterpolate)
+set _obj_sphere_remesh_for_deforming_geo_attribinterpolate1 = `run("opadd -e -n -v attribinterpolate attribinterpolate1")`
+oplocate -x `$arg2 + 1` -y `$arg3 + 0.93860999999999972` $_obj_sphere_remesh_for_deforming_geo_attribinterpolate1
+opparm -V 15.5.480 $_obj_sphere_remesh_for_deforming_geo_attribinterpolate1 numberattrib ( hitprim ) weightsattrib ( hitprimuv )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_sphere_remesh_for_deforming_geo_attribinterpolate1
+opexprlanguage -s hscript $_obj_sphere_remesh_for_deforming_geo_attribinterpolate1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_sphere_remesh_for_deforming_geo_attribinterpolate1
+
+# Node $_obj_sphere_remesh_for_deforming_geo_OUT (Sop/null)
+set _obj_sphere_remesh_for_deforming_geo_OUT = `run("opadd -e -n -v null OUT")`
+oplocate -x `$arg2 + 1` -y `$arg3 + -0.89910999999999941` $_obj_sphere_remesh_for_deforming_geo_OUT
+opcolor -c 0.60000002384185791 0.60000002384185791 1 $_obj_sphere_remesh_for_deforming_geo_OUT
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_sphere_remesh_for_deforming_geo_OUT
+opexprlanguage -s hscript $_obj_sphere_remesh_for_deforming_geo_OUT
+opuserdata -n '___Version___' -v '15.5.480' $_obj_sphere_remesh_for_deforming_geo_OUT
+
+# Node $_obj_sphere_remesh_for_deforming_geo_attribute1 (Sop/attribute)
+set _obj_sphere_remesh_for_deforming_geo_attribute1 = `run("opadd -e -n -v attribute attribute1")`
+oplocate -x `$arg2 + 1` -y `$arg3 + 0.041730000000000267` $_obj_sphere_remesh_for_deforming_geo_attribute1
+opparm -V 15.5.480 $_obj_sphere_remesh_for_deforming_geo_attribute1 ptdel ( 'hitprim hitprimuv' )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_sphere_remesh_for_deforming_geo_attribute1
+opexprlanguage -s hscript $_obj_sphere_remesh_for_deforming_geo_attribute1
+opuserdata -n '___Version___' -v '15.5.480' $_obj_sphere_remesh_for_deforming_geo_attribute1
+
+# Node $_obj_sphere_remesh_for_deforming_geo_output1 (Sop/output)
+set _obj_sphere_remesh_for_deforming_geo_output1 = `run("opadd -e -n -v output output1")`
+oplocate -x `$arg2 + 1` -y `$arg3 + -2.2995080947875977` $_obj_sphere_remesh_for_deforming_geo_output1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_sphere_remesh_for_deforming_geo_output1
+opexprlanguage -s hscript $_obj_sphere_remesh_for_deforming_geo_output1
+oporder -e remesh1 timeshift1 ray1 null1 null2 attribinterpolate1 OUT attribute1 output1
+opcf ..
+opset -p on $_obj_sphere_remesh_for_deforming_geo
+
+opcf $arg1
+opwire -n $_obj_sphere_noise -0 $_obj_sphere_remesh_for_deforming_geo
+opcf $_obj_sphere_remesh_for_deforming_geo
+opwire -n $_obj_sphere_remesh_for_deforming_geo_timeshift1 -0 $_obj_sphere_remesh_for_deforming_geo_remesh1
+opwire -n -i 0 -0 $_obj_sphere_remesh_for_deforming_geo_timeshift1
+opwire -n $_obj_sphere_remesh_for_deforming_geo_remesh1 -0 $_obj_sphere_remesh_for_deforming_geo_ray1
+opwire -n $_obj_sphere_remesh_for_deforming_geo_null1 -1 $_obj_sphere_remesh_for_deforming_geo_ray1
+opwire -n $_obj_sphere_remesh_for_deforming_geo_timeshift1 -0 $_obj_sphere_remesh_for_deforming_geo_null1
+opwire -n -i 0 -0 $_obj_sphere_remesh_for_deforming_geo_null2
+opwire -n $_obj_sphere_remesh_for_deforming_geo_ray1 -0 $_obj_sphere_remesh_for_deforming_geo_attribinterpolate1
+opwire -n $_obj_sphere_remesh_for_deforming_geo_null2 -1 $_obj_sphere_remesh_for_deforming_geo_attribinterpolate1
+opwire -n $_obj_sphere_remesh_for_deforming_geo_attribute1 -0 $_obj_sphere_remesh_for_deforming_geo_OUT
+opwire -n $_obj_sphere_remesh_for_deforming_geo_attribinterpolate1 -0 $_obj_sphere_remesh_for_deforming_geo_attribute1
+opwire -n $_obj_sphere_remesh_for_deforming_geo_OUT -0 $_obj_sphere_remesh_for_deforming_geo_output1
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_sphere_remesh_for_deforming_geo
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_sphere_remesh_for_deforming_geo
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
 </shelfDocument>
