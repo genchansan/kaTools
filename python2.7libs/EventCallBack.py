@@ -24,7 +24,7 @@ def setClr(node):
 
 ####################################
 
-
-for node in allSubChildren(hou.node("/")):
-    node.removeAllEventCallbacks()
-    setUpCallback(node)
+def execute(node):
+    for node in allSubChildren(node):
+        node.removeAllEventCallbacks()
+        setUpCallback(node)
