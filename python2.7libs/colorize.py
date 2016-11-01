@@ -1,3 +1,5 @@
+import hou
+
 def execute():
     wrangleClr = hou.Color((1,0.8,0.0))
     sopRopClr = hou.Color((0.4,1,0.4))
@@ -10,7 +12,7 @@ def execute():
     currentNode = hou.selectedNodes()
     
     for node in currentNode:
-        print node.type().name()
+        #print node.type().name()
         if node.type().name() == "attribwrangle":
             node.setColor(wrangleClr)
         elif node.type().name() == "volumewrangle":
@@ -25,5 +27,4 @@ def execute():
             node.setColor(dopClr)
         elif node.type().name() == "object_merge":
             node.setColor(objMergeClr)
-        elif node.type().name() == "null":
-     
+        elif node.type().name() =
