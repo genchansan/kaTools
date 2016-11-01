@@ -30,37 +30,9 @@ sanityCheck.execute(hou.node("/"))]]></script>
   </tool>
 
   <tool name="connect" label="Connect" icon="PLASMA_App">
-    <script scriptType="python"><![CDATA[import math
+    <script scriptType="python"><![CDATA[import connectNodes
 
-
-limit = len(hou.selectedNodes())
-
-
-yPos = []
-
-
-for aNode in hou.selectedNodes():
-
-
-    yPos.append([aNode.position()[1], aNode])
-
-
-    yPos = sorted(yPos)
-
-
-for i in xrange(len(yPos) - 1):
-
-
-    yPos[i][1].setInput(0,yPos[i+1][1])
-
-
-for yNode in hou.selectedNodes():
-
-
-    yFit = math.floor(yNode.position()[0])
-
-
-    mean = (yNode.position()[1]) - (yFit) / (limit)]]></script>
+connectNodes.execute()]]></script>
   </tool>
 
   <tool name="subnet" label="remesh_for_deforming_geo" icon="SOP_subnet">
