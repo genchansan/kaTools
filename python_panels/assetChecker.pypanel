@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pythonPanelDocument>
+  <!-- This file contains definitions of Python interfaces and the
+ interfaces menu.  It should not be hand-edited when it is being
+ used by the application.  Note, that two definitions of the
+ same interface or of the interfaces menu are not allowed
+ in a single file. -->
+  <interface name="assetChecker" label="assetChecker" icon="MISC_python" help_url="">
+    <script><![CDATA[import os
+from PySide import QtCore, QtGui
+
+class Dialog(QtGui.QFrame):
+    def __init__(self, parent=None):
+        super(Dialog, self).__init__(parent)
+
+        # Create the filter input field and add the widgets to a scrolling
+        # list in the dialog.
+        self.myFilterRow = QtGui.QHBoxLayout()
+        self.myFilterLabel = QtGui.QLabel("Filter:")
+        self.myFilter = QtGui.QLineEdit()
+
+        self.myFilterChanged = QtGui.QCheckBox("Changed Values")
+
+        self.myFilterRow.addWidget(self.myFilterLabel)
+        self.myFilterRow.addWidget(self.myFilter)
+        self.myFilterRow.addWidget(self.myFilterChanged)
+
+        self.myScroller = QtGui.QScrollArea()
+        self.myScroller.setWidgetResizable(True)
+
+        self.myActionRow = QtGui.QHBoxLayout()
+        self.myClearSelectionButton = QtGui.QPushButton("Clear Selection")
+
+        self.mySchemeMenu = QtGui.QComboBox()
+        self.mySchemeMenu.setEditable(False)
+        self.mySchemeMenu.addItem("Light", "config/3DSceneColors.light")
+        self.mySchemeMenu.addItem("Dark", "config/3DSceneColors.dark")
+        self.mySchemeMenu.addItem("Grey", "config/3DSceneColors.bw")
+
+        self.mySaveButton = QtGui.QPushButton("Save")
+
+        self.myQuitButton = QtGui.QPushButton("Revert")
+
+        self.myActionRow.addWidget(self.myClearSelectionButton)
+        self.myActionRow.addStretch(1)
+        self.myActionRow.addWidget(QtGui.QLabel("Color Scheme:"))
+        self.myActionRow.addWidget(self.mySchemeMenu)
+        self.myActionRow.addStretch(1)
+        self.myActionRow.addWidget(self.mySaveButton)
+        self.myActionRow.addWidget(self.myQuitButton)
+
+        # Create the initial dialog layout.
+        mainLayout = QtGui.QBoxLayout(QtGui.QBoxLayout.Direction.TopToBottom)
+        mainLayout.addLayout(self.myFilterRow)
+        mainLayout.addWidget(self.myScroller)
+        mainLayout.addLayout(self.myActionRow)
+        self.setLayout(mainLayout)
+
+
+def createInterface():
+    # Create the dialog to display and edit the color information.
+    root = Dialog()
+    return root]]></script>
+    <help><![CDATA[]]></help>
+  </interface>
+</pythonPanelDocument>
