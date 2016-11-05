@@ -17,6 +17,7 @@
     <memberTool name="subnet"/>
     <memberTool name="attribvop"/>
     <memberTool name="uv_fixer"/>
+    <memberTool name="recursiveReferenceCopy"/>
   </toolshelf>
 
   <tool name="add_event_when_created" label="add_event_when_created" icon="PLASMA_App">
@@ -1468,5 +1469,12 @@ colorize.execute()]]></script>
     <script scriptType="python"><![CDATA[import jumpTpDependency
 
 jumpTpDependency.execute()]]></script>
+  </tool>
+  <tool name="recursiveReferenceCopy" label="recursiveReferenceCopy" icon="PLASMA_App">
+    <script scriptType="python"><![CDATA[import recursiveReferenceCopy
+
+reload(recursiveReferenceCopy)
+
+recursiveReferenceCopy.execute()]]></script>
   </tool>
 </shelfDocument>
