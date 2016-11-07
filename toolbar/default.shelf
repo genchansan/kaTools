@@ -1470,6 +1470,7 @@ colorize.execute()]]></script>
 
 jumpTpDependency.execute()]]></script>
   </tool>
+
   <tool name="recursiveReferenceCopy" label="recursiveReferenceCopy" icon="PLASMA_App">
     <script scriptType="python"><![CDATA[import recursiveReferenceCopy
 
