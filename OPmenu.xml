@@ -11,8 +11,8 @@
       </context>
         <scriptCode>
         <![CDATA[
-import test
-test.execute()
+import testPrint
+testPrint.ex()
 ]]>
         </scriptCode>
       </scriptItem>

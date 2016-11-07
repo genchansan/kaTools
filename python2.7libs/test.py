@@ -1,4 +1,0 @@
-
-
-def execute ():
-    print "a"
