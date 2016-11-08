@@ -7,9 +7,9 @@ def execute():
 
     for node in selectedNodes:
         for connection in node.outputConnections():
-            print connection
+            #print connection
             outputNode = connection.outputNode()
             inputIndex = connection.inputIndex()
-            print outputNode.name(), inputIndex
+            #print outputNode.name(), inputIndex
 
             outputNode.setInput(inputIndex, None)
