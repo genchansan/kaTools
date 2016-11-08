@@ -11,7 +11,7 @@ def execute():
         yPos = sorted(yPos)
 
     for i in xrange(len(yPos) - 1):
-        yPos[i][1].setInput(0,yPos[i+1][1])
+        yPos[i][1].setNextInput(yPos[i+1][1])
 
     for yNode in hou.selectedNodes():
         yFit = math.floor(yNode.position()[0])

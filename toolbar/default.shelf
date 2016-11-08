@@ -7,6 +7,7 @@
 
   <toolshelf name="kaTools" label="kaTools">
     <memberTool name="connect"/>
+    <memberTool name="disconnectOutput"/>
     <memberTool name="gotToCam"/>
     <memberTool name="changeUpdateMode"/>
     <memberTool name="add_event_when_created"/>
@@ -1477,5 +1478,11 @@ jumpTpDependency.execute()]]></script>
 reload(recursiveReferenceCopy)
 
 recursiveReferenceCopy.execute()]]></script>
+  </tool>
+
+  <tool name="disconnectOutput" label="disconnectOutput" icon="PLASMA_App">
+    <script scriptType="python"><![CDATA[import disconnectOutput
+
+disconnectOutput.execute()]]></script>
   </tool>
 </shelfDocument>
