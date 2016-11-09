@@ -4,5 +4,6 @@ h.tool:connect	Connect	"Shelf Tool: Connect"	 F6
 h.tool:changeUpdateMode	changeUpdateMode	"Shelf Tool: changeUpdateMode"	 F9
 h.pane.parms.copy_parm	"Copy Parameter"	"Copy parameter"	 Ctrl+Shift+C
 h.pane.wsheet.opmenu.flag_template	"Toggle Template"	"Toggle the Template flag of the selected node"	 3
+h.pane.gview.selectmode	"Toggle Object/Geometry Mode"	"Toggle the selection mode between object and geometry"	
 h.pane.parms.paste_rel_refs	"Paste Copied Relative Refs"	"Paste copied relative refs"	 Ctrl+Shift+V
 h.tool:colorize	colorize	"Shelf Tool: colorize"	 F10
