@@ -12,7 +12,8 @@
         <scriptCode>
         <![CDATA[
 import testPrint
-testPrint.ex()
+reload(testPrint)
+testPrint.ex(kwargs)
 ]]>
         </scriptCode>
       </scriptItem>
