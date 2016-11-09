@@ -18,7 +18,9 @@
     <memberTool name="recursiveReferenceCopy"/>
     <memberTool name="subnet"/>
     <memberTool name="attribvop"/>
+    <memberTool name="attribvop0"/>
     <memberTool name="uv_fixer"/>
+    <memberTool name="subnet0"/>
   </toolshelf>
 
   <tool name="add_event_when_created" label="add_event_when_created" icon="PLASMA_App">
@@ -1484,5 +1486,535 @@ recursiveReferenceCopy.execute()]]></script>
     <script scriptType="python"><![CDATA[import disconnectOutputNodes
 
 disconnectOutputNodes.execute()]]></script>
+  </tool>
+
+  <tool name="attribvop0" label="noise_1d" icon="SOP_attribvop">
+    <helpURL>operator:Sop/attribvop</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/attribvop</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputnode = None
+inputindex = -1
+inputnode = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputnode = pane_node.node(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputnode = pane_node.node(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputnode is None:
+            inputnode = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+    if not autoplace and not pane.autoPlaceNodes() and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputnode is None:
+            pos = pane.selectPosition(inputnode, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputnode, outputindex,
+                                      outputnode, inputindex)
+    if pos is None and pane.autoPlaceNodes():
+        pos = pane.cursorPosition()
+        
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('attribvop'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script: Tuesday November 08, 22:40 2016
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_noise_1d (Sop/attribvop)
+set _obj_geo1_noise_1d = `run("opadd -e -n -v attribvop noise_1d")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_noise_1d
+opspareds '    parm { 	name	"bindgroup" 	baseparm 	label	"Group" 	export	none 	bindselector points "Modify Points" 	    "Select the points to affect and press Enter to complete." 	    0 1 0xffffffff 0 bindgrouptype 0     }     parm { 	name	"bindgrouptype" 	baseparm 	label	"Group Type" 	export	none     }     parm { 	name	"bindclass" 	baseparm 	label	"Run Over" 	export	none     }     parm { 	name	"vex_numcount" 	baseparm 	label	"Number Count" 	export	none     }     parm { 	name	"vex_threadjobsize" 	baseparm 	label	"Thread Job Size" 	export	none     }     group { 	name	"stdswitcher3" 	label	"Vex Setup"  	parm { 	    name	"vexsrc" 	    baseparm 	    label	"Vex Source" 	    export	all 	} 	parm { 	    name	"shoppath" 	    baseparm 	    label	"Shop Path" 	    export	all 	} 	parm { 	    name	"script" 	    baseparm 	    label	"Script" 	    export	all 	} 	parm { 	    name	"clear" 	    baseparm 	    label	"Re-load VEX Functions" 	    export	all 	} 	parm { 	    name	"vop_compiler" 	    baseparm 	    label	"Compiler" 	    export	none 	} 	parm { 	    name	"vop_forcecompile" 	    baseparm 	    label	"Force Compile" 	    export	none 	} 	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_multithread" 	    baseparm 	    label	"Enable Multithreading" 	    export	none 	}     }      group { 	name	"stdswitcher3_1" 	label	"Attribute Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	}     }      parm { 	name	"ptnum" 	label	"Point Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"vtxnum" 	label	"Vertex Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"primnum" 	label	"Primitive Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"id" 	label	"Id" 	type	integer 	invisible 	default	{ "-1" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numpt" 	label	"Number of Points" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numvtx" 	label	"Number of Vertices" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numprim" 	label	"Number of Prims" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Time" 	label	"Time" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"TimeInc" 	label	"Time Inc" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Frame" 	label	"Frame" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"life" 	label	"Life" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"age" 	label	"Age" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput2" 	label	"Second Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput3" 	label	"Third Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput4" 	label	"Fourth Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput1" 	label	"First Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"uv" 	label	"UV" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"P" 	label	"P" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"v" 	label	"Velocity" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"force" 	label	"Force" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Cd" 	label	"Cd" 	type	float 	invisible 	size	3 	default	{ "1" "1" "1" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"N" 	label	"N" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"freq" 	label	"Frequency" 	type	float 	size	4 	default	{ "1" "1" "1" "1" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"offset" 	label	"Offset" 	type	float 	size	4 	default	{ "0" "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"amp" 	label	"Amplitude" 	type	float 	default	{ "1" } 	range	{ -1 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"rough" 	label	"Roughness" 	type	float 	default	{ "0.5" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"ramp" 	label	"ramp" 	type	ramp_flt 	default	{ "2" } 	range	{ 1! 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "rampbasis_var" "ramp_the_basis_strings" } 	parmtag	{ "rampbasisdefault" "linear" } 	parmtag	{ "rampkeys_var" "ramp_the_key_positions" } 	parmtag	{ "rampshowcontrolsdefault" "1" } 	parmtag	{ "rampvalues_var" "ramp_the_key_values" } 	parmtag	{ "shaderparmcontexts" "cvex" }     } ' $_obj_geo1_noise_1d
+opparm $_obj_geo1_noise_1d  bindings ( 0 ) groupbindings ( 0 ) ramp ( 2 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_noise_1d freq2
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("freq1")' $_obj_geo1_noise_1d/freq2
+chadd -t 0 0 $_obj_geo1_noise_1d freq3
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("freq1")' $_obj_geo1_noise_1d/freq3
+chblockend
+opparm -V 15.5.480 $_obj_geo1_noise_1d freq ( 1 freq2 freq3 1 ) ramp2pos ( 1 ) ramp2value ( 1 )
+opcolor -c 1 1 0.60000002384185791 $_obj_geo1_noise_1d
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_noise_1d
+opexprlanguage -s hscript $_obj_geo1_noise_1d
+opcf $_obj_geo1_noise_1d
+
+# Node $_obj_geo1_noise_1d_geometryvopglobal1 (Vop/geometryvopglobal::2.0)
+set _obj_geo1_noise_1d_geometryvopglobal1 = `run("opadd -e -n -v geometryvopglobal::2.0 geometryvopglobal1")`
+oplocate -x `$arg2 + 2.9616677732799999` -y `$arg3 + 1.69100370842` $_obj_geo1_noise_1d_geometryvopglobal1
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off -L off -M off -H on $_obj_geo1_noise_1d_geometryvopglobal1
+opexprlanguage -s hscript $_obj_geo1_noise_1d_geometryvopglobal1
+
+# Node $_obj_geo1_noise_1d_geometryvopoutput1 (Vop/geometryvopoutput)
+set _obj_geo1_noise_1d_geometryvopoutput1 = `run("opadd -e -n -v geometryvopoutput geometryvopoutput1")`
+oplocate -x `$arg2 + 12.87767219543457` -y `$arg3 + 2.8490509986877441` $_obj_geo1_noise_1d_geometryvopoutput1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off -L off -M off -H on $_obj_geo1_noise_1d_geometryvopoutput1
+opexprlanguage -s hscript $_obj_geo1_noise_1d_geometryvopoutput1
+
+# Node $_obj_geo1_noise_1d_aaflownoise1 (Vop/aaflownoise)
+set _obj_geo1_noise_1d_aaflownoise1 = `run("opadd -e -n -v aaflownoise aaflownoise1")`
+oplocate -x `$arg2 + 6.7875505371045` -y `$arg3 + 2.2842508983614001` $_obj_geo1_noise_1d_aaflownoise1
+opparm $_obj_geo1_noise_1d_aaflownoise1 signature ( fp )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off -L off -M off -H on $_obj_geo1_noise_1d_aaflownoise1
+opexprlanguage -s hscript $_obj_geo1_noise_1d_aaflownoise1
+
+# Node $_obj_geo1_noise_1d_vectohvec1 (Vop/vectohvec)
+set _obj_geo1_noise_1d_vectohvec1 = `run("opadd -e -n -v vectohvec vectohvec1")`
+oplocate -x `$arg2 + 4.8480950279187001` -y `$arg3 + 3.2726506423952002` $_obj_geo1_noise_1d_vectohvec1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off -L off -M off -H on $_obj_geo1_noise_1d_vectohvec1
+opexprlanguage -s hscript $_obj_geo1_noise_1d_vectohvec1
+
+# Node $_obj_geo1_noise_1d_freq (Vop/parameter)
+set _obj_geo1_noise_1d_freq = `run("opadd -e -n -v parameter freq")`
+oplocate -x `$arg2 + 4.0875505490253996` -y `$arg3 + 3.6842508745195` $_obj_geo1_noise_1d_freq
+opparm -V 15.5.480 $_obj_geo1_noise_1d_freq parmname ( freq ) parmlabel ( Frequency ) parmtype ( float4 ) float4def ( 1 1 1 1 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_noise_1d_freq
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_noise_1d_freq
+opexprlanguage -s hscript $_obj_geo1_noise_1d_freq
+
+# Node $_obj_geo1_noise_1d_offset (Vop/parameter)
+set _obj_geo1_noise_1d_offset = `run("opadd -e -n -v parameter offset")`
+oplocate -x `$arg2 + 4.1875505132626003` -y `$arg3 + 3.4842509460450999` $_obj_geo1_noise_1d_offset
+opparm -V 15.5.480 $_obj_geo1_noise_1d_offset parmname ( offset ) parmlabel ( Offset ) parmtype ( float4 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_noise_1d_offset
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_noise_1d_offset
+opexprlanguage -s hscript $_obj_geo1_noise_1d_offset
+
+# Node $_obj_geo1_noise_1d_amp (Vop/parameter)
+set _obj_geo1_noise_1d_amp = `run("opadd -e -n -v parameter amp")`
+oplocate -x `$arg2 + 4.2875505371045` -y `$arg3 + 3.2842508983614001` $_obj_geo1_noise_1d_amp
+opparm -V 15.5.480 $_obj_geo1_noise_1d_amp parmname ( amp ) parmlabel ( Amplitude ) floatdef ( 1 ) rangeflt ( -1 1 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_noise_1d_amp
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_noise_1d_amp
+opexprlanguage -s hscript $_obj_geo1_noise_1d_amp
+
+# Node $_obj_geo1_noise_1d_rough (Vop/parameter)
+set _obj_geo1_noise_1d_rough = `run("opadd -e -n -v parameter rough")`
+oplocate -x `$arg2 + 4.387550531144` -y `$arg3 + 3.0842509102823001` $_obj_geo1_noise_1d_rough
+opparm -V 15.5.480 $_obj_geo1_noise_1d_rough parmname ( rough ) parmlabel ( Roughness ) floatdef ( 0.5 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_noise_1d_rough
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_noise_1d_rough
+opexprlanguage -s hscript $_obj_geo1_noise_1d_rough
+
+# Node $_obj_geo1_noise_1d_fit1 (Vop/fit)
+set _obj_geo1_noise_1d_fit1 = `run("opadd -e -n -v fit fit1")`
+oplocate -x `$arg2 + 8.498382568359375` -y `$arg3 + 2.8490509986877441` $_obj_geo1_noise_1d_fit1
+opparm $_obj_geo1_noise_1d_fit1 srcmin ( -0.5 ) srcmax ( 0.5 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off -L off -M off -H on $_obj_geo1_noise_1d_fit1
+opexprlanguage -s hscript $_obj_geo1_noise_1d_fit1
+
+# Node $_obj_geo1_noise_1d_ramp1 (Vop/rampparm)
+set _obj_geo1_noise_1d_ramp1 = `run("opadd -e -n -v rampparm ramp1")`
+oplocate -x `$arg2 + 10.572565078735352` -y `$arg3 + 2.7078509330749512` $_obj_geo1_noise_1d_ramp1
+opparm -V 15.5.480 $_obj_geo1_noise_1d_ramp1 ramptype ( flt )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_noise_1d_ramp1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off -L off -M off -H on $_obj_geo1_noise_1d_ramp1
+opexprlanguage -s hscript $_obj_geo1_noise_1d_ramp1
+opcf ..
+opcf $_obj_geo1_noise_1d
+oporder -e geometryvopglobal1 geometryvopoutput1 aaflownoise1 vectohvec1 freq offset amp rough fit1 ramp1 
+opcf ..
+opset -p on $_obj_geo1_noise_1d
+
+opcf $arg1
+opcf $_obj_geo1_noise_1d
+opwire -n $_obj_geo1_noise_1d_ramp1 -3 $_obj_geo1_noise_1d_geometryvopoutput1
+opwire -n $_obj_geo1_noise_1d_vectohvec1 -0 $_obj_geo1_noise_1d_aaflownoise1
+opwire -n $_obj_geo1_noise_1d_freq -1 $_obj_geo1_noise_1d_aaflownoise1
+opwire -n $_obj_geo1_noise_1d_offset -2 $_obj_geo1_noise_1d_aaflownoise1
+opwire -n $_obj_geo1_noise_1d_amp -3 $_obj_geo1_noise_1d_aaflownoise1
+opwire -n $_obj_geo1_noise_1d_rough -4 $_obj_geo1_noise_1d_aaflownoise1
+opwire -n $_obj_geo1_noise_1d_geometryvopglobal1 -0 $_obj_geo1_noise_1d_vectohvec1
+opwire -n $_obj_geo1_noise_1d_aaflownoise1 -0 $_obj_geo1_noise_1d_fit1
+opwire -n $_obj_geo1_noise_1d_fit1 -0 $_obj_geo1_noise_1d_ramp1
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_noise_1d
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_noise_1d
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="subnet0" label="mix_to_noise" icon="SOP_subnet">
+    <helpURL>operator:Sop/subnet</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/subnet</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputnode = None
+inputindex = -1
+inputnode = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputnode = pane_node.node(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputnode = pane_node.node(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputnode is None:
+            inputnode = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+    if not autoplace and not pane.autoPlaceNodes() and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputnode is None:
+            pos = pane.selectPosition(inputnode, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputnode, outputindex,
+                                      outputnode, inputindex)
+    if pos is None and pane.autoPlaceNodes():
+        pos = pane.cursorPosition()
+        
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('subnet'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script: Tuesday November 08, 22:50 2016
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_mix_to_noise (Sop/subnet)
+set _obj_geo1_mix_to_noise = `run("opadd -e -n -v subnet mix_to_noise")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_mix_to_noise
+opspareds '    parm { 	name	"label1" 	baseparm 	label	"Input #1 Label" 	invisible 	export	dialog     }     parm { 	name	"label2" 	baseparm 	label	"Input #2 Label" 	invisible 	export	dialog     }     parm { 	name	"label3" 	baseparm 	label	"Input #3 Label" 	invisible 	export	dialog     }     parm { 	name	"label4" 	baseparm 	label	"Input #4 Label" 	invisible 	export	dialog     }     parm { 	name	"parm_name" 	label	"parm_name" 	type	string 	default	{ "parm" } 	range	{ 0 1 } 	export	none 	parmtag	{ "autoscope" "0000000000000000" }     }     parm { 	name	"freq" 	label	"Frequency" 	type	float 	size	4 	default	{ "1" [ "ch(\\"freq1\\")" hscript-expr ] [ "ch(\\"freq1\\")" hscript-expr ] "1" } 	range	{ 0 10 } 	export	none 	parmtag	{ "autoscope" "0000000000000000" } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"offset" 	label	"Offset" 	type	float 	size	4 	default	{ "0" "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "autoscope" "0000000000000000" } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"rough" 	label	"Roughness" 	type	float 	default	{ "0.5" } 	range	{ 0 1 } 	export	none 	parmtag	{ "autoscope" "0000000000000000" } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"bias" 	label	"Bias" 	type	float 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "autoscope" "0000000000000000" }     } ' $_obj_geo1_mix_to_noise
+chblockbegin
+chadd -t 0 0 $_obj_geo1_mix_to_noise freq2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("freq1")' $_obj_geo1_mix_to_noise/freq2
+chadd -t 0 0 $_obj_geo1_mix_to_noise freq3
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("freq1")' $_obj_geo1_mix_to_noise/freq3
+chblockend
+opparm -V 15.5.480 $_obj_geo1_mix_to_noise parm_name ( v )
+opcolor -c 0.86699998378753662 0 0 $_obj_geo1_mix_to_noise
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_mix_to_noise
+opexprlanguage -s hscript $_obj_geo1_mix_to_noise
+opcf $_obj_geo1_mix_to_noise
+
+# Node $_obj_geo1_mix_to_noise_noise (Sop/attribvop)
+set _obj_geo1_mix_to_noise_noise = `run("opadd -e -n -v attribvop noise")`
+oplocate -x `$arg2 + 2.7294120788574219` -y `$arg3 + 3.9117059707641602` $_obj_geo1_mix_to_noise_noise
+opspareds '    parm { 	name	"bindgroup" 	baseparm 	label	"Group" 	export	none 	bindselector points "Modify Points" 	    "Select the points to affect and press Enter to complete." 	    0 1 0xffffffff 0 bindgrouptype 0     }     parm { 	name	"bindgrouptype" 	baseparm 	label	"Group Type" 	export	none     }     parm { 	name	"bindclass" 	baseparm 	label	"Run Over" 	export	none     }     parm { 	name	"vex_numcount" 	baseparm 	label	"Number Count" 	export	none     }     parm { 	name	"vex_threadjobsize" 	baseparm 	label	"Thread Job Size" 	export	none     }     group { 	name	"stdswitcher3" 	label	"Vex Setup"  	parm { 	    name	"vexsrc" 	    baseparm 	    label	"Vex Source" 	    export	all 	} 	parm { 	    name	"shoppath" 	    baseparm 	    label	"Shop Path" 	    export	all 	} 	parm { 	    name	"script" 	    baseparm 	    label	"Script" 	    export	all 	} 	parm { 	    name	"clear" 	    baseparm 	    label	"Re-load VEX Functions" 	    export	all 	} 	parm { 	    name	"vop_compiler" 	    baseparm 	    label	"Compiler" 	    export	none 	} 	parm { 	    name	"vop_forcecompile" 	    baseparm 	    label	"Force Compile" 	    export	none 	} 	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_multithread" 	    baseparm 	    label	"Enable Multithreading" 	    export	none 	}     }      group { 	name	"stdswitcher3_1" 	label	"Attribute Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	}     }      parm { 	name	"ptnum" 	label	"Point Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"vtxnum" 	label	"Vertex Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"primnum" 	label	"Primitive Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"id" 	label	"Id" 	type	integer 	invisible 	default	{ "-1" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numpt" 	label	"Number of Points" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numvtx" 	label	"Number of Vertices" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numprim" 	label	"Number of Prims" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Time" 	label	"Time" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"TimeInc" 	label	"Time Inc" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Frame" 	label	"Frame" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"life" 	label	"Life" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"age" 	label	"Age" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput2" 	label	"Second Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput3" 	label	"Third Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput4" 	label	"Fourth Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput1" 	label	"First Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"uv" 	label	"UV" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"P" 	label	"P" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"force" 	label	"Force" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Cd" 	label	"Cd" 	type	float 	invisible 	size	3 	default	{ "1" "1" "1" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"N" 	label	"N" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"freq" 	label	"Frequency" 	type	float 	size	4 	default	{ "1" "1" "1" "1" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"offset" 	label	"Offset" 	type	float 	size	4 	default	{ "0" "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"rough" 	label	"Roughness" 	type	float 	default	{ "0.5" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     } ' $_obj_geo1_mix_to_noise_noise
+opparm $_obj_geo1_mix_to_noise_noise  bindings ( 0 ) groupbindings ( 0 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_mix_to_noise_noise freq1
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../freq1")' $_obj_geo1_mix_to_noise_noise/freq1
+chadd -t 0 0 $_obj_geo1_mix_to_noise_noise freq2
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("freq1")' $_obj_geo1_mix_to_noise_noise/freq2
+chadd -t 0 0 $_obj_geo1_mix_to_noise_noise freq3
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("freq1")' $_obj_geo1_mix_to_noise_noise/freq3
+chadd -t 0 0 $_obj_geo1_mix_to_noise_noise freq4
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../freq4")' $_obj_geo1_mix_to_noise_noise/freq4
+chadd -t 0 0 $_obj_geo1_mix_to_noise_noise offset1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../offset1")' $_obj_geo1_mix_to_noise_noise/offset1
+chadd -t 0 0 $_obj_geo1_mix_to_noise_noise offset2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../offset2")' $_obj_geo1_mix_to_noise_noise/offset2
+chadd -t 0 0 $_obj_geo1_mix_to_noise_noise offset3
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../offset3")' $_obj_geo1_mix_to_noise_noise/offset3
+chadd -t 0 0 $_obj_geo1_mix_to_noise_noise offset4
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../offset4")' $_obj_geo1_mix_to_noise_noise/offset4
+chadd -t 0 0 $_obj_geo1_mix_to_noise_noise rough
+chkey -t 0 -v 0.5 -m 0 -a 0 -A 0 -T a  -F 'ch("../rough")' $_obj_geo1_mix_to_noise_noise/rough
+chblockend
+opcolor -c 1 1 0.60000002384185791 $_obj_geo1_mix_to_noise_noise
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_mix_to_noise_noise
+opexprlanguage -s hscript $_obj_geo1_mix_to_noise_noise
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_mix_to_noise_noise
+opcf $_obj_geo1_mix_to_noise_noise
+
+# Node $_obj_geo1_mix_to_noise_noise_geometryvopglobal1 (Vop/geometryvopglobal::2.0)
+set _obj_geo1_mix_to_noise_noise_geometryvopglobal1 = `run("opadd -e -n -v geometryvopglobal::2.0 geometryvopglobal1")`
+oplocate -x `$arg2 + 1.49108` -y `$arg3 + 1.3733599999999999` $_obj_geo1_mix_to_noise_noise_geometryvopglobal1
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off -L off -M off -H on $_obj_geo1_mix_to_noise_noise_geometryvopglobal1
+opexprlanguage -s hscript $_obj_geo1_mix_to_noise_noise_geometryvopglobal1
+opuserdata -n '___Version___' -v '' $_obj_geo1_mix_to_noise_noise_geometryvopglobal1
+
+# Node $_obj_geo1_mix_to_noise_noise_aaflownoise1 (Vop/aaflownoise)
+set _obj_geo1_mix_to_noise_noise_aaflownoise1 = `run("opadd -e -n -v aaflownoise aaflownoise1")`
+oplocate -x `$arg2 + 5.3169599999999999` -y `$arg3 + 1.96661` $_obj_geo1_mix_to_noise_noise_aaflownoise1
+opparm $_obj_geo1_mix_to_noise_noise_aaflownoise1 signature ( vp )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off -L off -M off -H on $_obj_geo1_mix_to_noise_noise_aaflownoise1
+opexprlanguage -s hscript $_obj_geo1_mix_to_noise_noise_aaflownoise1
+opuserdata -n '___Version___' -v '' $_obj_geo1_mix_to_noise_noise_aaflownoise1
+
+# Node $_obj_geo1_mix_to_noise_noise_vectohvec1 (Vop/vectohvec)
+set _obj_geo1_mix_to_noise_noise_vectohvec1 = `run("opadd -e -n -v vectohvec vectohvec1")`
+oplocate -x `$arg2 + 3.37751` -y `$arg3 + 2.9550100000000001` $_obj_geo1_mix_to_noise_noise_vectohvec1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off -L off -M off -H on $_obj_geo1_mix_to_noise_noise_vectohvec1
+opexprlanguage -s hscript $_obj_geo1_mix_to_noise_noise_vectohvec1
+opuserdata -n '___Version___' -v '' $_obj_geo1_mix_to_noise_noise_vectohvec1
+
+# Node $_obj_geo1_mix_to_noise_noise_freq (Vop/parameter)
+set _obj_geo1_mix_to_noise_noise_freq = `run("opadd -e -n -v parameter freq")`
+oplocate -x `$arg2 + 2.6169600000000002` -y `$arg3 + 3.3666100000000001` $_obj_geo1_mix_to_noise_noise_freq
+opparm -V 15.5.480 $_obj_geo1_mix_to_noise_noise_freq parmname ( freq ) parmlabel ( Frequency ) parmtype ( float4 ) float4def ( 1 1 1 1 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_mix_to_noise_noise_freq
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_mix_to_noise_noise_freq
+opexprlanguage -s hscript $_obj_geo1_mix_to_noise_noise_freq
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_mix_to_noise_noise_freq
+
+# Node $_obj_geo1_mix_to_noise_noise_offset (Vop/parameter)
+set _obj_geo1_mix_to_noise_noise_offset = `run("opadd -e -n -v parameter offset")`
+oplocate -x `$arg2 + 2.7169599999999998` -y `$arg3 + 3.1666099999999999` $_obj_geo1_mix_to_noise_noise_offset
+opparm -V 15.5.480 $_obj_geo1_mix_to_noise_noise_offset parmname ( offset ) parmlabel ( Offset ) parmtype ( float4 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_mix_to_noise_noise_offset
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_mix_to_noise_noise_offset
+opexprlanguage -s hscript $_obj_geo1_mix_to_noise_noise_offset
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_mix_to_noise_noise_offset
+
+# Node $_obj_geo1_mix_to_noise_noise_rough (Vop/parameter)
+set _obj_geo1_mix_to_noise_noise_rough = `run("opadd -e -n -v parameter rough")`
+oplocate -x `$arg2 + 2.91696` -y `$arg3 + 2.76661` $_obj_geo1_mix_to_noise_noise_rough
+opparm -V 15.5.480 $_obj_geo1_mix_to_noise_noise_rough parmname ( rough ) parmlabel ( Roughness ) floatdef ( 0.5 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_geo1_mix_to_noise_noise_rough
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_mix_to_noise_noise_rough
+opexprlanguage -s hscript $_obj_geo1_mix_to_noise_noise_rough
+opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_mix_to_noise_noise_rough
+
+# Node $_obj_geo1_mix_to_noise_noise_bind1 (Vop/bind)
+set _obj_geo1_mix_to_noise_noise_bind1 = `run("opadd -e -n -v bind bind1")`
+oplocate -x `$arg2 + 8.295659065246582` -y `$arg3 + 2.955009937286377` $_obj_geo1_mix_to_noise_noise_bind1
+opparm -V 15.5.480 $_obj_geo1_mix_to_noise_noise_bind1 parmname ( '`chs("../../parm_name")`' ) parmtype ( vector ) overridetype ( on ) useasparmdefiner ( on ) exportparm ( whenconnected ) exportcontext ( cvex )
+opcolor -c 0.60000002384185791 0.60000002384185791 1 $_obj_geo1_mix_to_noise_noise_bind1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off -L off -M off -H on $_obj_geo1_mix_to_noise_noise_bind1
+opexprlanguage -s hscript $_obj_geo1_mix_to_noise_noise_bind1
+opcf ..
+
+# Node $_obj_geo1_mix_to_noise_mix (Sop/attribwrangle)
+set _obj_geo1_mix_to_noise_mix = `run("opadd -e -n -v attribwrangle mix")`
+oplocate -x `$arg2 + 1.2623496055603027` -y `$arg3 + 1.5378241539001465` $_obj_geo1_mix_to_noise_mix
+opspareds '    group { 	name	"folder1" 	label	"Code"  	parm { 	    name	"group" 	    baseparm 	    label	"Group" 	    export	none 	    bindselector points "Modify Points" 	        "Select the points to affect and press Enter to complete." 	        0 1 0xffffffff 0 grouptype 0 	} 	parm { 	    name	"grouptype" 	    baseparm 	    label	"Group Type" 	    export	none 	} 	parm { 	    name	"class" 	    baseparm 	    label	"Run Over" 	    export	none 	} 	parm { 	    name	"vex_numcount" 	    baseparm 	    label	"Number Count" 	    export	none 	} 	parm { 	    name	"vex_threadjobsize" 	    baseparm 	    label	"Thread Job Size" 	    export	none 	} 	parm { 	    name	"snippet" 	    baseparm 	    label	"VEXpression" 	    export	all 	} 	parm { 	    name	"exportlist" 	    baseparm 	    label	"Attributes to Create" 	    export	none 	} 	parm { 	    name	"vex_strict" 	    baseparm 	    label	"Enforce Prototypes" 	    export	none 	}     }      group { 	name	"folder1_1" 	label	"Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	}     }      parm { 	name	"bias" 	label	"Bias" 	type	float 	default	{ "0" } 	range	{ 0 1 } 	export	none     } ' $_obj_geo1_mix_to_noise_mix
+opparm $_obj_geo1_mix_to_noise_mix  bindings ( 0 ) groupbindings ( 0 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_mix_to_noise_mix bias
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../bias")' $_obj_geo1_mix_to_noise_mix/bias
+chblockend
+opparm $_obj_geo1_mix_to_noise_mix snippet ( 'v@`chs("../parm_name")` = normalize(lerp(normalize(v@`chs("../parm_name")`), normalize(v@opinput1_`chs("../parm_name")`), ch("bias"))) * length(v@`chs("../parm_name")`);' ) bias ( bias )
+opcolor -c 1 0.80000001192092896 0 $_obj_geo1_mix_to_noise_mix
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_mix_to_noise_mix
+opexprlanguage -s hscript $_obj_geo1_mix_to_noise_mix
+opuserdata -n '___Version___' -v '' $_obj_geo1_mix_to_noise_mix
+opcf ..
+opcf $_obj_geo1_mix_to_noise
+opcf $_obj_geo1_mix_to_noise_noise
+oporder -e geometryvopglobal1 aaflownoise1 vectohvec1 freq offset rough bind1 
+opcf ..
+
+# Node $_obj_geo1_mix_to_noise_output1 (Sop/output)
+set _obj_geo1_mix_to_noise_output1 = `run("opadd -e -n -v output output1")`
+oplocate -x `$arg2 + 1.2623496055603027` -y `$arg3 + 0.29860782623291016` $_obj_geo1_mix_to_noise_output1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_mix_to_noise_output1
+opexprlanguage -s hscript $_obj_geo1_mix_to_noise_output1
+oporder -e noise mix output1 
+opcf ..
+opset -p on $_obj_geo1_mix_to_noise
+
+opcf $arg1
+opwire -n $_obj_geo1_attribwrangle1 -0 $_obj_geo1_mix_to_noise
+opcf $_obj_geo1_mix_to_noise
+opwire -n -i 0 -0 $_obj_geo1_mix_to_noise_noise
+opcf $_obj_geo1_mix_to_noise_noise
+opwire -n $_obj_geo1_mix_to_noise_noise_vectohvec1 -0 $_obj_geo1_mix_to_noise_noise_aaflownoise1
+opwire -n $_obj_geo1_mix_to_noise_noise_freq -1 $_obj_geo1_mix_to_noise_noise_aaflownoise1
+opwire -n $_obj_geo1_mix_to_noise_noise_offset -2 $_obj_geo1_mix_to_noise_noise_aaflownoise1
+opwire -n $_obj_geo1_mix_to_noise_noise_rough -4 $_obj_geo1_mix_to_noise_noise_aaflownoise1
+opwire -n $_obj_geo1_mix_to_noise_noise_geometryvopglobal1 -0 $_obj_geo1_mix_to_noise_noise_vectohvec1
+opwire -n $_obj_geo1_mix_to_noise_noise_aaflownoise1 -0 $_obj_geo1_mix_to_noise_noise_bind1
+opcf ..
+opwire -n -i 0 -0 $_obj_geo1_mix_to_noise_mix
+opwire -n $_obj_geo1_mix_to_noise_noise -1 $_obj_geo1_mix_to_noise_mix
+opwire -n $_obj_geo1_mix_to_noise_mix -0 $_obj_geo1_mix_to_noise_output1
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_mix_to_noise
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_mix_to_noise
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
   </tool>
 </shelfDocument>
