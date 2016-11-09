@@ -1,5 +1,5 @@
 import hou
 
-def ex():
-    print "a"
+def ex(kwargs):
+    print kwargs["node"]
     return
