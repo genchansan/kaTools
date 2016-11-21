@@ -33,9 +33,9 @@ def execute():
             node.setColor(objMergeClr)
         elif node.type().name() == "null":
             node.setColor(nullClr)
-        elif node.type().name() == "attibvop":
+        elif node.type().name() == "attribvop":
             node.setColor(vopClr)
-        elif node.type().name() == "avolumevop":
+        elif node.type().name() == "volumevop":
             node.setColor(vopClr)
         elif node.type().name() == "subnet":
             node.setColor(subnetClr)
