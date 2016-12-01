@@ -11,8 +11,7 @@ def execute():
         yPos = sorted(yPos)
 
     for i in xrange(len(yPos) - 1):
-        yPos[i][1].setNextInput(yPos[i+1][1])
-
-    for yNode in hou.selectedNodes():
-        yFit = math.floor(yNode.position()[0])
-        mean = (yNode.position()[1]) - (yFit) / (limit)
+        try:
+            yPos[i][1].setNextInput(yPos[i+1][1])
+        except hou.Error:
+            yPos[i][1].setFirstInput(yPos[i+1][1])
