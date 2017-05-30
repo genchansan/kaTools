@@ -22,6 +22,7 @@
     <memberTool name="uv_fixer"/>
     <memberTool name="subnet0"/>
     <memberTool name="subnet1"/>
+    <memberTool name="subnet2"/>
   </toolshelf>
 
   <tool name="add_event_when_created" label="add_event_when_created" icon="PLASMA_App">
@@ -2019,7 +2020,7 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
 ]]></script>
   </tool>
 
-  <tool name="subnet1" label="time_blend" icon="SOP_subnet">
+  <tool name="subnet1" label="GET_interporation_by_id" icon="SOP_subnet">
     <helpURL>operator:Sop/subnet</helpURL>
     <toolMenuContext name="network">
       <contextOpType>Sop/subnet</contextOpType>
@@ -2028,9 +2029,9 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
 import sys
 import toolutils
 
-outputnode = None
+outputitem = None
 inputindex = -1
-inputnode = None
+inputitem = None
 outputindex = -1
 
 num_args = 1
@@ -2045,13 +2046,13 @@ if not isinstance(pane, hou.NetworkEditor):
 else: # We're creating this tool from the TAB menu inside a network editor
     pane_node = pane.pwd()
     if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
-        outputnode = pane_node.node(kwargs["outputnodename"])
+        outputitem = pane_node.item(kwargs["outputnodename"])
         inputindex = kwargs["inputindex"]
         h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
         h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
         num_args = 6
     if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
-        inputnode = pane_node.node(kwargs["inputnodename"])
+        inputitem = pane_node.item(kwargs["inputnodename"])
         outputindex = kwargs["outputindex"]
         h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
         h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
@@ -2063,8 +2064,8 @@ else: # We're creating this tool from the TAB menu inside a network editor
     # If shift-clicked we want to auto append to the current
     # node
     if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
-        if inputnode is None:
-            inputnode = pane.currentNode()
+        if inputitem is None:
+            inputitem = pane.currentNode()
             outputindex = 0
     if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
         try:
@@ -2074,17 +2075,16 @@ else: # We're creating this tool from the TAB menu inside a network editor
             pos = None
     else:
         pos = None
-    if not autoplace and not pane.autoPlaceNodes() and not pane.listMode():
+
+    if not autoplace and not pane.listMode():
         if pos is not None:
             pass
-        elif outputnode is None:
-            pos = pane.selectPosition(inputnode, outputindex, None, -1)
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
         else:
-            pos = pane.selectPosition(inputnode, outputindex,
-                                      outputnode, inputindex)
-    if pos is None and pane.autoPlaceNodes():
-        pos = pane.cursorPosition()
-        
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
     if pos is not None:
         if kwargs.has_key("node_bbox"):
             size = kwargs["node_bbox"]
@@ -2117,7 +2117,7 @@ endif
 if ($argc < 3 || "$arg3" == "") then
    set arg3 = 0
 endif
-# Automatically generated script: Thursday November 10, 01:33 2016
+# Automatically generated script
 # $arg1 - the path to add this node
 # $arg2 - x position of the tile
 # $arg3 - y position of the tile
@@ -2132,731 +2132,207 @@ endif
 set saved_path = `execute("oppwf")`
 opcf $arg1
 
-# Node $_obj_geo1_time_blend (Sop/subnet)
-set _obj_geo1_time_blend = `run("opadd -e -n -v subnet time_blend")`
-oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_time_blend
-opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend
-opexprlanguage -s hscript $_obj_geo1_time_blend
-opcf $_obj_geo1_time_blend
+# Node $_obj_geo1_GET_interporation_by_id (Sop/subnet)
+set _obj_geo1_GET_interporation_by_id = `run("opadd -e -n -v subnet GET_interporation_by_id")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_GET_interporation_by_id
+opspareds '    parm { 	name	"label1" 	baseparm 	label	"Input #1 Label" 	invisible 	export	dialog     }     parm { 	name	"label2" 	baseparm 	label	"Input #2 Label" 	invisible 	export	dialog     }     parm { 	name	"label3" 	baseparm 	label	"Input #3 Label" 	invisible 	export	dialog     }     parm { 	name	"label4" 	baseparm 	label	"Input #4 Label" 	invisible 	export	dialog     }     parm { 	name	"match_by_id" 	label	"match_by_id" 	type	toggle 	default	{ "1" } 	range	{ 0! 10 } 	parmtag	{ "autoscope" "0000000000000000" }     }     parm { 	name	"id_atr" 	label	"id_atr" 	type	string 	default	{ "id" } 	range	{ 0 1 } 	parmtag	{ "autoscope" "0000000000000000" }     } ' $_obj_geo1_GET_interporation_by_id
+opcolor -c 0.86699998378753662 0 0 $_obj_geo1_GET_interporation_by_id
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_GET_interporation_by_id
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id
+opcf $_obj_geo1_GET_interporation_by_id
 
-# Node $_obj_geo1_time_blend_noise (Sop/attribvop)
-set _obj_geo1_time_blend_noise = `run("opadd -e -n -v attribvop noise")`
-oplocate -x `$arg2 + 1` -y `$arg3 + 3.7616939999999999` $_obj_geo1_time_blend_noise
-opspareds '    parm { 	name	"bindgroup" 	baseparm 	label	"Group" 	export	none 	bindselector points "Modify Points" 	    "Select the points to affect and press Enter to complete." 	    0 1 0xffffffff 0 bindgrouptype 0     }     parm { 	name	"bindgrouptype" 	baseparm 	label	"Group Type" 	export	none     }     parm { 	name	"bindclass" 	baseparm 	label	"Run Over" 	export	none     }     parm { 	name	"vex_numcount" 	baseparm 	label	"Number Count" 	export	none     }     parm { 	name	"vex_threadjobsize" 	baseparm 	label	"Thread Job Size" 	export	none     }     group { 	name	"stdswitcher3" 	label	"Vex Setup"  	parm { 	    name	"vexsrc" 	    baseparm 	    label	"Vex Source" 	    export	all 	} 	parm { 	    name	"shoppath" 	    baseparm 	    label	"Shop Path" 	    export	all 	} 	parm { 	    name	"script" 	    baseparm 	    label	"Script" 	    export	all 	} 	parm { 	    name	"clear" 	    baseparm 	    label	"Re-load VEX Functions" 	    export	all 	} 	parm { 	    name	"vop_compiler" 	    baseparm 	    label	"Compiler" 	    export	none 	} 	parm { 	    name	"vop_forcecompile" 	    baseparm 	    label	"Force Compile" 	    export	none 	} 	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_multithread" 	    baseparm 	    label	"Enable Multithreading" 	    export	none 	}     }      group { 	name	"stdswitcher3_1" 	label	"Attribute Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	}     }      parm { 	name	"ptnum" 	label	"Point Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"vtxnum" 	label	"Vertex Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"primnum" 	label	"Primitive Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"id" 	label	"Id" 	type	integer 	invisible 	default	{ "-1" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numpt" 	label	"Number of Points" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numvtx" 	label	"Number of Vertices" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numprim" 	label	"Number of Prims" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Time" 	label	"Time" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"TimeInc" 	label	"Time Inc" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Frame" 	label	"Frame" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"life" 	label	"Life" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"age" 	label	"Age" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput2" 	label	"Second Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput3" 	label	"Third Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput4" 	label	"Fourth Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput1" 	label	"First Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"uv" 	label	"UV" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"P" 	label	"P" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"v" 	label	"Velocity" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"force" 	label	"Force" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Cd" 	label	"Cd" 	type	float 	invisible 	size	3 	default	{ "1" "1" "1" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"N" 	label	"N" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"freq" 	label	"Frequency" 	type	float 	size	4 	default	{ "1" "1" "1" "1" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"offset" 	label	"Offset" 	type	float 	size	4 	default	{ "0" "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"amp" 	label	"Amplitude" 	type	float 	default	{ "1" } 	range	{ -1 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"rough" 	label	"Roughness" 	type	float 	default	{ "0.5" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     } ' $_obj_geo1_time_blend_noise
-opparm $_obj_geo1_time_blend_noise  bindings ( 0 ) groupbindings ( 0 )
+# Node $_obj_geo1_GET_interporation_by_id_interporation_by_id (Sop/attribwrangle)
+set _obj_geo1_GET_interporation_by_id_interporation_by_id = `run("opadd -e -n -v attribwrangle interporation_by_id")`
+oplocate -x `$arg2 + -0.0030000111758708981` -y `$arg3 + -3.6293055612140224` $_obj_geo1_GET_interporation_by_id_interporation_by_id
+opspareds '    group { 	name	"folder1" 	label	"Code"  	parm { 	    name	"group" 	    baseparm 	    label	"Group" 	    export	none 	    bindselector points "Modify Points" 	        "Select the points to affect and press Enter to complete." 	        0 1 0xffffffff 0 grouptype 0 	} 	parm { 	    name	"grouptype" 	    baseparm 	    label	"Group Type" 	    export	none 	} 	parm { 	    name	"class" 	    baseparm 	    label	"Run Over" 	    export	none 	} 	parm { 	    name	"vex_numcount" 	    baseparm 	    label	"Number Count" 	    export	none 	} 	parm { 	    name	"vex_threadjobsize" 	    baseparm 	    label	"Thread Job Size" 	    export	none 	} 	parm { 	    name	"snippet" 	    baseparm 	    label	"VEXpression" 	    export	all 	} 	parm { 	    name	"exportlist" 	    baseparm 	    label	"Attributes to Create" 	    export	none 	} 	parm { 	    name	"vex_strict" 	    baseparm 	    label	"Enforce Prototypes" 	    export	none 	}     }      group { 	name	"folder1_1" 	label	"Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	} 	parm { 	    name	"vex_inplace" 	    baseparm 	    label	"Compute Results In Place" 	    export	none 	} 	parm { 	    name	"vex_selectiongroup" 	    baseparm 	    label	"Output Selection Group" 	    export	none 	}     }      parm { 	name	"second_previous_frame" 	label	"Second Previous Frame" 	type	oppath 	default	{ "" } 	parmtag	{ "oprelative" "." }     } ' $_obj_geo1_GET_interporation_by_id_interporation_by_id
+opparm $_obj_geo1_GET_interporation_by_id_interporation_by_id  bindings ( 0 ) groupbindings ( 0 )
 chblockbegin
-chadd -t 0 0 $_obj_geo1_time_blend_noise freq2
-chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("freq1")' $_obj_geo1_time_blend_noise/freq2
-chadd -t 0 0 $_obj_geo1_time_blend_noise freq3
-chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("freq1")' $_obj_geo1_time_blend_noise/freq3
-chadd -t 0 0 $_obj_geo1_time_blend_noise offset2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_time_blend_noise/offset2
-chadd -t 0 0 $_obj_geo1_time_blend_noise offset4
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T*6' $_obj_geo1_time_blend_noise/offset4
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_interporation_by_id vex_matchattrib
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'chs("../id_atr")' $_obj_geo1_GET_interporation_by_id_interporation_by_id/vex_matchattrib
 chblockend
-opparm -V 15.5.480 $_obj_geo1_time_blend_noise freq ( 3 freq2 freq3 2 ) offset ( -0.80000000000000004 offset2 0 offset4 ) amp ( 10 ) rough ( 0 )
-opcolor -c 1 1 0.60000002384185791 $_obj_geo1_time_blend_noise
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_noise
-opexprlanguage -s hscript $_obj_geo1_time_blend_noise
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_noise
-opcf $_obj_geo1_time_blend_noise
+opparm $_obj_geo1_GET_interporation_by_id_interporation_by_id snippet ( 'vector p = @P;\nvector prevPrevP = @P;\nvector prevP = @P;\nvector nextP = @P;\nvector nextNextP = @P;\n\nint idPt = findattribval(1,"point",chs("vex_matchattrib"),i@`chs("vex_matchattrib")`,0);\nif(idPt != -1)\n{\n    prevP = v@opinput1_P;\n}\n\nidPt = findattribval(2,"point",chs("vex_matchattrib"),i@`chs("vex_matchattrib")`,0);\nif(idPt != -1)\n{\n    nextP = v@opinput2_P;\n}\n\nidPt = findattribval(3,"point",chs("vex_matchattrib"),i@`chs("vex_matchattrib")`,0);\nif(idPt != -1)\n{\n    nextNextP = v@opinput3_P;\n}\n\nidPt = findattribval("op:" + chs("second_previous_frame"),"point",chs("vex_matchattrib"),i@`chs("vex_matchattrib")`,0);\nif(idPt != -1)\n{\n    prevPrevP = point("op:" + chs("second_previous_frame"),"P", idPt);\n}\n\nvector arrayP[];\nif(rint(@Frame)==floor(@Frame))\n{\n    arrayP = vector[](array(prevP,p,nextP,nextNextP));\n}\nelse\n{\n    arrayP = vector[](array(prevPrevP,prevP,p,nextP));\n}\n\n@P = spline("cubic",frac(@Frame),arrayP);' ) vex_matchattrib ( vex_matchattrib ) folder1 ( 1 1 ) second_previous_frame ( ../OUT_prevPrev_f )
+opcolor -c 1 0.80000001192092896 0 $_obj_geo1_GET_interporation_by_id_interporation_by_id
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_GET_interporation_by_id_interporation_by_id
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_interporation_by_id
+opuserdata -n '___Version___' -v '' $_obj_geo1_GET_interporation_by_id_interporation_by_id
 
-# Node $_obj_geo1_time_blend_noise_geometryvopglobal1 (Vop/geometryvopglobal::2.0)
-set _obj_geo1_time_blend_noise_geometryvopglobal1 = `run("opadd -e -n -v geometryvopglobal::2.0 geometryvopglobal1")`
-oplocate -x `$arg2 + 2.39697` -y `$arg3 + 0.37336000000000003` $_obj_geo1_time_blend_noise_geometryvopglobal1
-opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off -L off -M off -H on $_obj_geo1_time_blend_noise_geometryvopglobal1
-opexprlanguage -s hscript $_obj_geo1_time_blend_noise_geometryvopglobal1
-opuserdata -n '___Version___' -v '' $_obj_geo1_time_blend_noise_geometryvopglobal1
-
-# Node $_obj_geo1_time_blend_noise_geometryvopoutput1 (Vop/geometryvopoutput)
-set _obj_geo1_time_blend_noise_geometryvopoutput1 = `run("opadd -e -n -v geometryvopoutput geometryvopoutput1")`
-oplocate -x `$arg2 + 10.363300000000001` -y `$arg3 + 2.68479` $_obj_geo1_time_blend_noise_geometryvopoutput1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off -L off -M off -H on $_obj_geo1_time_blend_noise_geometryvopoutput1
-opexprlanguage -s hscript $_obj_geo1_time_blend_noise_geometryvopoutput1
-opuserdata -n '___Version___' -v '' $_obj_geo1_time_blend_noise_geometryvopoutput1
-
-# Node $_obj_geo1_time_blend_noise_aaflownoise1 (Vop/aaflownoise)
-set _obj_geo1_time_blend_noise_aaflownoise1 = `run("opadd -e -n -v aaflownoise aaflownoise1")`
-oplocate -x `$arg2 + 6.2228500000000002` -y `$arg3 + 0.96660699999999999` $_obj_geo1_time_blend_noise_aaflownoise1
-opparm $_obj_geo1_time_blend_noise_aaflownoise1 signature ( vp )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off -L off -M off -H on $_obj_geo1_time_blend_noise_aaflownoise1
-opexprlanguage -s hscript $_obj_geo1_time_blend_noise_aaflownoise1
-opuserdata -n '___Version___' -v '' $_obj_geo1_time_blend_noise_aaflownoise1
-
-# Node $_obj_geo1_time_blend_noise_vectohvec1 (Vop/vectohvec)
-set _obj_geo1_time_blend_noise_vectohvec1 = `run("opadd -e -n -v vectohvec vectohvec1")`
-oplocate -x `$arg2 + 4.2833899999999998` -y `$arg3 + 1.9550099999999999` $_obj_geo1_time_blend_noise_vectohvec1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off -L off -M off -H on $_obj_geo1_time_blend_noise_vectohvec1
-opexprlanguage -s hscript $_obj_geo1_time_blend_noise_vectohvec1
-opuserdata -n '___Version___' -v '' $_obj_geo1_time_blend_noise_vectohvec1
-
-# Node $_obj_geo1_time_blend_noise_add1 (Vop/add)
-set _obj_geo1_time_blend_noise_add1 = `run("opadd -e -n -v add add1")`
-oplocate -x `$arg2 + 8.1873799999999992` -y `$arg3 + 2.96719` $_obj_geo1_time_blend_noise_add1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off -L off -M off -H on $_obj_geo1_time_blend_noise_add1
-opexprlanguage -s hscript $_obj_geo1_time_blend_noise_add1
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_noise_add1
-
-# Node $_obj_geo1_time_blend_noise_freq (Vop/parameter)
-set _obj_geo1_time_blend_noise_freq = `run("opadd -e -n -v parameter freq")`
-oplocate -x `$arg2 + 3.52285` -y `$arg3 + 2.3666100000000001` $_obj_geo1_time_blend_noise_freq
-opparm -V 15.5.480 $_obj_geo1_time_blend_noise_freq parmname ( freq ) parmlabel ( Frequency ) parmtype ( float4 ) float4def ( 1 1 1 1 ) exportcontext ( cvex )
-opcolor -c 1 1 0.40000000596046448 $_obj_geo1_time_blend_noise_freq
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_time_blend_noise_freq
-opexprlanguage -s hscript $_obj_geo1_time_blend_noise_freq
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_noise_freq
-
-# Node $_obj_geo1_time_blend_noise_offset (Vop/parameter)
-set _obj_geo1_time_blend_noise_offset = `run("opadd -e -n -v parameter offset")`
-oplocate -x `$arg2 + 3.6228500000000001` -y `$arg3 + 2.1666099999999999` $_obj_geo1_time_blend_noise_offset
-opparm -V 15.5.480 $_obj_geo1_time_blend_noise_offset parmname ( offset ) parmlabel ( Offset ) parmtype ( float4 ) exportcontext ( cvex )
-opcolor -c 1 1 0.40000000596046448 $_obj_geo1_time_blend_noise_offset
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_time_blend_noise_offset
-opexprlanguage -s hscript $_obj_geo1_time_blend_noise_offset
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_noise_offset
-
-# Node $_obj_geo1_time_blend_noise_amp (Vop/parameter)
-set _obj_geo1_time_blend_noise_amp = `run("opadd -e -n -v parameter amp")`
-oplocate -x `$arg2 + 3.7228500000000002` -y `$arg3 + 1.96661` $_obj_geo1_time_blend_noise_amp
-opparm -V 15.5.480 $_obj_geo1_time_blend_noise_amp parmname ( amp ) parmlabel ( Amplitude ) floatdef ( 1 ) rangeflt ( -1 1 ) exportcontext ( cvex )
-opcolor -c 1 1 0.40000000596046448 $_obj_geo1_time_blend_noise_amp
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_time_blend_noise_amp
-opexprlanguage -s hscript $_obj_geo1_time_blend_noise_amp
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_noise_amp
-
-# Node $_obj_geo1_time_blend_noise_rough (Vop/parameter)
-set _obj_geo1_time_blend_noise_rough = `run("opadd -e -n -v parameter rough")`
-oplocate -x `$arg2 + 3.8228499999999999` -y `$arg3 + 1.76661` $_obj_geo1_time_blend_noise_rough
-opparm -V 15.5.480 $_obj_geo1_time_blend_noise_rough parmname ( rough ) parmlabel ( Roughness ) floatdef ( 0.5 ) exportcontext ( cvex )
-opcolor -c 1 1 0.40000000596046448 $_obj_geo1_time_blend_noise_rough
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e off -b off -L off -M off -H on $_obj_geo1_time_blend_noise_rough
-opexprlanguage -s hscript $_obj_geo1_time_blend_noise_rough
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_noise_rough
+# Node $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum (Sop/attribwrangle)
+set _obj_geo1_GET_interporation_by_id_interporation_by_ptnum = `run("opadd -e -n -v attribwrangle interporation_by_ptnum")`
+oplocate -x `$arg2 + 4.1869576662367223` -y `$arg3 + -3.6293055612140224` $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
+opspareds '    group { 	name	"folder1" 	label	"Code"  	parm { 	    name	"group" 	    baseparm 	    label	"Group" 	    export	none 	    bindselector points "Modify Points" 	        "Select the points to affect and press Enter to complete." 	        0 1 0xffffffff 0 grouptype 0 	} 	parm { 	    name	"grouptype" 	    baseparm 	    label	"Group Type" 	    export	none 	} 	parm { 	    name	"class" 	    baseparm 	    label	"Run Over" 	    export	none 	} 	parm { 	    name	"vex_numcount" 	    baseparm 	    label	"Number Count" 	    export	none 	} 	parm { 	    name	"vex_threadjobsize" 	    baseparm 	    label	"Thread Job Size" 	    export	none 	} 	parm { 	    name	"snippet" 	    baseparm 	    label	"VEXpression" 	    export	all 	} 	parm { 	    name	"exportlist" 	    baseparm 	    label	"Attributes to Create" 	    export	none 	} 	parm { 	    name	"vex_strict" 	    baseparm 	    label	"Enforce Prototypes" 	    export	none 	}     }      group { 	name	"folder1_1" 	label	"Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	} 	parm { 	    name	"vex_inplace" 	    baseparm 	    label	"Compute Results In Place" 	    export	none 	} 	parm { 	    name	"vex_selectiongroup" 	    baseparm 	    label	"Output Selection Group" 	    export	none 	}     }      parm { 	name	"second_previous_frame" 	label	"Second Previous Frame" 	type	oppath 	default	{ "" } 	parmtag	{ "oprelative" "." }     } ' $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
+opparm $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum snippet ( 'vector p = @P;\nvector prevPrevP = @P;\nvector prevP = @P;\nvector nextP = @P;\nvector nextNextP = @P;\n\nprevP = point(1,"P",@ptnum);\n\nnextP = point(2,"P",@ptnum);\n\nnextNextP = point(3,"P",@ptnum);\n\nprevPrevP = point("op:" + chs("second_previous_frame"),"P", @ptnum);\n\n\nvector arrayP[];\nif(rint(@Frame)==floor(@Frame))\n{\n    arrayP = vector[](array(prevP,p,nextP,nextNextP));\n}\nelse\n{\n    arrayP = vector[](array(prevPrevP,prevP,p,nextP));\n}\n\n@P = spline("cubic",frac(@Frame),arrayP);' ) second_previous_frame ( ../OUT_prevPrev_f )
+opcolor -c 1 0.80000001192092896 0 $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
+opuserdata -n '___Version___' -v '' $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
 opcf ..
+opcf $_obj_geo1_GET_interporation_by_id
 
-# Node $_obj_geo1_time_blend_attribwrangle1 (Sop/attribwrangle)
-set _obj_geo1_time_blend_attribwrangle1 = `run("opadd -e -n -v attribwrangle attribwrangle1")`
-oplocate -x `$arg2 + 1` -y `$arg3 + 1.7955739999999998` $_obj_geo1_time_blend_attribwrangle1
-opparm $_obj_geo1_time_blend_attribwrangle1  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_geo1_time_blend_attribwrangle1 snippet ( 'i@id = @ptnum;' )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_attribwrangle1
-opexprlanguage -s hscript $_obj_geo1_time_blend_attribwrangle1
-opuserdata -n '___Version___' -v '' $_obj_geo1_time_blend_attribwrangle1
-
-# Node $_obj_geo1_time_blend_attribwrangle2 (Sop/attribwrangle)
-set _obj_geo1_time_blend_attribwrangle2 = `run("opadd -e -n -v attribwrangle attribwrangle2")`
-oplocate -x `$arg2 + 2.2211050000000001` -y `$arg3 + -2.225346` $_obj_geo1_time_blend_attribwrangle2
-opspareds '    group { 	name	"folder1" 	label	"Code"  	parm { 	    name	"group" 	    baseparm 	    label	"Group" 	    export	none 	    bindselector points "Modify Points" 	        "Select the points to affect and press Enter to complete." 	        0 1 0xffffffff 0 grouptype 0 	} 	parm { 	    name	"grouptype" 	    baseparm 	    label	"Group Type" 	    export	none 	} 	parm { 	    name	"class" 	    baseparm 	    label	"Run Over" 	    export	none 	} 	parm { 	    name	"vex_numcount" 	    baseparm 	    label	"Number Count" 	    export	none 	} 	parm { 	    name	"vex_threadjobsize" 	    baseparm 	    label	"Thread Job Size" 	    export	none 	} 	parm { 	    name	"snippet" 	    baseparm 	    label	"VEXpression" 	    export	all 	} 	parm { 	    name	"exportlist" 	    baseparm 	    label	"Attributes to Create" 	    export	none 	} 	parm { 	    name	"vex_strict" 	    baseparm 	    label	"Enforce Prototypes" 	    export	none 	}     }      group { 	name	"folder1_1" 	label	"Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	}     }      parm { 	name	"bias" 	label	"Bias" 	type	float 	default	{ "0" } 	range	{ 0 1 } 	export	none     }     parm { 	name	"remap" 	label	"Remap" 	type	ramp_flt 	default	{ "2" } 	range	{ 1! 10 } 	export	none     }     parm { 	name	"iteration" 	label	"Iteration" 	type	float 	default	{ "0" } 	range	{ 0 1 } 	export	none     }     parm { 	name	"iterations" 	label	"Iterations" 	type	float 	default	{ "0" } 	range	{ 0 1 } 	export	none     } ' $_obj_geo1_time_blend_attribwrangle2
-opparm $_obj_geo1_time_blend_attribwrangle2  bindings ( 0 ) groupbindings ( 0 ) remap ( 2 )
+# Node $_obj_geo1_GET_interporation_by_id_current_f (Sop/timeshift)
+set _obj_geo1_GET_interporation_by_id_current_f = `run("opadd -e -n -v timeshift current_f")`
+oplocate -x `$arg2 + -1.1175870895385742e-08` -y `$arg3 + 1.0738444387859776` $_obj_geo1_GET_interporation_by_id_current_f
 chblockbegin
-chadd -t 0 0 $_obj_geo1_time_blend_attribwrangle2 bias
-chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F '$FF % 1' $_obj_geo1_time_blend_attribwrangle2/bias
-chadd -t 0 0 $_obj_geo1_time_blend_attribwrangle2 iteration
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'detail("../foreach_begin1_metadata1","iteration",0)' $_obj_geo1_time_blend_attribwrangle2/iteration
-chadd -t 0 0 $_obj_geo1_time_blend_attribwrangle2 iterations
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../foreach_end1/iterations")' $_obj_geo1_time_blend_attribwrangle2/iterations
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_current_f frame
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'round($FF)' $_obj_geo1_GET_interporation_by_id_current_f/frame
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_current_f time
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_GET_interporation_by_id_current_f/time
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_current_f frange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_GET_interporation_by_id_current_f/frange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_current_f frange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_GET_interporation_by_id_current_f/frange2
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_current_f trange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_GET_interporation_by_id_current_f/trange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_current_f trange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_GET_interporation_by_id_current_f/trange2
 chblockend
-opparm $_obj_geo1_time_blend_attribwrangle2 snippet ( 'float prop = length(v@opinput1_v)/length(@v);\n\nprop = fit(pow(ch("bias") + 1, prop), pow(1, prop), pow(2, prop), 0, 1);\n\n@P = lerp(@P, v@opinput1_P,prop);\n\nfloat bias = (ch("bias") - prop) + ch("bias");\nprop = chramp("remap",prop);\n\n@v = lerp(@v, v@opinput1_v,1-prop);\n\n\n@P += (@v ) * @TimeInc * ch("bias") * (prop);\n\n\n//@P.x = ch("iteration")/10;\n//@P.y = prop;\n//@P.y = bias;\n//@P.z=0;' ) bias ( bias ) remap1value ( 1 ) iteration ( iteration ) iterations ( iterations ) remap2pos ( 1 )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_attribwrangle2
-opexprlanguage -s hscript $_obj_geo1_time_blend_attribwrangle2
-opuserdata -n '___Version___' -v '' $_obj_geo1_time_blend_attribwrangle2
+opparm -V 16.0.504.20 $_obj_geo1_GET_interporation_by_id_current_f frame ( frame ) integerframe ( off )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_current_f
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_current_f
+opuserdata -n '___Version___' -v '16.0.504.20' $_obj_geo1_GET_interporation_by_id_current_f
 
-# Node $_obj_geo1_time_blend_attribwrangle3 (Sop/attribwrangle)
-set _obj_geo1_time_blend_attribwrangle3 = `run("opadd -e -n -v attribwrangle attribwrangle3")`
-oplocate -x `$arg2 + 22.394504999999999` -y `$arg3 + 1.7955739999999998` $_obj_geo1_time_blend_attribwrangle3
-opparm $_obj_geo1_time_blend_attribwrangle3  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_geo1_time_blend_attribwrangle3 snippet ( 'i@id = @ptnum;' )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_attribwrangle3
-opexprlanguage -s hscript $_obj_geo1_time_blend_attribwrangle3
-opuserdata -n '___Version___' -v '' $_obj_geo1_time_blend_attribwrangle3
-
-# Node $_obj_geo1_time_blend_attribwrangle4 (Sop/attribwrangle)
-set _obj_geo1_time_blend_attribwrangle4 = `run("opadd -e -n -v attribwrangle attribwrangle4")`
-oplocate -x `$arg2 + 23.615604999999999` -y `$arg3 + -2.225346` $_obj_geo1_time_blend_attribwrangle4
-opspareds '    group { 	name	"folder1" 	label	"Code"  	parm { 	    name	"group" 	    baseparm 	    label	"Group" 	    export	none 	    bindselector points "Modify Points" 	        "Select the points to affect and press Enter to complete." 	        0 1 0xffffffff 0 grouptype 0 	} 	parm { 	    name	"grouptype" 	    baseparm 	    label	"Group Type" 	    export	none 	} 	parm { 	    name	"class" 	    baseparm 	    label	"Run Over" 	    export	none 	} 	parm { 	    name	"vex_numcount" 	    baseparm 	    label	"Number Count" 	    export	none 	} 	parm { 	    name	"vex_threadjobsize" 	    baseparm 	    label	"Thread Job Size" 	    export	none 	} 	parm { 	    name	"snippet" 	    baseparm 	    label	"VEXpression" 	    export	all 	} 	parm { 	    name	"exportlist" 	    baseparm 	    label	"Attributes to Create" 	    export	none 	} 	parm { 	    name	"vex_strict" 	    baseparm 	    label	"Enforce Prototypes" 	    export	none 	}     }      group { 	name	"folder1_1" 	label	"Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	}     }      parm { 	name	"bias" 	label	"Bias" 	type	float 	default	{ "0" } 	range	{ 0 1 } 	export	none     }     parm { 	name	"remap" 	label	"Remap" 	type	ramp_flt 	default	{ "2" } 	range	{ 1! 10 } 	export	none     }     parm { 	name	"iteration" 	label	"Iteration" 	type	float 	default	{ "0" } 	range	{ 0 1 } 	export	none     }     parm { 	name	"iterations" 	label	"Iterations" 	type	float 	default	{ "0" } 	range	{ 0 1 } 	export	none     }     parm { 	name	"remap_2" 	label	"Remap 2" 	type	ramp_flt 	default	{ "2" } 	range	{ 1! 10 } 	export	none     } ' $_obj_geo1_time_blend_attribwrangle4
-opparm $_obj_geo1_time_blend_attribwrangle4  bindings ( 0 ) groupbindings ( 0 ) remap ( 2 ) remap_2 ( 5 )
+# Node $_obj_geo1_GET_interporation_by_id_prev_f (Sop/timeshift)
+set _obj_geo1_GET_interporation_by_id_prev_f = `run("opadd -e -n -v timeshift prev_f")`
+oplocate -x `$arg2 + 3.057974988824129` -y `$arg3 + 0.83243443878597745` $_obj_geo1_GET_interporation_by_id_prev_f
 chblockbegin
-chadd -t 0 0 $_obj_geo1_time_blend_attribwrangle4 bias
-chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F '$FF % 1' $_obj_geo1_time_blend_attribwrangle4/bias
-chadd -t 0 0 $_obj_geo1_time_blend_attribwrangle4 iteration
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'detail("../foreach_begin1_metadata4","iteration",0)' $_obj_geo1_time_blend_attribwrangle4/iteration
-chadd -t 0 0 $_obj_geo1_time_blend_attribwrangle4 iterations
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../foreach_end4/iterations")' $_obj_geo1_time_blend_attribwrangle4/iterations
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prev_f frame
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'round($FF)-1' $_obj_geo1_GET_interporation_by_id_prev_f/frame
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prev_f time
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_GET_interporation_by_id_prev_f/time
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prev_f frange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_GET_interporation_by_id_prev_f/frange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prev_f frange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_GET_interporation_by_id_prev_f/frange2
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prev_f trange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_GET_interporation_by_id_prev_f/trange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prev_f trange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_GET_interporation_by_id_prev_f/trange2
 chblockend
-opparm $_obj_geo1_time_blend_attribwrangle4 snippet ( 'float prop = length(v@opinput1_v)/length(@v);\n\nprop = fit(pow(ch("bias") + 1, prop), pow(1, prop), pow(2, prop), 0, 1);\n\n//@P = lerp(@P, v@opinput1_P,prop);\n\nfloat bias = (ch("bias") - prop) + ch("bias");\nprop = chramp("remap",prop);\n\n@v = lerp(@v, -v@opinput1_v, prop);\n\n\n@P = v@P + (-@v ) * @TimeInc/1 * ch("bias") + (v@opinput1_v ) * @TimeInc/1 *(1- ch("bias"));\n\n\n//@P.x = ch("iteration")/10;\n//@P.y = prop;\n//@P.y = bias;\n//@P.z=0;' ) bias ( bias ) remap1value ( 1 ) iteration ( iteration ) iterations ( iterations ) remap_2 ( 5 ) remap_2_1interp ( bspline ) remap2pos ( 1 ) remap_2_2pos ( 0.25 ) remap_2_2value ( 1 ) remap_2_2interp ( bspline ) remap_2_3pos ( 0.5 ) remap_2_3value ( 1 ) remap_2_3interp ( bspline ) remap_2_4pos ( 0.75 ) remap_2_4value ( 1 ) remap_2_4interp ( bspline ) remap_2_5pos ( 1 )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_attribwrangle4
-opexprlanguage -s hscript $_obj_geo1_time_blend_attribwrangle4
-opuserdata -n '___Version___' -v '' $_obj_geo1_time_blend_attribwrangle4
+opparm -V 16.0.504.20 $_obj_geo1_GET_interporation_by_id_prev_f frame ( frame ) integerframe ( off )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_prev_f
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_prev_f
+opuserdata -n '___Version___' -v '16.0.504.20' $_obj_geo1_GET_interporation_by_id_prev_f
+
+# Node $_obj_geo1_GET_interporation_by_id_next_f (Sop/timeshift)
+set _obj_geo1_GET_interporation_by_id_next_f = `run("opadd -e -n -v timeshift next_f")`
+oplocate -x `$arg2 + 5.1191549888241292` -y `$arg3 + 0.38067443878597818` $_obj_geo1_GET_interporation_by_id_next_f
+chblockbegin
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_f frame
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'round($FF)+1' $_obj_geo1_GET_interporation_by_id_next_f/frame
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_f time
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_GET_interporation_by_id_next_f/time
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_f frange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_GET_interporation_by_id_next_f/frange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_f frange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_GET_interporation_by_id_next_f/frange2
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_f trange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_GET_interporation_by_id_next_f/trange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_f trange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_GET_interporation_by_id_next_f/trange2
+chblockend
+opparm -V 16.0.504.20 $_obj_geo1_GET_interporation_by_id_next_f frame ( frame ) integerframe ( off )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_next_f
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_next_f
+opuserdata -n '___Version___' -v '16.0.504.20' $_obj_geo1_GET_interporation_by_id_next_f
+
+# Node $_obj_geo1_GET_interporation_by_id_prevPrev_f (Sop/timeshift)
+set _obj_geo1_GET_interporation_by_id_prevPrev_f = `run("opadd -e -n -v timeshift prevPrev_f")`
+oplocate -x `$arg2 + 10.616564988824129` -y `$arg3 + -0.36756556121402184` $_obj_geo1_GET_interporation_by_id_prevPrev_f
+chblockbegin
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prevPrev_f frame
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'round($FF)-2' $_obj_geo1_GET_interporation_by_id_prevPrev_f/frame
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prevPrev_f time
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_GET_interporation_by_id_prevPrev_f/time
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prevPrev_f frange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_GET_interporation_by_id_prevPrev_f/frange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prevPrev_f frange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_GET_interporation_by_id_prevPrev_f/frange2
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prevPrev_f trange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_GET_interporation_by_id_prevPrev_f/trange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prevPrev_f trange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_GET_interporation_by_id_prevPrev_f/trange2
+chblockend
+opparm -V 16.0.504.20 $_obj_geo1_GET_interporation_by_id_prevPrev_f frame ( frame ) integerframe ( off )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_prevPrev_f
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_prevPrev_f
+opuserdata -n '___Version___' -v '16.0.504.20' $_obj_geo1_GET_interporation_by_id_prevPrev_f
+
+# Node $_obj_geo1_GET_interporation_by_id_next_Next_f (Sop/timeshift)
+set _obj_geo1_GET_interporation_by_id_next_Next_f = `run("opadd -e -n -v timeshift next_Next_f")`
+oplocate -x `$arg2 + 7.523674988824129` -y `$arg3 + -0.15749556121402186` $_obj_geo1_GET_interporation_by_id_next_Next_f
+chblockbegin
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_Next_f frame
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'round($FF)+2' $_obj_geo1_GET_interporation_by_id_next_Next_f/frame
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_Next_f time
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_GET_interporation_by_id_next_Next_f/time
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_Next_f frange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_GET_interporation_by_id_next_Next_f/frange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_Next_f frange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_GET_interporation_by_id_next_Next_f/frange2
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_Next_f trange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_GET_interporation_by_id_next_Next_f/trange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_Next_f trange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_GET_interporation_by_id_next_Next_f/trange2
+chblockend
+opparm -V 16.0.504.20 $_obj_geo1_GET_interporation_by_id_next_Next_f frame ( frame ) integerframe ( off )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_next_Next_f
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_next_Next_f
+opuserdata -n '___Version___' -v '16.0.504.20' $_obj_geo1_GET_interporation_by_id_next_Next_f
+
+# Node $_obj_geo1_GET_interporation_by_id_OUT_prevPrev_f (Sop/null)
+set _obj_geo1_GET_interporation_by_id_OUT_prevPrev_f = `run("opadd -e -n -v null OUT_prevPrev_f")`
+oplocate -x `$arg2 + 10.616564988824129` -y `$arg3 + -1.2417255612140226` $_obj_geo1_GET_interporation_by_id_OUT_prevPrev_f
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_OUT_prevPrev_f
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_OUT_prevPrev_f
+opuserdata -n '___Version___' -v '16.0.504.20' $_obj_geo1_GET_interporation_by_id_OUT_prevPrev_f
+
+# Node $_obj_geo1_GET_interporation_by_id_null1 (Sop/null)
+set _obj_geo1_GET_interporation_by_id_null1 = `run("opadd -e -n -v null null1")`
+oplocate -x `$arg2 + -1.1175870895385742e-08` -y `$arg3 + 3.6873253402957116` $_obj_geo1_GET_interporation_by_id_null1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_null1
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_null1
+
+# Node $_obj_geo1_GET_interporation_by_id_output1 (Sop/output)
+set _obj_geo1_GET_interporation_by_id_output1 = `run("opadd -e -n -v output output1")`
+oplocate -x `$arg2 + -1.4642253617913603e-08` -y `$arg3 + -7.8299650733225654` $_obj_geo1_GET_interporation_by_id_output1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_output1
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_output1
+
+# Node $_obj_geo1_GET_interporation_by_id_switch1 (Sop/switch)
+set _obj_geo1_GET_interporation_by_id_switch1 = `run("opadd -e -n -v switch switch1")`
+oplocate -x `$arg2 + -2.3955479308557237e-08` -y `$arg3 + -6.2432114844687128` $_obj_geo1_GET_interporation_by_id_switch1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_switch1 input
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../match_by_id")' $_obj_geo1_GET_interporation_by_id_switch1/input
+chblockend
+opparm -V 16.0.504.20 $_obj_geo1_GET_interporation_by_id_switch1 input ( input )
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_switch1
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_switch1
+oporder -e interporation_by_id current_f prev_f next_f prevPrev_f next_Next_f OUT_prevPrev_f null1 output1 interporation_by_ptnum switch1 
 opcf ..
-opcf $_obj_geo1_time_blend
-opcf $_obj_geo1_time_blend_noise
-oporder -e geometryvopglobal1 geometryvopoutput1 aaflownoise1 vectohvec1 add1 freq offset amp rough 
-opcf ..
-
-# Node $_obj_geo1_time_blend_add1 (Sop/add)
-set _obj_geo1_time_blend_add1 = `run("opadd -e -n -v add add1")`
-oplocate -x `$arg2 + 1` -y `$arg3 + 4.7469999999999999` $_obj_geo1_time_blend_add1
-opparm $_obj_geo1_time_blend_add1  points ( 1 ) prims ( 1 )
-opparm -V 15.5.480 $_obj_geo1_time_blend_add1 usept0 ( on )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_add1
-opexprlanguage -s hscript $_obj_geo1_time_blend_add1
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_add1
-
-# Node $_obj_geo1_time_blend_trail1 (Sop/trail)
-set _obj_geo1_time_blend_trail1 = `run("opadd -e -n -v trail trail1")`
-oplocate -x `$arg2 + 1` -y `$arg3 + 2.8552339999999998` $_obj_geo1_time_blend_trail1
-opparm -V 15.5.480 $_obj_geo1_time_blend_trail1 result ( velocity )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_trail1
-opexprlanguage -s hscript $_obj_geo1_time_blend_trail1
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_trail1
-
-# Node $_obj_geo1_time_blend_foreach_end1 (Sop/block_end)
-set _obj_geo1_time_blend_foreach_end1 = `run("opadd -e -n -v block_end foreach_end1")`
-oplocate -x `$arg2 + 2.2211050000000001` -y `$arg3 + -5.6968459999999999` $_obj_geo1_time_blend_foreach_end1
-opparm -V 15.5.480 $_obj_geo1_time_blend_foreach_end1 itermethod ( count ) method ( merge ) class ( primitive ) attrib ( name ) blockpath ( ../foreach_begin1 ) templatepath ( ../foreach_begin1 )
-opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_time_blend_foreach_end1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_foreach_end1
-opexprlanguage -s hscript $_obj_geo1_time_blend_foreach_end1
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_foreach_end1
-
-# Node $_obj_geo1_time_blend_foreach_begin1 (Sop/block_begin)
-set _obj_geo1_time_blend_foreach_begin1 = `run("opadd -e -n -v block_begin foreach_begin1")`
-oplocate -x `$arg2 + -0.052116999999999969` -y `$arg3 + -3.4829160000000003` $_obj_geo1_time_blend_foreach_begin1
-opparm -V 15.5.480 $_obj_geo1_time_blend_foreach_begin1 method ( piece ) blockpath ( ../foreach_end1 )
-opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_time_blend_foreach_begin1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_foreach_begin1
-opexprlanguage -s hscript $_obj_geo1_time_blend_foreach_begin1
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_foreach_begin1
-
-# Node $_obj_geo1_time_blend_timeshift1 (Sop/timeshift)
-set _obj_geo1_time_blend_timeshift1 = `run("opadd -e -n -v timeshift timeshift1")`
-oplocate -x `$arg2 + 2.2211050000000001` -y `$arg3 + -4.6027460000000007` $_obj_geo1_time_blend_timeshift1
-chblockbegin
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift1 frame
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FF + detail("../foreach_begin1_metadata1","iteration",0)/ch("../foreach_end1/iterations")' $_obj_geo1_time_blend_timeshift1/frame
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift1 time
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_time_blend_timeshift1/time
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift1 frange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_time_blend_timeshift1/frange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift1 frange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_time_blend_timeshift1/frange2
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift1 trange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_time_blend_timeshift1/trange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift1 trange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_time_blend_timeshift1/trange2
-chblockend
-opparm -V 15.5.480 $_obj_geo1_time_blend_timeshift1 frame ( frame ) integerframe ( off )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_timeshift1
-opexprlanguage -s hscript $_obj_geo1_time_blend_timeshift1
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_timeshift1
-
-# Node $_obj_geo1_time_blend_foreach_begin1_metadata1 (Sop/block_begin)
-set _obj_geo1_time_blend_foreach_begin1_metadata1 = `run("opadd -e -n -v block_begin foreach_begin1_metadata1")`
-oplocate -x `$arg2 + 4.1269850000000003` -y `$arg3 + -3.5439060000000007` $_obj_geo1_time_blend_foreach_begin1_metadata1
-chblockbegin
-chadd -t 0 0 $_obj_geo1_time_blend_foreach_begin1_metadata1 blockpath
-chkey -t 0 -v 0 -m 0 -a 0.33333333333333331 -A 0.33333333333333331 -T a  -F 'chsop("../foreach_begin1/blockpath")' $_obj_geo1_time_blend_foreach_begin1_metadata1/blockpath
-chblockend
-opparm -V 15.5.480 $_obj_geo1_time_blend_foreach_begin1_metadata1 method ( metadata ) blockpath ( blockpath )
-chautoscope $_obj_geo1_time_blend_foreach_begin1_metadata1 +blockpath
-opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_time_blend_foreach_begin1_metadata1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_foreach_begin1_metadata1
-opexprlanguage -s hscript $_obj_geo1_time_blend_foreach_begin1_metadata1
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_foreach_begin1_metadata1
-
-# Node $_obj_geo1_time_blend_add2 (Sop/add)
-set _obj_geo1_time_blend_add2 = `run("opadd -e -n -v add add2")`
-oplocate -x `$arg2 + 2.2211050000000001` -y `$arg3 + -7.2866460000000002` $_obj_geo1_time_blend_add2
-opparm $_obj_geo1_time_blend_add2  points ( 1 ) prims ( 1 )
-opparm -V 15.5.480 $_obj_geo1_time_blend_add2 stdswitcher ( 1 1 1 ) switcher ( 1 1 ) add ( attribute ) attrname ( id )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_add2
-opexprlanguage -s hscript $_obj_geo1_time_blend_add2
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_add2
-
-# Node $_obj_geo1_time_blend_timeshift2 (Sop/timeshift)
-set _obj_geo1_time_blend_timeshift2 = `run("opadd -e -n -v timeshift timeshift2")`
-oplocate -x `$arg2 + 3.4562149999999998` -y `$arg3 + -0.11149599999999982` $_obj_geo1_time_blend_timeshift2
-chblockbegin
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift2 frame
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'floor($FF)' $_obj_geo1_time_blend_timeshift2/frame
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift2 time
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_time_blend_timeshift2/time
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift2 frange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_time_blend_timeshift2/frange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift2 frange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_time_blend_timeshift2/frange2
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift2 trange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_time_blend_timeshift2/trange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift2 trange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_time_blend_timeshift2/trange2
-chblockend
-opparm -V 15.5.480 $_obj_geo1_time_blend_timeshift2 frame ( frame )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_timeshift2
-opexprlanguage -s hscript $_obj_geo1_time_blend_timeshift2
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_timeshift2
-
-# Node $_obj_geo1_time_blend_timeshift3 (Sop/timeshift)
-set _obj_geo1_time_blend_timeshift3 = `run("opadd -e -n -v timeshift timeshift3")`
-oplocate -x `$arg2 + 1.147319` -y `$arg3 + -0.11149599999999982` $_obj_geo1_time_blend_timeshift3
-chblockbegin
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift3 frame
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'floor($FF)-1' $_obj_geo1_time_blend_timeshift3/frame
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift3 time
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_time_blend_timeshift3/time
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift3 frange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_time_blend_timeshift3/frange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift3 frange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_time_blend_timeshift3/frange2
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift3 trange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_time_blend_timeshift3/trange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift3 trange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_time_blend_timeshift3/trange2
-chblockend
-opparm -V 15.5.480 $_obj_geo1_time_blend_timeshift3 frame ( frame )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_timeshift3
-opexprlanguage -s hscript $_obj_geo1_time_blend_timeshift3
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_timeshift3
-
-# Node $_obj_geo1_time_blend_foreach_end2 (Sop/block_end)
-set _obj_geo1_time_blend_foreach_end2 = `run("opadd -e -n -v block_end foreach_end2")`
-oplocate -x `$arg2 + -6.8061049999999996` -y `$arg3 + -2.3718360000000009` $_obj_geo1_time_blend_foreach_end2
-opparm -V 15.5.480 $_obj_geo1_time_blend_foreach_end2 itermethod ( count ) method ( merge ) class ( primitive ) attrib ( name ) blockpath ( ../foreach_begin2 ) templatepath ( ../foreach_begin2 )
-opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_time_blend_foreach_end2
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_foreach_end2
-opexprlanguage -s hscript $_obj_geo1_time_blend_foreach_end2
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_foreach_end2
-
-# Node $_obj_geo1_time_blend_foreach_begin2 (Sop/block_begin)
-set _obj_geo1_time_blend_foreach_begin2 = `run("opadd -e -n -v block_begin foreach_begin2")`
-oplocate -x `$arg2 + -7.9002249999999989` -y `$arg3 + -0.21889599999999998` $_obj_geo1_time_blend_foreach_begin2
-opparm -V 15.5.480 $_obj_geo1_time_blend_foreach_begin2 method ( piece ) blockpath ( ../foreach_end2 )
-opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_time_blend_foreach_begin2
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_foreach_begin2
-opexprlanguage -s hscript $_obj_geo1_time_blend_foreach_begin2
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_foreach_begin2
-
-# Node $_obj_geo1_time_blend_timeshift4 (Sop/timeshift)
-set _obj_geo1_time_blend_timeshift4 = `run("opadd -e -n -v timeshift timeshift4")`
-oplocate -x `$arg2 + -6.8061049999999996` -y `$arg3 + -1.277736` $_obj_geo1_time_blend_timeshift4
-chblockbegin
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift4 frame
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'detail("../foreach_begin1_metadata2","iteration",0) + 1' $_obj_geo1_time_blend_timeshift4/frame
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift4 time
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_time_blend_timeshift4/time
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift4 frange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_time_blend_timeshift4/frange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift4 frange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_time_blend_timeshift4/frange2
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift4 trange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_time_blend_timeshift4/trange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift4 trange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_time_blend_timeshift4/trange2
-chblockend
-opparm -V 15.5.480 $_obj_geo1_time_blend_timeshift4 frame ( frame ) integerframe ( off )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_timeshift4
-opexprlanguage -s hscript $_obj_geo1_time_blend_timeshift4
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_timeshift4
-
-# Node $_obj_geo1_time_blend_foreach_begin1_metadata2 (Sop/block_begin)
-set _obj_geo1_time_blend_foreach_begin1_metadata2 = `run("opadd -e -n -v block_begin foreach_begin1_metadata2")`
-oplocate -x `$arg2 + -4.9002249999999998` -y `$arg3 + -0.21889599999999998` $_obj_geo1_time_blend_foreach_begin1_metadata2
-chblockbegin
-chadd -t 0 0 $_obj_geo1_time_blend_foreach_begin1_metadata2 blockpath
-chkey -t 0 -v 0 -m 0 -a 0.33333333333333331 -A 0.33333333333333331 -T a  -F 'chsop("../foreach_begin2/blockpath")' $_obj_geo1_time_blend_foreach_begin1_metadata2/blockpath
-chblockend
-opparm -V 15.5.480 $_obj_geo1_time_blend_foreach_begin1_metadata2 method ( metadata ) blockpath ( blockpath )
-chautoscope $_obj_geo1_time_blend_foreach_begin1_metadata2 +blockpath
-opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_time_blend_foreach_begin1_metadata2
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_foreach_begin1_metadata2
-opexprlanguage -s hscript $_obj_geo1_time_blend_foreach_begin1_metadata2
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_foreach_begin1_metadata2
-
-# Node $_obj_geo1_time_blend_add3 (Sop/add)
-set _obj_geo1_time_blend_add3 = `run("opadd -e -n -v add add3")`
-oplocate -x `$arg2 + -6.8061049999999996` -y `$arg3 + -4.4007460000000007` $_obj_geo1_time_blend_add3
-opparm $_obj_geo1_time_blend_add3  points ( 1 ) prims ( 1 )
-opparm -V 15.5.480 $_obj_geo1_time_blend_add3 stdswitcher ( 1 1 1 ) switcher ( 1 1 ) add ( attribute ) attrname ( id )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_add3
-opexprlanguage -s hscript $_obj_geo1_time_blend_add3
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_add3
-
-# Node $_obj_geo1_time_blend_foreach_end3 (Sop/block_end)
-set _obj_geo1_time_blend_foreach_end3 = `run("opadd -e -n -v block_end foreach_end3")`
-oplocate -x `$arg2 + 1.5324849999999999` -y `$arg3 + -12.670745999999998` $_obj_geo1_time_blend_foreach_end3
-opparm -V 15.5.480 $_obj_geo1_time_blend_foreach_end3 itermethod ( count ) method ( merge ) class ( primitive ) attrib ( name ) blockpath ( ../foreach_begin3 ) templatepath ( ../foreach_begin3 )
-opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_time_blend_foreach_end3
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_foreach_end3
-opexprlanguage -s hscript $_obj_geo1_time_blend_foreach_end3
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_foreach_end3
-
-# Node $_obj_geo1_time_blend_foreach_begin3 (Sop/block_begin)
-set _obj_geo1_time_blend_foreach_begin3 = `run("opadd -e -n -v block_begin foreach_begin3")`
-oplocate -x `$arg2 + 0.43836860000000005` -y `$arg3 + -10.517845999999999` $_obj_geo1_time_blend_foreach_begin3
-opparm -V 15.5.480 $_obj_geo1_time_blend_foreach_begin3 method ( piece ) blockpath ( ../foreach_end3 )
-opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_time_blend_foreach_begin3
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_foreach_begin3
-opexprlanguage -s hscript $_obj_geo1_time_blend_foreach_begin3
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_foreach_begin3
-
-# Node $_obj_geo1_time_blend_timeshift5 (Sop/timeshift)
-set _obj_geo1_time_blend_timeshift5 = `run("opadd -e -n -v timeshift timeshift5")`
-oplocate -x `$arg2 + 1.5324849999999999` -y `$arg3 + -11.576646` $_obj_geo1_time_blend_timeshift5
-chblockbegin
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift5 frame
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'detail("../foreach_begin1_metadata3","iteration",0) + 1' $_obj_geo1_time_blend_timeshift5/frame
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift5 time
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_time_blend_timeshift5/time
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift5 frange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_time_blend_timeshift5/frange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift5 frange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_time_blend_timeshift5/frange2
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift5 trange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_time_blend_timeshift5/trange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift5 trange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_time_blend_timeshift5/trange2
-chblockend
-opparm -V 15.5.480 $_obj_geo1_time_blend_timeshift5 frame ( frame ) integerframe ( off )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_timeshift5
-opexprlanguage -s hscript $_obj_geo1_time_blend_timeshift5
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_timeshift5
-
-# Node $_obj_geo1_time_blend_foreach_begin1_metadata3 (Sop/block_begin)
-set _obj_geo1_time_blend_foreach_begin1_metadata3 = `run("opadd -e -n -v block_begin foreach_begin1_metadata3")`
-oplocate -x `$arg2 + 3.4383650000000001` -y `$arg3 + -10.517845999999999` $_obj_geo1_time_blend_foreach_begin1_metadata3
-chblockbegin
-chadd -t 0 0 $_obj_geo1_time_blend_foreach_begin1_metadata3 blockpath
-chkey -t 0 -v 0 -m 0 -a 0.33333333333333331 -A 0.33333333333333331 -T a  -F 'chsop("../foreach_begin3/blockpath")' $_obj_geo1_time_blend_foreach_begin1_metadata3/blockpath
-chblockend
-opparm -V 15.5.480 $_obj_geo1_time_blend_foreach_begin1_metadata3 method ( metadata ) blockpath ( blockpath )
-chautoscope $_obj_geo1_time_blend_foreach_begin1_metadata3 +blockpath
-opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_time_blend_foreach_begin1_metadata3
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_foreach_begin1_metadata3
-opexprlanguage -s hscript $_obj_geo1_time_blend_foreach_begin1_metadata3
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_foreach_begin1_metadata3
-
-# Node $_obj_geo1_time_blend_add4 (Sop/add)
-set _obj_geo1_time_blend_add4 = `run("opadd -e -n -v add add4")`
-oplocate -x `$arg2 + 1.5324849999999999` -y `$arg3 + -14.699645999999998` $_obj_geo1_time_blend_add4
-opparm $_obj_geo1_time_blend_add4  points ( 1 ) prims ( 1 )
-opparm -V 15.5.480 $_obj_geo1_time_blend_add4 stdswitcher ( 1 1 1 ) switcher ( 1 1 ) add ( attribute ) attrname ( id )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_add4
-opexprlanguage -s hscript $_obj_geo1_time_blend_add4
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_add4
-
-# Node $_obj_geo1_time_blend_add5 (Sop/add)
-set _obj_geo1_time_blend_add5 = `run("opadd -e -n -v add add5")`
-oplocate -x `$arg2 + 2.2211050000000001` -y `$arg3 + -8.1988459999999996` $_obj_geo1_time_blend_add5
-opparm $_obj_geo1_time_blend_add5  points ( 1 ) prims ( 1 )
-opparm -V 15.5.480 $_obj_geo1_time_blend_add5 keep ( on )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b on $_obj_geo1_time_blend_add5
-opexprlanguage -s hscript $_obj_geo1_time_blend_add5
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_add5
-
-# Node $_obj_geo1_time_blend_trail2 (Sop/trail)
-set _obj_geo1_time_blend_trail2 = `run("opadd -e -n -v trail trail2")`
-oplocate -x `$arg2 + 22.394504999999999` -y `$arg3 + 2.8552339999999998` $_obj_geo1_time_blend_trail2
-opparm -V 15.5.480 $_obj_geo1_time_blend_trail2 result ( velocity )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_trail2
-opexprlanguage -s hscript $_obj_geo1_time_blend_trail2
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_trail2
-
-# Node $_obj_geo1_time_blend_foreach_end4 (Sop/block_end)
-set _obj_geo1_time_blend_foreach_end4 = `run("opadd -e -n -v block_end foreach_end4")`
-oplocate -x `$arg2 + 23.615604999999999` -y `$arg3 + -5.6968459999999999` $_obj_geo1_time_blend_foreach_end4
-opparm -V 15.5.480 $_obj_geo1_time_blend_foreach_end4 itermethod ( count ) method ( merge ) class ( primitive ) attrib ( name ) blockpath ( ../foreach_begin4 ) templatepath ( ../foreach_begin4 )
-opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_time_blend_foreach_end4
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_foreach_end4
-opexprlanguage -s hscript $_obj_geo1_time_blend_foreach_end4
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_foreach_end4
-
-# Node $_obj_geo1_time_blend_foreach_begin4 (Sop/block_begin)
-set _obj_geo1_time_blend_foreach_begin4 = `run("opadd -e -n -v block_begin foreach_begin4")`
-oplocate -x `$arg2 + 21.342305` -y `$arg3 + -3.4829160000000003` $_obj_geo1_time_blend_foreach_begin4
-opparm -V 15.5.480 $_obj_geo1_time_blend_foreach_begin4 method ( piece ) blockpath ( ../foreach_end4 )
-opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_time_blend_foreach_begin4
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_foreach_begin4
-opexprlanguage -s hscript $_obj_geo1_time_blend_foreach_begin4
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_foreach_begin4
-
-# Node $_obj_geo1_time_blend_timeshift6 (Sop/timeshift)
-set _obj_geo1_time_blend_timeshift6 = `run("opadd -e -n -v timeshift timeshift6")`
-oplocate -x `$arg2 + 23.615604999999999` -y `$arg3 + -4.6027460000000007` $_obj_geo1_time_blend_timeshift6
-chblockbegin
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift6 frame
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FF + detail("../foreach_begin1_metadata4","iteration",0)/ch("../foreach_end4/iterations")' $_obj_geo1_time_blend_timeshift6/frame
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift6 time
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_time_blend_timeshift6/time
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift6 frange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_time_blend_timeshift6/frange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift6 frange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_time_blend_timeshift6/frange2
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift6 trange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_time_blend_timeshift6/trange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift6 trange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_time_blend_timeshift6/trange2
-chblockend
-opparm -V 15.5.480 $_obj_geo1_time_blend_timeshift6 frame ( frame ) integerframe ( off )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_timeshift6
-opexprlanguage -s hscript $_obj_geo1_time_blend_timeshift6
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_timeshift6
-
-# Node $_obj_geo1_time_blend_foreach_begin1_metadata4 (Sop/block_begin)
-set _obj_geo1_time_blend_foreach_begin1_metadata4 = `run("opadd -e -n -v block_begin foreach_begin1_metadata4")`
-oplocate -x `$arg2 + 25.521504999999998` -y `$arg3 + -3.5439060000000007` $_obj_geo1_time_blend_foreach_begin1_metadata4
-chblockbegin
-chadd -t 0 0 $_obj_geo1_time_blend_foreach_begin1_metadata4 blockpath
-chkey -t 0 -v 0 -m 0 -a 0.33333333333333331 -A 0.33333333333333331 -T a  -F 'chsop("../foreach_begin4/blockpath")' $_obj_geo1_time_blend_foreach_begin1_metadata4/blockpath
-chblockend
-opparm -V 15.5.480 $_obj_geo1_time_blend_foreach_begin1_metadata4 method ( metadata ) blockpath ( blockpath )
-chautoscope $_obj_geo1_time_blend_foreach_begin1_metadata4 +blockpath
-opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_time_blend_foreach_begin1_metadata4
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_foreach_begin1_metadata4
-opexprlanguage -s hscript $_obj_geo1_time_blend_foreach_begin1_metadata4
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_foreach_begin1_metadata4
-
-# Node $_obj_geo1_time_blend_add6 (Sop/add)
-set _obj_geo1_time_blend_add6 = `run("opadd -e -n -v add add6")`
-oplocate -x `$arg2 + 23.615604999999999` -y `$arg3 + -7.2866460000000002` $_obj_geo1_time_blend_add6
-opparm $_obj_geo1_time_blend_add6  points ( 1 ) prims ( 1 )
-opparm -V 15.5.480 $_obj_geo1_time_blend_add6 stdswitcher ( 1 1 1 ) switcher ( 1 1 ) add ( attribute ) attrname ( id )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_add6
-opexprlanguage -s hscript $_obj_geo1_time_blend_add6
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_add6
-
-# Node $_obj_geo1_time_blend_timeshift7 (Sop/timeshift)
-set _obj_geo1_time_blend_timeshift7 = `run("opadd -e -n -v timeshift timeshift7")`
-oplocate -x `$arg2 + 24.850704999999998` -y `$arg3 + -0.11149599999999982` $_obj_geo1_time_blend_timeshift7
-chblockbegin
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift7 frame
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'floor($FF)' $_obj_geo1_time_blend_timeshift7/frame
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift7 time
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_time_blend_timeshift7/time
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift7 frange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_time_blend_timeshift7/frange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift7 frange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_time_blend_timeshift7/frange2
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift7 trange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_time_blend_timeshift7/trange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift7 trange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_time_blend_timeshift7/trange2
-chblockend
-opparm -V 15.5.480 $_obj_geo1_time_blend_timeshift7 frame ( frame )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_timeshift7
-opexprlanguage -s hscript $_obj_geo1_time_blend_timeshift7
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_timeshift7
-
-# Node $_obj_geo1_time_blend_timeshift8 (Sop/timeshift)
-set _obj_geo1_time_blend_timeshift8 = `run("opadd -e -n -v timeshift timeshift8")`
-oplocate -x `$arg2 + 22.541805` -y `$arg3 + -0.11149599999999982` $_obj_geo1_time_blend_timeshift8
-chblockbegin
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift8 frame
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'floor($FF)-1' $_obj_geo1_time_blend_timeshift8/frame
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift8 time
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_time_blend_timeshift8/time
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift8 frange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_time_blend_timeshift8/frange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift8 frange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_time_blend_timeshift8/frange2
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift8 trange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_time_blend_timeshift8/trange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift8 trange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_time_blend_timeshift8/trange2
-chblockend
-opparm -V 15.5.480 $_obj_geo1_time_blend_timeshift8 frame ( frame )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_timeshift8
-opexprlanguage -s hscript $_obj_geo1_time_blend_timeshift8
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_timeshift8
-
-# Node $_obj_geo1_time_blend_foreach_end5 (Sop/block_end)
-set _obj_geo1_time_blend_foreach_end5 = `run("opadd -e -n -v block_end foreach_end5")`
-oplocate -x `$arg2 + 22.927004999999998` -y `$arg3 + -12.670745999999998` $_obj_geo1_time_blend_foreach_end5
-opparm -V 15.5.480 $_obj_geo1_time_blend_foreach_end5 itermethod ( count ) method ( merge ) class ( primitive ) attrib ( name ) blockpath ( ../foreach_begin5 ) templatepath ( ../foreach_begin5 )
-opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_time_blend_foreach_end5
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_foreach_end5
-opexprlanguage -s hscript $_obj_geo1_time_blend_foreach_end5
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_foreach_end5
-
-# Node $_obj_geo1_time_blend_foreach_begin5 (Sop/block_begin)
-set _obj_geo1_time_blend_foreach_begin5 = `run("opadd -e -n -v block_begin foreach_begin5")`
-oplocate -x `$arg2 + 21.832804999999997` -y `$arg3 + -10.517845999999999` $_obj_geo1_time_blend_foreach_begin5
-opparm -V 15.5.480 $_obj_geo1_time_blend_foreach_begin5 method ( piece ) blockpath ( ../foreach_end5 )
-opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_time_blend_foreach_begin5
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_foreach_begin5
-opexprlanguage -s hscript $_obj_geo1_time_blend_foreach_begin5
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_foreach_begin5
-
-# Node $_obj_geo1_time_blend_timeshift9 (Sop/timeshift)
-set _obj_geo1_time_blend_timeshift9 = `run("opadd -e -n -v timeshift timeshift9")`
-oplocate -x `$arg2 + 22.927004999999998` -y `$arg3 + -11.576646` $_obj_geo1_time_blend_timeshift9
-chblockbegin
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift9 frame
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'detail("../foreach_begin1_metadata5","iteration",0) + 1' $_obj_geo1_time_blend_timeshift9/frame
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift9 time
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_time_blend_timeshift9/time
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift9 frange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_time_blend_timeshift9/frange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift9 frange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_time_blend_timeshift9/frange2
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift9 trange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_time_blend_timeshift9/trange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift9 trange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_time_blend_timeshift9/trange2
-chblockend
-opparm -V 15.5.480 $_obj_geo1_time_blend_timeshift9 frame ( frame ) integerframe ( off )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_timeshift9
-opexprlanguage -s hscript $_obj_geo1_time_blend_timeshift9
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_timeshift9
-
-# Node $_obj_geo1_time_blend_foreach_begin1_metadata5 (Sop/block_begin)
-set _obj_geo1_time_blend_foreach_begin1_metadata5 = `run("opadd -e -n -v block_begin foreach_begin1_metadata5")`
-oplocate -x `$arg2 + 24.832804999999997` -y `$arg3 + -10.517845999999999` $_obj_geo1_time_blend_foreach_begin1_metadata5
-chblockbegin
-chadd -t 0 0 $_obj_geo1_time_blend_foreach_begin1_metadata5 blockpath
-chkey -t 0 -v 0 -m 0 -a 0.33333333333333331 -A 0.33333333333333331 -T a  -F 'chsop("../foreach_begin5/blockpath")' $_obj_geo1_time_blend_foreach_begin1_metadata5/blockpath
-chblockend
-opparm -V 15.5.480 $_obj_geo1_time_blend_foreach_begin1_metadata5 method ( metadata ) blockpath ( blockpath )
-chautoscope $_obj_geo1_time_blend_foreach_begin1_metadata5 +blockpath
-opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_time_blend_foreach_begin1_metadata5
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_foreach_begin1_metadata5
-opexprlanguage -s hscript $_obj_geo1_time_blend_foreach_begin1_metadata5
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_foreach_begin1_metadata5
-
-# Node $_obj_geo1_time_blend_add7 (Sop/add)
-set _obj_geo1_time_blend_add7 = `run("opadd -e -n -v add add7")`
-oplocate -x `$arg2 + 22.927004999999998` -y `$arg3 + -14.699645999999998` $_obj_geo1_time_blend_add7
-opparm $_obj_geo1_time_blend_add7  points ( 1 ) prims ( 1 )
-opparm -V 15.5.480 $_obj_geo1_time_blend_add7 stdswitcher ( 1 1 1 ) switcher ( 1 1 ) add ( attribute ) attrname ( id )
-opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_add7
-opexprlanguage -s hscript $_obj_geo1_time_blend_add7
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_add7
-
-# Node $_obj_geo1_time_blend_add8 (Sop/add)
-set _obj_geo1_time_blend_add8 = `run("opadd -e -n -v add add8")`
-oplocate -x `$arg2 + 23.615604999999999` -y `$arg3 + -8.1988459999999996` $_obj_geo1_time_blend_add8
-opparm $_obj_geo1_time_blend_add8  points ( 1 ) prims ( 1 )
-opparm -V 15.5.480 $_obj_geo1_time_blend_add8 keep ( on )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b on $_obj_geo1_time_blend_add8
-opexprlanguage -s hscript $_obj_geo1_time_blend_add8
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_add8
-
-# Node $_obj_geo1_time_blend_foreach_end6 (Sop/block_end)
-set _obj_geo1_time_blend_foreach_end6 = `run("opadd -e -n -v block_end foreach_end6")`
-oplocate -x `$arg2 + 13.557005` -y `$arg3 + -1.0238160000000001` $_obj_geo1_time_blend_foreach_end6
-opparm -V 15.5.480 $_obj_geo1_time_blend_foreach_end6 itermethod ( count ) method ( merge ) class ( primitive ) attrib ( name ) blockpath ( ../foreach_begin6 ) templatepath ( ../foreach_begin6 )
-opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_time_blend_foreach_end6
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_foreach_end6
-opexprlanguage -s hscript $_obj_geo1_time_blend_foreach_end6
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_foreach_end6
-
-# Node $_obj_geo1_time_blend_foreach_begin6 (Sop/block_begin)
-set _obj_geo1_time_blend_foreach_begin6 = `run("opadd -e -n -v block_begin foreach_begin6")`
-oplocate -x `$arg2 + 12.462905000000001` -y `$arg3 + 1.129124` $_obj_geo1_time_blend_foreach_begin6
-opparm -V 15.5.480 $_obj_geo1_time_blend_foreach_begin6 method ( piece ) blockpath ( ../foreach_end6 )
-opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_time_blend_foreach_begin6
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_foreach_begin6
-opexprlanguage -s hscript $_obj_geo1_time_blend_foreach_begin6
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_foreach_begin6
-
-# Node $_obj_geo1_time_blend_timeshift10 (Sop/timeshift)
-set _obj_geo1_time_blend_timeshift10 = `run("opadd -e -n -v timeshift timeshift10")`
-oplocate -x `$arg2 + 13.557005` -y `$arg3 + 0.070284000000000013` $_obj_geo1_time_blend_timeshift10
-chblockbegin
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift10 frame
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'detail("../foreach_begin1_metadata6","iteration",0) + 1' $_obj_geo1_time_blend_timeshift10/frame
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift10 time
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_time_blend_timeshift10/time
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift10 frange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_time_blend_timeshift10/frange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift10 frange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_time_blend_timeshift10/frange2
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift10 trange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_time_blend_timeshift10/trange1
-chadd -t 0 0 $_obj_geo1_time_blend_timeshift10 trange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_time_blend_timeshift10/trange2
-chblockend
-opparm -V 15.5.480 $_obj_geo1_time_blend_timeshift10 frame ( frame ) integerframe ( off )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_timeshift10
-opexprlanguage -s hscript $_obj_geo1_time_blend_timeshift10
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_timeshift10
-
-# Node $_obj_geo1_time_blend_foreach_begin1_metadata6 (Sop/block_begin)
-set _obj_geo1_time_blend_foreach_begin1_metadata6 = `run("opadd -e -n -v block_begin foreach_begin1_metadata6")`
-oplocate -x `$arg2 + 15.462905000000001` -y `$arg3 + 1.129124` $_obj_geo1_time_blend_foreach_begin1_metadata6
-chblockbegin
-chadd -t 0 0 $_obj_geo1_time_blend_foreach_begin1_metadata6 blockpath
-chkey -t 0 -v 0 -m 0 -a 0.33333333333333331 -A 0.33333333333333331 -T a  -F 'chsop("../foreach_begin6/blockpath")' $_obj_geo1_time_blend_foreach_begin1_metadata6/blockpath
-chblockend
-opparm -V 15.5.480 $_obj_geo1_time_blend_foreach_begin1_metadata6 method ( metadata ) blockpath ( blockpath )
-chautoscope $_obj_geo1_time_blend_foreach_begin1_metadata6 +blockpath
-opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_time_blend_foreach_begin1_metadata6
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_foreach_begin1_metadata6
-opexprlanguage -s hscript $_obj_geo1_time_blend_foreach_begin1_metadata6
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_foreach_begin1_metadata6
-
-# Node $_obj_geo1_time_blend_add9 (Sop/add)
-set _obj_geo1_time_blend_add9 = `run("opadd -e -n -v add add9")`
-oplocate -x `$arg2 + 13.557005` -y `$arg3 + -3.0527260000000007` $_obj_geo1_time_blend_add9
-opparm $_obj_geo1_time_blend_add9  points ( 1 ) prims ( 1 )
-opparm -V 15.5.480 $_obj_geo1_time_blend_add9 stdswitcher ( 1 1 1 ) switcher ( 1 1 ) add ( attribute ) attrname ( id )
-opset -d off -r off -h off -f off -y off -t on -l off -s off -u off -c off -e on -b off $_obj_geo1_time_blend_add9
-opexprlanguage -s hscript $_obj_geo1_time_blend_add9
-opuserdata -n '___Version___' -v '15.5.480' $_obj_geo1_time_blend_add9
-oporder -e noise attribwrangle1 attribwrangle2 attribwrangle3 attribwrangle4 add1 trail1 foreach_end1 foreach_begin1 timeshift1 foreach_begin1_metadata1 add2 timeshift2 timeshift3 foreach_end2 foreach_begin2 timeshift4 foreach_begin1_metadata2 add3 foreach_end3 foreach_begin3 timeshift5 foreach_begin1_metadata3 add4 add5 trail2 foreach_end4 foreach_begin4 timeshift6 foreach_begin1_metadata4 add6 timeshift7 timeshift8 foreach_end5 foreach_begin5 timeshift9 foreach_begin1_metadata5 add7 add8 foreach_end6 foreach_begin6 timeshift10 foreach_begin1_metadata6 add9 
-opcf ..
-opset -p on $_obj_geo1_time_blend
+opset -p on $_obj_geo1_GET_interporation_by_id
 
 opcf $arg1
-opcf $_obj_geo1_time_blend
-opwire -n $_obj_geo1_time_blend_add1 -0 $_obj_geo1_time_blend_noise
-opcf $_obj_geo1_time_blend_noise
-opwire -n $_obj_geo1_time_blend_noise_add1 -0 $_obj_geo1_time_blend_noise_geometryvopoutput1
-opwire -n $_obj_geo1_time_blend_noise_vectohvec1 -0 $_obj_geo1_time_blend_noise_aaflownoise1
-opwire -n $_obj_geo1_time_blend_noise_freq -1 $_obj_geo1_time_blend_noise_aaflownoise1
-opwire -n $_obj_geo1_time_blend_noise_offset -2 $_obj_geo1_time_blend_noise_aaflownoise1
-opwire -n $_obj_geo1_time_blend_noise_amp -3 $_obj_geo1_time_blend_noise_aaflownoise1
-opwire -n $_obj_geo1_time_blend_noise_rough -4 $_obj_geo1_time_blend_noise_aaflownoise1
-opwire -n $_obj_geo1_time_blend_noise_geometryvopglobal1 -0 $_obj_geo1_time_blend_noise_vectohvec1
-opwire -n $_obj_geo1_time_blend_noise_geometryvopglobal1 -0 $_obj_geo1_time_blend_noise_add1
-opwire -n $_obj_geo1_time_blend_noise_aaflownoise1 -1 $_obj_geo1_time_blend_noise_add1
-opcf ..
-opwire -n $_obj_geo1_time_blend_trail1 -0 $_obj_geo1_time_blend_attribwrangle1
-opwire -n $_obj_geo1_time_blend_timeshift3 -0 $_obj_geo1_time_blend_attribwrangle2
-opwire -n $_obj_geo1_time_blend_timeshift2 -1 $_obj_geo1_time_blend_attribwrangle2
-opwire -n $_obj_geo1_time_blend_trail2 -0 $_obj_geo1_time_blend_attribwrangle3
-opwire -n $_obj_geo1_time_blend_timeshift8 -0 $_obj_geo1_time_blend_attribwrangle4
-opwire -n $_obj_geo1_time_blend_timeshift7 -1 $_obj_geo1_time_blend_attribwrangle4
-opwire -n $_obj_geo1_time_blend_noise -0 $_obj_geo1_time_blend_trail1
-opwire -n $_obj_geo1_time_blend_timeshift1 -0 $_obj_geo1_time_blend_foreach_end1
-opwire -n $_obj_geo1_time_blend_attribwrangle2 -0 $_obj_geo1_time_blend_foreach_begin1
-opwire -n $_obj_geo1_time_blend_attribwrangle2 -0 $_obj_geo1_time_blend_timeshift1
-opwire -n $_obj_geo1_time_blend_foreach_end1 -0 $_obj_geo1_time_blend_add2
-opwire -n $_obj_geo1_time_blend_attribwrangle1 -0 $_obj_geo1_time_blend_timeshift2
-opwire -n $_obj_geo1_time_blend_attribwrangle1 -0 $_obj_geo1_time_blend_timeshift3
-opwire -n $_obj_geo1_time_blend_timeshift4 -0 $_obj_geo1_time_blend_foreach_end2
-opwire -n $_obj_geo1_time_blend_attribwrangle1 -0 $_obj_geo1_time_blend_foreach_begin2
-opwire -n $_obj_geo1_time_blend_attribwrangle1 -0 $_obj_geo1_time_blend_timeshift4
-opwire -n $_obj_geo1_time_blend_foreach_end2 -0 $_obj_geo1_time_blend_add3
-opwire -n $_obj_geo1_time_blend_timeshift5 -0 $_obj_geo1_time_blend_foreach_end3
-opwire -n $_obj_geo1_time_blend_add5 -0 $_obj_geo1_time_blend_foreach_begin3
-opwire -n $_obj_geo1_time_blend_add5 -0 $_obj_geo1_time_blend_timeshift5
-opwire -n $_obj_geo1_time_blend_foreach_end3 -0 $_obj_geo1_time_blend_add4
-opwire -n $_obj_geo1_time_blend_add2 -0 $_obj_geo1_time_blend_add5
-opwire -n $_obj_geo1_time_blend_noise -0 $_obj_geo1_time_blend_trail2
-opwire -n $_obj_geo1_time_blend_timeshift6 -0 $_obj_geo1_time_blend_foreach_end4
-opwire -n $_obj_geo1_time_blend_attribwrangle4 -0 $_obj_geo1_time_blend_foreach_begin4
-opwire -n $_obj_geo1_time_blend_attribwrangle4 -0 $_obj_geo1_time_blend_timeshift6
-opwire -n $_obj_geo1_time_blend_foreach_end4 -0 $_obj_geo1_time_blend_add6
-opwire -n $_obj_geo1_time_blend_attribwrangle3 -0 $_obj_geo1_time_blend_timeshift7
-opwire -n $_obj_geo1_time_blend_attribwrangle3 -0 $_obj_geo1_time_blend_timeshift8
-opwire -n $_obj_geo1_time_blend_timeshift9 -0 $_obj_geo1_time_blend_foreach_end5
-opwire -n $_obj_geo1_time_blend_add8 -0 $_obj_geo1_time_blend_foreach_begin5
-opwire -n $_obj_geo1_time_blend_add8 -0 $_obj_geo1_time_blend_timeshift9
-opwire -n $_obj_geo1_time_blend_foreach_end5 -0 $_obj_geo1_time_blend_add7
-opwire -n $_obj_geo1_time_blend_add6 -0 $_obj_geo1_time_blend_add8
-opwire -n $_obj_geo1_time_blend_timeshift10 -0 $_obj_geo1_time_blend_foreach_end6
-opwire -n $_obj_geo1_time_blend_attribwrangle3 -0 $_obj_geo1_time_blend_foreach_begin6
-opwire -n $_obj_geo1_time_blend_attribwrangle3 -0 $_obj_geo1_time_blend_timeshift10
-opwire -n $_obj_geo1_time_blend_foreach_end6 -0 $_obj_geo1_time_blend_add9
+opwire -n $_obj_geo1_sort1 -0 $_obj_geo1_GET_interporation_by_id
+opcf $_obj_geo1_GET_interporation_by_id
+opwire -n $_obj_geo1_GET_interporation_by_id_current_f -0 $_obj_geo1_GET_interporation_by_id_interporation_by_id
+opwire -n $_obj_geo1_GET_interporation_by_id_prev_f -1 $_obj_geo1_GET_interporation_by_id_interporation_by_id
+opwire -n $_obj_geo1_GET_interporation_by_id_next_f -2 $_obj_geo1_GET_interporation_by_id_interporation_by_id
+opwire -n $_obj_geo1_GET_interporation_by_id_next_Next_f -3 $_obj_geo1_GET_interporation_by_id_interporation_by_id
+opwire -n $_obj_geo1_GET_interporation_by_id_null1 -0 $_obj_geo1_GET_interporation_by_id_current_f
+opwire -n $_obj_geo1_GET_interporation_by_id_null1 -0 $_obj_geo1_GET_interporation_by_id_prev_f
+opwire -n $_obj_geo1_GET_interporation_by_id_null1 -0 $_obj_geo1_GET_interporation_by_id_next_f
+opwire -n $_obj_geo1_GET_interporation_by_id_null1 -0 $_obj_geo1_GET_interporation_by_id_prevPrev_f
+opwire -n $_obj_geo1_GET_interporation_by_id_null1 -0 $_obj_geo1_GET_interporation_by_id_next_Next_f
+opwire -n $_obj_geo1_GET_interporation_by_id_prevPrev_f -0 $_obj_geo1_GET_interporation_by_id_OUT_prevPrev_f
+opwire -n -i 0 -0 $_obj_geo1_GET_interporation_by_id_null1
+opwire -n $_obj_geo1_GET_interporation_by_id_switch1 -0 $_obj_geo1_GET_interporation_by_id_output1
+opwire -n $_obj_geo1_GET_interporation_by_id_current_f -0 $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
+opwire -n $_obj_geo1_GET_interporation_by_id_prev_f -1 $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
+opwire -n $_obj_geo1_GET_interporation_by_id_next_f -2 $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
+opwire -n $_obj_geo1_GET_interporation_by_id_next_Next_f -3 $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
+opwire -n $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum -0 $_obj_geo1_GET_interporation_by_id_switch1
+opwire -n $_obj_geo1_GET_interporation_by_id_interporation_by_id -1 $_obj_geo1_GET_interporation_by_id_switch1
 opcf ..
 
 set oidx = 0
@@ -2865,11 +2341,11 @@ if ($argc >= 9 && "$arg9" != "") then
 endif
 
 if ($argc >= 5 && "$arg4" != "") then
-    set output = $_obj_geo1_time_blend
+    set output = $_obj_geo1_GET_interporation_by_id
     opwire -n $output -$arg5 $arg4
 endif
 if ($argc >= 6 && "$arg6" != "") then
-    set input = $_obj_geo1_time_blend
+    set input = $_obj_geo1_GET_interporation_by_id
     if ($arg8) then
         opwire -n -i $arg6 -0 $input
     else
@@ -2881,4 +2357,238 @@ opcf $saved_path
 hou.hscript(h_preamble + h_extra_args + h_cmd)
 ]]></script>
   </tool>
+
+  <tool name="subnet2" label="GET_subframe_geo" icon="SOP_subnet">
+    <helpURL>operator:Sop/subnet</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/subnet</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('subnet'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_GET_subframe_geo (Sop/subnet)
+set _obj_geo1_GET_subframe_geo = `run("opadd -e -n -v subnet GET_subframe_geo")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_GET_subframe_geo
+opspareds '    parm { 	name	"label1" 	baseparm 	label	"Input #1 Label" 	invisible 	export	dialog     }     parm { 	name	"label2" 	baseparm 	label	"Input #2 Label" 	invisible 	export	dialog     }     parm { 	name	"label3" 	baseparm 	label	"Input #3 Label" 	invisible 	export	dialog     }     parm { 	name	"label4" 	baseparm 	label	"Input #4 Label" 	invisible 	export	dialog     }     parm { 	name	"substeps" 	label	"substeps" 	type	integer 	default	{ "10" } 	range	{ 0 10 } 	parmtag	{ "autoscope" "0000000000000000" }     }     parm { 	name	"shutter" 	label	"shutter" 	type	vector2 	size	2 	default	{ "-0.25" "0.25" } 	range	{ -1 1 } 	parmtag	{ "autoscope" "0000000000000000" }     } ' $_obj_geo1_GET_subframe_geo
+opcolor -c 0.86699998378753662 0 0 $_obj_geo1_GET_subframe_geo
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_GET_subframe_geo
+opexprlanguage -s hscript $_obj_geo1_GET_subframe_geo
+opcf $_obj_geo1_GET_subframe_geo
+
+# Node $_obj_geo1_GET_subframe_geo_foreach_end1 (Sop/block_end)
+set _obj_geo1_GET_subframe_geo_foreach_end1 = `run("opadd -e -n -v block_end foreach_end1")`
+oplocate -x `$arg2 + 0.0015999999999999903` -y `$arg3 + 1.5632552955012902` $_obj_geo1_GET_subframe_geo_foreach_end1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_GET_subframe_geo_foreach_end1 iterations
+chkey -t 0 -v 10 -m 0 -a 0 -A 0 -T a  -F 'ch("../substeps")' $_obj_geo1_GET_subframe_geo_foreach_end1/iterations
+chblockend
+opparm -V 16.0.504.20 $_obj_geo1_GET_subframe_geo_foreach_end1 itermethod ( count ) method ( merge ) iterations ( iterations ) class ( primitive ) useattrib ( off ) attrib ( name ) blockpath ( ../foreach_begin1 ) templatepath ( ../foreach_begin1 )
+opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_GET_subframe_geo_foreach_end1
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_GET_subframe_geo_foreach_end1
+opexprlanguage -s hscript $_obj_geo1_GET_subframe_geo_foreach_end1
+opuserdata -n '___Version___' -v '16.0.504.20' $_obj_geo1_GET_subframe_geo_foreach_end1
+
+# Node $_obj_geo1_GET_subframe_geo_foreach_begin1 (Sop/block_begin)
+set _obj_geo1_GET_subframe_geo_foreach_begin1 = `run("opadd -e -n -v block_begin foreach_begin1")`
+oplocate -x `$arg2 + -2.3491150000000003` -y `$arg3 + 4.0414000000000012` $_obj_geo1_GET_subframe_geo_foreach_begin1
+opparm -V 16.0.504.20 $_obj_geo1_GET_subframe_geo_foreach_begin1 method ( piece ) blockpath ( ../foreach_end1 )
+opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_GET_subframe_geo_foreach_begin1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_GET_subframe_geo_foreach_begin1
+opexprlanguage -s hscript $_obj_geo1_GET_subframe_geo_foreach_begin1
+opuserdata -n '___Version___' -v '16.0.504.20' $_obj_geo1_GET_subframe_geo_foreach_begin1
+
+# Node $_obj_geo1_GET_subframe_geo_timeshift1 (Sop/timeshift)
+set _obj_geo1_GET_subframe_geo_timeshift1 = `run("opadd -e -n -v timeshift timeshift1")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 2.9167000000000005` $_obj_geo1_GET_subframe_geo_timeshift1
+opspareds '    parm { 	name	"method" 	baseparm 	label	"Method" 	export	none     }     parm { 	name	"frame" 	baseparm 	label	"Frame" 	export	none     }     parm { 	name	"integerframe" 	baseparm 	label	"Integer Frames" 	export	none     }     parm { 	name	"time" 	baseparm 	label	"Time" 	export	none     }     parm { 	name	"rangeclamp" 	baseparm 	label	"Clamp" 	export	none     }     parm { 	name	"frange" 	baseparm 	label	"Start/End Frame" 	export	none     }     parm { 	name	"trange" 	baseparm 	label	"Start/End Time" 	export	none     }     parm { 	name	"bias" 	label	"bias" 	type	float 	default	{ "0" } 	range	{ 0 10 }     }     parm { 	name	"shutter" 	label	"shutter" 	type	vector2 	size	2 	default	{ "0" "0" } 	range	{ -1 1 }     } ' $_obj_geo1_GET_subframe_geo_timeshift1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_GET_subframe_geo_timeshift1 frame
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FF + (1 - ch("bias")) * ch("shutterx") + ch("bias") * ch("shuttery")' $_obj_geo1_GET_subframe_geo_timeshift1/frame
+chadd -t 0 0 $_obj_geo1_GET_subframe_geo_timeshift1 time
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_GET_subframe_geo_timeshift1/time
+chadd -t 0 0 $_obj_geo1_GET_subframe_geo_timeshift1 frange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_GET_subframe_geo_timeshift1/frange1
+chadd -t 0 0 $_obj_geo1_GET_subframe_geo_timeshift1 frange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_GET_subframe_geo_timeshift1/frange2
+chadd -t 0 0 $_obj_geo1_GET_subframe_geo_timeshift1 trange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_GET_subframe_geo_timeshift1/trange1
+chadd -t 0 0 $_obj_geo1_GET_subframe_geo_timeshift1 trange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_GET_subframe_geo_timeshift1/trange2
+chadd -t 0 0 $_obj_geo1_GET_subframe_geo_timeshift1 bias
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'detail("../foreach_begin1_metadata1","iteration",0)/(ch("../foreach_end1/iterations")-1)' $_obj_geo1_GET_subframe_geo_timeshift1/bias
+chadd -t 0 0 $_obj_geo1_GET_subframe_geo_timeshift1 shutterx
+chkey -t 0 -v -0.25 -m 0 -a 0 -A 0 -T a  -F 'ch("../shutterx")' $_obj_geo1_GET_subframe_geo_timeshift1/shutterx
+chadd -t 0 0 $_obj_geo1_GET_subframe_geo_timeshift1 shuttery
+chkey -t 0 -v 0.25 -m 0 -a 0 -A 0 -T a  -F 'ch("../shuttery")' $_obj_geo1_GET_subframe_geo_timeshift1/shuttery
+chblockend
+opparm -V 16.0.504.20 $_obj_geo1_GET_subframe_geo_timeshift1 frame ( frame ) integerframe ( off ) bias ( bias ) shutter ( shutterx shuttery )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_subframe_geo_timeshift1
+opexprlanguage -s hscript $_obj_geo1_GET_subframe_geo_timeshift1
+opuserdata -n '___Version___' -v '16.0.504.20' $_obj_geo1_GET_subframe_geo_timeshift1
+
+# Node $_obj_geo1_GET_subframe_geo_foreach_begin1_metadata1 (Sop/block_begin)
+set _obj_geo1_GET_subframe_geo_foreach_begin1_metadata1 = `run("opadd -e -n -v block_begin foreach_begin1_metadata1")`
+oplocate -x `$arg2 + 2.0408149999999998` -y `$arg3 + 4.0414000000000012` $_obj_geo1_GET_subframe_geo_foreach_begin1_metadata1
+opparm -V 16.0.504.20 $_obj_geo1_GET_subframe_geo_foreach_begin1_metadata1 method ( metadata ) blockpath ( ../foreach_end1 )
+opcolor -c 0.75 0.40000000596046448 0 $_obj_geo1_GET_subframe_geo_foreach_begin1_metadata1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_GET_subframe_geo_foreach_begin1_metadata1
+opexprlanguage -s hscript $_obj_geo1_GET_subframe_geo_foreach_begin1_metadata1
+opuserdata -n '___Version___' -v '16.0.504.20' $_obj_geo1_GET_subframe_geo_foreach_begin1_metadata1
+
+# Node $_obj_geo1_GET_subframe_geo_IN (Sop/null)
+set _obj_geo1_GET_subframe_geo_IN = `run("opadd -e -n -v null IN")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 5.2176000000000009` $_obj_geo1_GET_subframe_geo_IN
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_subframe_geo_IN
+opexprlanguage -s hscript $_obj_geo1_GET_subframe_geo_IN
+opuserdata -n '___Version___' -v '16.0.504.20' $_obj_geo1_GET_subframe_geo_IN
+
+# Node $_obj_geo1_GET_subframe_geo_output1 (Sop/output)
+set _obj_geo1_GET_subframe_geo_output1 = `run("opadd -e -n -v output output1")`
+oplocate -x `$arg2 + -1.3521965547269588e-08` -y `$arg3 + 0.29837161290678677` $_obj_geo1_GET_subframe_geo_output1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_subframe_geo_output1
+opexprlanguage -s hscript $_obj_geo1_GET_subframe_geo_output1
+oporder -e foreach_end1 foreach_begin1 timeshift1 foreach_begin1_metadata1 IN output1 
+opcf ..
+opset -p on $_obj_geo1_GET_subframe_geo
+
+opcf $arg1
+opwire -n $_obj_geo1_GET_interporation_by_id -0 $_obj_geo1_GET_subframe_geo
+opcf $_obj_geo1_GET_subframe_geo
+opwire -n $_obj_geo1_GET_subframe_geo_timeshift1 -0 $_obj_geo1_GET_subframe_geo_foreach_end1
+opwire -n $_obj_geo1_GET_subframe_geo_IN -0 $_obj_geo1_GET_subframe_geo_foreach_begin1
+opwire -n $_obj_geo1_GET_subframe_geo_IN -0 $_obj_geo1_GET_subframe_geo_timeshift1
+opwire -n -i 0 -0 $_obj_geo1_GET_subframe_geo_IN
+opwire -n $_obj_geo1_GET_subframe_geo_foreach_end1 -0 $_obj_geo1_GET_subframe_geo_output1
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_GET_subframe_geo
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_GET_subframe_geo
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <shelfSetEdit name="shelf_set_1" fileLocation="C:/PROGRA~1/SIDEEF~1/HOUDIN~1.20/houdini/toolbar\ShelfDefinitions.shelf">
+    <addMemberToolshelf name="kaTools" inPosition="16"/>
+  </shelfSetEdit>
 </shelfDocument>
