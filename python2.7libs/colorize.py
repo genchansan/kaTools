@@ -11,35 +11,26 @@ def execute():
     geoClr = hou.Color((0,0.267,0))
     geoFxClr = hou.Color((0.4,1,0.4))
     geoRenClr = hou.Color((0.8,1,0.8))
+
+    clrSet = [["attribwrangle",wrangleClr],["volumewrangle",wrangleClr],["solver",dopClr],["dopnet",dopClr],["object_merge",objMergeClr],["attribvop",vopClr],["volumevop",vopClr],["subnet",subnetClr]]
     
+    ### for AL
+    clrSet.extend([["cachewrite",sopRopClr],["cacheread",sopRopClr]])
+    ### for IE
+    clrSet.append(["ieSopReader",sopRopClr])
+
+
+
     #######################
     currentNode = hou.selectedNodes()
     
     for node in currentNode:
         #print node.type().name()
-        if node.type().name() == "attribwrangle":
-            node.setColor(wrangleClr)
-        elif node.type().name() == "volumewrangle":
-            node.setColor(wrangleClr)   
-        elif node.type().name() == "ieSopRop":
-            node.setColor(sopRopClr)
-        elif node.type().name() == "ieSopReader":
-            node.setColor(sopRopClr)
-        elif node.type().name() == "solver":
-            node.setColor(dopClr)
-        elif node.type().name() == "dopnet":
-            node.setColor(dopClr)
-        elif node.type().name() == "object_merge":
-            node.setColor(objMergeClr)
-        elif node.type().name() == "null":
-            node.setColor(nullClr)
-        elif node.type().name() == "attribvop":
-            node.setColor(vopClr)
-        elif node.type().name() == "volumevop":
-            node.setColor(vopClr)
-        elif node.type().name() == "subnet":
-            node.setColor(subnetClr)
-        elif node.type().name() == "geo":
+        for eachClr in clrSet:
+            if node.type().name() == eachClr[0]:
+                node.setColor(eachClr[1])
+
+        if node.type().name() == "geo":
             if node.name().find("FX") != -1:
                 node.setColor(geoFxClr)
             elif node.name().find("REN") != -1:
