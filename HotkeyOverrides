@@ -1,7 +1,0 @@
-h.tool:disconnectOutputNodes	disconnectOutputNodes	"Shelf Tool: disconnectOutputNodes"	 F6
-h.tool:gotToCam	gotToCam	"Shelf Tool: gotToCam"	 F7
-h.tool:connect	Connect	"Shelf Tool: Connect"	 F8
-h.tool:changeUpdateMode	changeUpdateMode	"Shelf Tool: changeUpdateMode"	 F9
-h.pane.parms.copy_parm	"Copy Parameter"	"Copy parameter"	 Ctrl+Shift+C
-h.pane.parms.paste_rel_refs	"Paste Copied Relative Refs"	"Paste copied relative refs"	 Ctrl+Shift+V
-h.tool:colorize	colorize	"Shelf Tool: colorize"	 F10

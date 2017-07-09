@@ -2,8 +2,8 @@
 
 <menuDocument>
   <menu>
-    <subMenu id="getReferences">
-      <label>tests</label>
+    <subMenu id="kaTools">
+      <label>kaTools</label>
       <scriptItem id="getReferencingThis">
         <label>getReferencingThis</label>
       <context>
@@ -11,20 +11,41 @@
       </context>
         <scriptCode>
         <![CDATA[
-import testParmMenu
-reload(testParmMenu)
-testParmMenu.ex(kwargs)
+import absToRel
+reload(absToRel)
+absToRel.execute(kwargs)
 ]]>
         </scriptCode>
       </scriptItem>
-      <scriptItem id="getReferenced">
-        <label>test3</label>
+
+      <scriptItem id="absToRel">
+        <label>absToRel</label>
       <context>
       <networkCategory>Sop</networkCategory>
       </context>
-        <scriptPath>C:/Users/gen/Documents/houdini15.5/kaTools/python2.7libs/testParmMenu.py
-        </scriptPath>
+        <scriptCode>
+        <![CDATA[
+import changePath
+reload(changePath)
+changePath.absToRel(kwargs)
+]]>
+        </scriptCode>
       </scriptItem>
+
+      <scriptItem id="relToAbs">
+        <label>relToAbs</label>
+      <context>
+      <networkCategory>Sop</networkCategory>
+      </context>
+        <scriptCode>
+        <![CDATA[
+import changePath
+reload(changePath)
+changePath.relToAbs(kwargs)
+]]>
+        </scriptCode>
+      </scriptItem>
+      
     </subMenu>
   </menu>
 </menuDocument>
