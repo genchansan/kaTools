@@ -46,6 +46,35 @@ changePath.relToAbs(kwargs)
         </scriptCode>
       </scriptItem>
       
+      <scriptMenuStripDynamic  id="addExpression">
+        <label>addExpression</label>
+      <context>
+      <networkCategory>Sop</networkCategory>
+      </context>
+        <contentsScriptCode>
+        <![CDATA[
+import addExpression
+
+reload(addExpression)
+
+menus = addExpression.readXML()
+return menus
+]]>
+        </contentsScriptCode>
+        <scriptCode>
+        <![CDATA[
+import hou
+import addExpression
+
+reload(addExpression)
+
+expression = addExpression.paste(kwargs)
+
+print expression
+]]>
+        </scriptCode>
+      </scriptMenuStripDynamic>
+
     </subMenu>
   </menu>
 </menuDocument>

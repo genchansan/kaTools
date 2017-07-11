@@ -7053,7 +7053,7 @@ for node in nodes:
   <tool name="tool_2" label="New Tool" icon="PLASMA_App">
     <script scriptType="python"><![CDATA[import xml.etree.ElementTree as ET
 
-tree = ET.parse('/home/users/naokik/houdini16.0/kaTools/expressions.xml')
+tree = ET.parse(hou.expandString("$HOUDINI_PATH").split(";")[0] + '/expressions.xml')
 root = tree.getroot()
 
 for set in root:
