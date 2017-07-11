@@ -27,6 +27,7 @@
     <memberTool name="opencl"/>
     <memberTool name="simple_upres"/>
     <memberTool name="dopnet"/>
+    <memberTool name="tool_2"/>
   </toolshelf>
 
   <tool name="add_event_when_created" label="add_event_when_created" icon="PLASMA_App">
@@ -7047,5 +7048,15 @@ for node in nodes:
         exp = parm.eval()
         print exp
         parm.set(exp + "\nfloat grad = fit(@P.y,ch(\"min\"),ch(\"max\"),0,1);\ngrad = chramp(\"remap_grad\",grad);")]]></script>
+  </tool>
+
+  <tool name="tool_2" label="New Tool" icon="PLASMA_App">
+    <script scriptType="python"><![CDATA[import xml.etree.ElementTree as ET
+
+tree = ET.parse('/home/users/naokik/houdini16.0/kaTools/expressions.xml')
+root = tree.getroot()
+
+for set in root:
+    print set[0].text]]></script>
   </tool>
 </shelfDocument>
