@@ -2,11 +2,7 @@
 
 <expressionSets>
 	<set name="mix">
-		<expression>
-		<![CDATA[
-print "a"
-		]]>
-		</expression>
+		<expression>print a</expression>
 	</set>
 
 	<set name="mix1">

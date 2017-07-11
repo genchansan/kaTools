@@ -10,6 +10,8 @@ def paste(kwargs):
     #print kwargs["selectedlabel"]
     #print kwargs["parms"][0]
 
+    kwargs["parms"][0].set(kwargs["parms"][0].eval() + expression)
+
     return expression
 
 
