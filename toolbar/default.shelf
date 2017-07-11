@@ -314,7 +314,7 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
 changeUpdateMode.execute()]]></script>
   </tool>
 
-  <tool name="copyRamp" label="copyRamp" icon="PLASMA_App">
+  <tool name="copyRamp" label="copyRamp" icon="VOP_rampparm">
     <script scriptType="python"><![CDATA[import copyRamp
 
 copyRamp.execute()]]></script>
@@ -323,7 +323,7 @@ copyRamp.execute()]]></script>
   <tool name="gotToCam" label="gotToCam" icon="PLASMA_App">
     <script scriptType="python"><![CDATA[import goToCam
 
-goToCam.execute()]]></script>
+goToCam.executeAL()]]></script>
   </tool>
 
   <tool name="attribvop" label="noise" icon="SOP_attribvop">
@@ -331,6 +331,7 @@ goToCam.execute()]]></script>
     <toolMenuContext name="network">
       <contextOpType>Sop/attribvop</contextOpType>
     </toolMenuContext>
+    <toolSubmenu>kaTools/attribvop</toolSubmenu>
     <script scriptType="python"><![CDATA[
 import sys
 import toolutils
@@ -442,7 +443,7 @@ opcf $arg1
 # Node $_obj_geo1_noise (Sop/attribvop)
 set _obj_geo1_noise = `run("opadd -e -n -v attribvop noise")`
 oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_noise
-opspareds '    parm { 	name	"bindgroup" 	baseparm 	label	"Group" 	export	none 	bindselector points "Modify Points" 	    "Select the points to affect and press Enter to complete." 	    0 1 0xffffffff 0 bindgrouptype 0     }     parm { 	name	"bindgrouptype" 	baseparm 	label	"Group Type" 	export	none     }     parm { 	name	"bindclass" 	baseparm 	label	"Run Over" 	export	none     }     parm { 	name	"vex_numcount" 	baseparm 	label	"Number Count" 	export	none     }     parm { 	name	"vex_threadjobsize" 	baseparm 	label	"Thread Job Size" 	export	none     }     group { 	name	"stdswitcher3" 	label	"Vex Setup"  	parm { 	    name	"vexsrc" 	    baseparm 	    label	"Vex Source" 	    export	dialog 	} 	parm { 	    name	"shoppath" 	    baseparm 	    label	"Shop Path" 	    export	dialog 	} 	parm { 	    name	"script" 	    baseparm 	    label	"Script" 	    export	all 	} 	parm { 	    name	"clear" 	    baseparm 	    label	"Re-load VEX Functions" 	    export	all 	} 	parm { 	    name	"vop_compiler" 	    baseparm 	    label	"Compiler" 	    export	none 	} 	parm { 	    name	"vop_forcecompile" 	    baseparm 	    label	"Force Compile" 	    export	none 	} 	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_multithread" 	    baseparm 	    label	"Enable Multithreading" 	    export	none 	}     }      group { 	name	"stdswitcher3_1" 	label	"Attribute Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	}     }      parm { 	name	"ptnum" 	label	"Point Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"vtxnum" 	label	"Vertex Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"primnum" 	label	"Primitive Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"id" 	label	"Id" 	type	integer 	invisible 	default	{ "-1" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numpt" 	label	"Number of Points" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numvtx" 	label	"Number of Vertices" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numprim" 	label	"Number of Prims" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Time" 	label	"Time" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"TimeInc" 	label	"Time Inc" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Frame" 	label	"Frame" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"life" 	label	"Life" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"age" 	label	"Age" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput2" 	label	"Second Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput3" 	label	"Third Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput4" 	label	"Fourth Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput1" 	label	"First Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"uv" 	label	"UV" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"P" 	label	"P" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"v" 	label	"Velocity" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"force" 	label	"Force" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Cd" 	label	"Cd" 	type	float 	invisible 	size	3 	default	{ "1" "1" "1" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"N" 	label	"N" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"freq" 	label	"Frequency" 	type	float 	size	4 	default	{ "1" "1" "1" "1" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"offset" 	label	"Offset" 	type	float 	size	4 	default	{ "0" "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"amp" 	label	"Amplitude" 	type	float 	default	{ "1" } 	range	{ -1 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"rough" 	label	"Roughness" 	type	float 	default	{ "0.5" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     } ' $_obj_geo1_noise
+opspareds '    parm {   name    "bindgroup"     baseparm        label   "Group"         export  none    bindselector points "Modify Points"         "Select the points to affect and press Enter to complete."      0 1 0xffffffff 0 bindgrouptype 0     }     parm {   name    "bindgrouptype"         baseparm        label   "Group Type"    export  none     }     parm {   name    "bindclass"     baseparm        label   "Run Over"      export  none     }     parm {   name    "vex_numcount"  baseparm        label   "Number Count"  export  none     }     parm {   name    "vex_threadjobsize"     baseparm        label   "Thread Job Size"       export  none     }     group {  name    "stdswitcher3"  label   "Vex Setup"     parm {      name        "vexsrc"            baseparm        label       "Vex Source"        export      dialog  }       parm {      name        "shoppath"          baseparm        label       "Shop Path"         export      dialog  }       parm {      name        "script"            baseparm        label       "Script"            export      all     }       parm {      name        "clear"             baseparm        label       "Re-load VEX Functions"             export      all     }       parm {      name        "vop_compiler"      baseparm        label       "Compiler"          export      none    }       parm {      name        "vop_forcecompile"          baseparm        label       "Force Compile"             export      none    }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_multithread"           baseparm        label       "Enable Multithreading"             export      none    }     }      group {    name    "stdswitcher3_1"        label   "Attribute Bindings"    parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }     }      parm {     name    "ptnum"         label   "Point Number"  type    integer         invisible       default { "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "vtxnum"        label   "Vertex Number"         type    integer         invisible       default { "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "primnum"       label   "Primitive Number"      type    integer         invisible       default { "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "id"    label   "Id"    type    integer         invisible       default { "-1" }        range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "numpt"         label   "Number of Points"      type    integer         invisible       default { "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "numvtx"        label   "Number of Vertices"    type    integer         invisible       default { "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "numprim"       label   "Number of Prims"       type    integer         invisible       default { "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "Time"  label   "Time"  type    float   invisible       default { "0" }         range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "TimeInc"       label   "Time Inc"      type    float   invisible       default { "0" }         range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "Frame"         label   "Frame"         type    float   invisible       default { "0" }         range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "life"  label   "Life"  type    float   invisible       default { "0" }         range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "age"   label   "Age"   type    float   invisible       default { "0" }         range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput2"      label   "Second Input"  type    string  invisible       default { "" }  range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput3"      label   "Third Input"   type    string  invisible       default { "" }  range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput4"      label   "Fourth Input"  type    string  invisible       default { "" }  range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput1"      label   "First Input"   type    string  invisible       default { "" }  range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "uv"    label   "UV"    type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "P"     label   "P"     type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "v"     label   "Velocity"      type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "force"         label   "Force"         type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "Cd"    label   "Cd"    type    float   invisible       size    3       default { "1" "1" "1" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "N"     label   "N"     type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "freq"  label   "Frequency"     type    float   size    4       default { "1" "1" "1" "1" }     range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "offset"        label   "Offset"        type    float   size    4       default { "0" "0" "0" "0" }     range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "amp"   label   "Amplitude"     type    float   default { "1" }         range   { -1 1 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "rough"         label   "Roughness"     type    float   default { "0.5" }       range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     } ' $_obj_geo1_noise
 opparm $_obj_geo1_noise  bindings ( 0 ) groupbindings ( 0 )
 chblockbegin
 chadd -t 0 0 $_obj_geo1_noise freq2
@@ -1499,6 +1500,7 @@ disconnectOutputNodes.execute()]]></script>
     <toolMenuContext name="network">
       <contextOpType>Sop/attribvop</contextOpType>
     </toolMenuContext>
+    <toolSubmenu>kaTools/attribvop</toolSubmenu>
     <script scriptType="python"><![CDATA[
 import sys
 import toolutils
@@ -1610,7 +1612,7 @@ opcf $arg1
 # Node $_obj_geo1_noise_1d (Sop/attribvop)
 set _obj_geo1_noise_1d = `run("opadd -e -n -v attribvop noise_1d")`
 oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_noise_1d
-opspareds '    parm { 	name	"bindgroup" 	baseparm 	label	"Group" 	export	none 	bindselector points "Modify Points" 	    "Select the points to affect and press Enter to complete." 	    0 1 0xffffffff 0 bindgrouptype 0     }     parm { 	name	"bindgrouptype" 	baseparm 	label	"Group Type" 	export	none     }     parm { 	name	"bindclass" 	baseparm 	label	"Run Over" 	export	none     }     parm { 	name	"vex_numcount" 	baseparm 	label	"Number Count" 	export	none     }     parm { 	name	"vex_threadjobsize" 	baseparm 	label	"Thread Job Size" 	export	none     }     group { 	name	"stdswitcher3" 	label	"Vex Setup"  	parm { 	    name	"vexsrc" 	    baseparm 	    label	"Vex Source" 	    export	all 	} 	parm { 	    name	"shoppath" 	    baseparm 	    label	"Shop Path" 	    export	all 	} 	parm { 	    name	"script" 	    baseparm 	    label	"Script" 	    export	all 	} 	parm { 	    name	"clear" 	    baseparm 	    label	"Re-load VEX Functions" 	    export	all 	} 	parm { 	    name	"vop_compiler" 	    baseparm 	    label	"Compiler" 	    export	none 	} 	parm { 	    name	"vop_forcecompile" 	    baseparm 	    label	"Force Compile" 	    export	none 	} 	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_multithread" 	    baseparm 	    label	"Enable Multithreading" 	    export	none 	}     }      group { 	name	"stdswitcher3_1" 	label	"Attribute Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	}     }      parm { 	name	"ptnum" 	label	"Point Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"vtxnum" 	label	"Vertex Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"primnum" 	label	"Primitive Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"id" 	label	"Id" 	type	integer 	invisible 	default	{ "-1" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numpt" 	label	"Number of Points" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numvtx" 	label	"Number of Vertices" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numprim" 	label	"Number of Prims" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Time" 	label	"Time" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"TimeInc" 	label	"Time Inc" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Frame" 	label	"Frame" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"life" 	label	"Life" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"age" 	label	"Age" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput2" 	label	"Second Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput3" 	label	"Third Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput4" 	label	"Fourth Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput1" 	label	"First Input" 	type	string 	invisible 	default	{ "" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"uv" 	label	"UV" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"P" 	label	"P" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"v" 	label	"Velocity" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"force" 	label	"Force" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Cd" 	label	"Cd" 	type	float 	invisible 	size	3 	default	{ "1" "1" "1" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"N" 	label	"N" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"freq" 	label	"Frequency" 	type	float 	size	4 	default	{ "1" "1" "1" "1" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"offset" 	label	"Offset" 	type	float 	size	4 	default	{ "0" "0" "0" "0" } 	range	{ 0 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"amp" 	label	"Amplitude" 	type	float 	default	{ "1" } 	range	{ -1 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"rough" 	label	"Roughness" 	type	float 	default	{ "0.5" } 	range	{ 0 1 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"ramp" 	label	"ramp" 	type	ramp_flt 	default	{ "2" } 	range	{ 1! 10 } 	export	none 	parmtag	{ "parmvop" "1" } 	parmtag	{ "rampbasis_var" "ramp_the_basis_strings" } 	parmtag	{ "rampbasisdefault" "linear" } 	parmtag	{ "rampkeys_var" "ramp_the_key_positions" } 	parmtag	{ "rampshowcontrolsdefault" "1" } 	parmtag	{ "rampvalues_var" "ramp_the_key_values" } 	parmtag	{ "shaderparmcontexts" "cvex" }     } ' $_obj_geo1_noise_1d
+opspareds '    parm {   name    "bindgroup"     baseparm        label   "Group"         export  none    bindselector points "Modify Points"         "Select the points to affect and press Enter to complete."      0 1 0xffffffff 0 bindgrouptype 0     }     parm {   name    "bindgrouptype"         baseparm        label   "Group Type"    export  none     }     parm {   name    "bindclass"     baseparm        label   "Run Over"      export  none     }     parm {   name    "vex_numcount"  baseparm        label   "Number Count"  export  none     }     parm {   name    "vex_threadjobsize"     baseparm        label   "Thread Job Size"       export  none     }     group {  name    "stdswitcher3"  label   "Vex Setup"     parm {      name        "vexsrc"            baseparm        label       "Vex Source"        export      all     }       parm {      name        "shoppath"          baseparm        label       "Shop Path"         export      all     }       parm {      name        "script"            baseparm        label       "Script"            export      all     }       parm {      name        "clear"             baseparm        label       "Re-load VEX Functions"             export      all     }       parm {      name        "vop_compiler"      baseparm        label       "Compiler"          export      none    }       parm {      name        "vop_forcecompile"          baseparm        label       "Force Compile"             export      none    }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_multithread"           baseparm        label       "Enable Multithreading"             export      none    }     }      group {    name    "stdswitcher3_1"        label   "Attribute Bindings"    parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }     }      parm {     name    "ptnum"         label   "Point Number"  type    integer         invisible       default { "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "vtxnum"        label   "Vertex Number"         type    integer         invisible       default { "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "primnum"       label   "Primitive Number"      type    integer         invisible       default { "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "id"    label   "Id"    type    integer         invisible       default { "-1" }        range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "numpt"         label   "Number of Points"      type    integer         invisible       default { "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "numvtx"        label   "Number of Vertices"    type    integer         invisible       default { "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "numprim"       label   "Number of Prims"       type    integer         invisible       default { "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "Time"  label   "Time"  type    float   invisible       default { "0" }         range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "TimeInc"       label   "Time Inc"      type    float   invisible       default { "0" }         range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "Frame"         label   "Frame"         type    float   invisible       default { "0" }         range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "life"  label   "Life"  type    float   invisible       default { "0" }         range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "age"   label   "Age"   type    float   invisible       default { "0" }         range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput2"      label   "Second Input"  type    string  invisible       default { "" }  range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput3"      label   "Third Input"   type    string  invisible       default { "" }  range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput4"      label   "Fourth Input"  type    string  invisible       default { "" }  range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput1"      label   "First Input"   type    string  invisible       default { "" }  range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "uv"    label   "UV"    type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "P"     label   "P"     type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "v"     label   "Velocity"      type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "force"         label   "Force"         type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "Cd"    label   "Cd"    type    float   invisible       size    3       default { "1" "1" "1" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "N"     label   "N"     type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "freq"  label   "Frequency"     type    float   size    4       default { "1" "1" "1" "1" }     range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "offset"        label   "Offset"        type    float   size    4       default { "0" "0" "0" "0" }     range   { 0 10 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "amp"   label   "Amplitude"     type    float   default { "1" }         range   { -1 1 }        export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "rough"         label   "Roughness"     type    float   default { "0.5" }       range   { 0 1 }         export  none    parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "ramp"  label   "ramp"  type    ramp_flt        default { "2" }         range   { 1! 10 }       export  none    parmtag { "parmvop" "1" }       parmtag { "rampbasis_var" "ramp_the_basis_strings" }    parmtag { "rampbasisdefault" "linear" }         parmtag { "rampkeys_var" "ramp_the_key_positions" }     parmtag { "rampshowcontrolsdefault" "1" }       parmtag { "rampvalues_var" "ramp_the_key_values" }      parmtag { "shaderparmcontexts" "cvex" }     } ' $_obj_geo1_noise_1d
 opparm $_obj_geo1_noise_1d  bindings ( 0 ) groupbindings ( 0 ) ramp ( 2 )
 chblockbegin
 chadd -t 0 0 $_obj_geo1_noise_1d freq2
@@ -4437,6 +4439,16 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
     <memberTool name="subnet4"/>
     <memberTool name="attribvop"/>
     <memberTool name="attribvop0"/>
+    <memberTool name="attribwrangle0"/>
+    <memberTool name="attribwrangle1"/>
+    <memberTool name="attribwrangle2"/>
+    <memberTool name="attribwrangle3"/>
+    <memberTool name="attribwrangle4"/>
+    <memberTool name="attribwrangle5"/>
+    <memberTool name="attribwrangle6"/>
+    <memberTool name="attribwrangle7"/>
+    <memberTool name="attribwrangle8"/>
+    <memberTool name="tool_1"/>
   </toolshelf>
 
   <tool name="attribvop1" label="trans_by_n_up" icon="SOP_attribvop">
@@ -4444,6 +4456,7 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
     <toolMenuContext name="network">
       <contextOpType>Sop/attribvop</contextOpType>
     </toolMenuContext>
+    <toolSubmenu>kaTools/attribvop</toolSubmenu>
     <script scriptType="python"><![CDATA[
 import sys
 import toolutils
@@ -4554,7 +4567,7 @@ opcf $arg1
 # Node $_obj_geo1_trans_by_n_up (Sop/attribvop)
 set _obj_geo1_trans_by_n_up = `run("opadd -e -n -v attribvop trans_by_n_up")`
 oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_trans_by_n_up
-opspareds '    parm { 	name	"bindgroup" 	baseparm 	label	"Group" 	export	none 	bindselector uvselect "Modify Points" 	    "Select the points to affect and press Enter to complete." 	    0 1 0xffffffff 0 bindgrouptype 0     }     parm { 	name	"bindgrouptype" 	baseparm 	label	"Group Type" 	export	none     }     parm { 	name	"bindclass" 	baseparm 	label	"Run Over" 	export	none     }     parm { 	name	"vex_numcount" 	baseparm 	label	"Number Count" 	export	none     }     parm { 	name	"vex_threadjobsize" 	baseparm 	label	"Thread Job Size" 	export	none     }     group { 	name	"stdswitcher3" 	label	"Vex Setup"  	parm { 	    name	"vexsrc" 	    baseparm 	    label	"Vex Source" 	    export	all 	} 	parm { 	    name	"shoppath" 	    baseparm 	    label	"Shop Path" 	    export	all 	} 	parm { 	    name	"script" 	    baseparm 	    label	"Script" 	    export	all 	} 	parm { 	    name	"clear" 	    baseparm 	    label	"Re-load VEX Functions" 	    export	all 	} 	parm { 	    name	"vop_compiler" 	    baseparm 	    label	"Compiler" 	    export	none 	} 	parm { 	    name	"vop_forcecompile" 	    baseparm 	    label	"Force Compile" 	    export	none 	} 	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_multithread" 	    baseparm 	    label	"Enable Multithreading" 	    export	none 	}     }      group { 	name	"stdswitcher3_1" 	label	"Attribute Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	} 	parm { 	    name	"vex_inplace" 	    baseparm 	    label	"Compute Results In Place" 	    export	none 	} 	parm { 	    name	"vex_selectiongroup" 	    baseparm 	    label	"Output Selection Group" 	    export	none 	}     }      parm { 	name	"ptnum" 	label	"Point Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"vtxnum" 	label	"Vertex Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"primnum" 	label	"Primitive Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"id" 	label	"Id" 	type	integer 	invisible 	default	{ "-1" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numpt" 	label	"Number of Points" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numvtx" 	label	"Number of Vertices" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numprim" 	label	"Number of Prims" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Time" 	label	"Time" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"TimeInc" 	label	"Time Inc" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Frame" 	label	"Frame" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"life" 	label	"Life" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"age" 	label	"Age" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput2" 	label	"Second Input" 	type	string 	invisible 	default	{ "" } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput3" 	label	"Third Input" 	type	string 	invisible 	default	{ "" } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput4" 	label	"Fourth Input" 	type	string 	invisible 	default	{ "" } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput1" 	label	"First Input" 	type	string 	invisible 	default	{ "" } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"uv" 	label	"UV" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"P" 	label	"P" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"v" 	label	"Velocity" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"force" 	label	"Force" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Cd" 	label	"Cd" 	type	float 	invisible 	size	3 	default	{ "1" "1" "1" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"N" 	label	"N" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     } ' $_obj_geo1_trans_by_n_up
+opspareds '    parm {   name    "bindgroup"     baseparm        label   "Group"         export  none    bindselector uvselect "Modify Points"       "Select the points to affect and press Enter to complete."      0 1 0xffffffff 0 bindgrouptype 0     }     parm {   name    "bindgrouptype"         baseparm        label   "Group Type"    export  none     }     parm {   name    "bindclass"     baseparm        label   "Run Over"      export  none     }     parm {   name    "vex_numcount"  baseparm        label   "Number Count"  export  none     }     parm {   name    "vex_threadjobsize"     baseparm        label   "Thread Job Size"       export  none     }     group {  name    "stdswitcher3"  label   "Vex Setup"     parm {      name        "vexsrc"            baseparm        label       "Vex Source"        export      all     }       parm {      name        "shoppath"          baseparm        label       "Shop Path"         export      all     }       parm {      name        "script"            baseparm        label       "Script"            export      all     }       parm {      name        "clear"             baseparm        label       "Re-load VEX Functions"             export      all     }       parm {      name        "vop_compiler"      baseparm        label       "Compiler"          export      none    }       parm {      name        "vop_forcecompile"          baseparm        label       "Force Compile"             export      none    }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_multithread"           baseparm        label       "Enable Multithreading"             export      none    }     }      group {    name    "stdswitcher3_1"        label   "Attribute Bindings"    parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }       parm {      name        "vex_inplace"       baseparm        label       "Compute Results In Place"          export      none    }       parm {      name        "vex_selectiongroup"        baseparm        label       "Output Selection Group"            export      none    }     }      parm {     name    "ptnum"         label   "Point Number"  type    integer         invisible       default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "vtxnum"        label   "Vertex Number"         type    integer         invisible       default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "primnum"       label   "Primitive Number"      type    integer         invisible       default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "id"    label   "Id"    type    integer         invisible       default { "-1" }        range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "numpt"         label   "Number of Points"      type    integer         invisible       default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "numvtx"        label   "Number of Vertices"    type    integer         invisible       default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "numprim"       label   "Number of Prims"       type    integer         invisible       default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "Time"  label   "Time"  type    float   invisible       default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "TimeInc"       label   "Time Inc"      type    float   invisible       default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "Frame"         label   "Frame"         type    float   invisible       default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "life"  label   "Life"  type    float   invisible       default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "age"   label   "Age"   type    float   invisible       default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput2"      label   "Second Input"  type    string  invisible       default { "" }  parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput3"      label   "Third Input"   type    string  invisible       default { "" }  parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput4"      label   "Fourth Input"  type    string  invisible       default { "" }  parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput1"      label   "First Input"   type    string  invisible       default { "" }  parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "uv"    label   "UV"    type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "P"     label   "P"     type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "v"     label   "Velocity"      type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "force"         label   "Force"         type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "Cd"    label   "Cd"    type    float   invisible       size    3       default { "1" "1" "1" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "N"     label   "N"     type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     } ' $_obj_geo1_trans_by_n_up
 opparm $_obj_geo1_trans_by_n_up  bindings ( 0 ) groupbindings ( 0 )
 opcolor -c 1 1 0.60000002384185791 $_obj_geo1_trans_by_n_up
 opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_trans_by_n_up
@@ -4745,6 +4758,7 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
     <toolMenuContext name="network">
       <contextOpType>Sop/attribvop</contextOpType>
     </toolMenuContext>
+    <toolSubmenu>kaTools/attribvop</toolSubmenu>
     <script scriptType="python"><![CDATA[
 import sys
 import toolutils
@@ -4855,7 +4869,7 @@ opcf $arg1
 # Node $_obj_geo1_trans_by_pt (Sop/attribvop)
 set _obj_geo1_trans_by_pt = `run("opadd -e -n -v attribvop trans_by_pt")`
 oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_trans_by_pt
-opspareds '    parm { 	name	"bindgroup" 	baseparm 	label	"Group" 	export	none 	bindselector uvselect "Modify Points" 	    "Select the points to affect and press Enter to complete." 	    0 1 0xffffffff 0 bindgrouptype 0     }     parm { 	name	"bindgrouptype" 	baseparm 	label	"Group Type" 	export	none     }     parm { 	name	"bindclass" 	baseparm 	label	"Run Over" 	export	none     }     parm { 	name	"vex_numcount" 	baseparm 	label	"Number Count" 	export	none     }     parm { 	name	"vex_threadjobsize" 	baseparm 	label	"Thread Job Size" 	export	none     }     group { 	name	"stdswitcher3" 	label	"Vex Setup"  	parm { 	    name	"vexsrc" 	    baseparm 	    label	"Vex Source" 	    export	all 	} 	parm { 	    name	"shoppath" 	    baseparm 	    label	"Shop Path" 	    export	all 	} 	parm { 	    name	"script" 	    baseparm 	    label	"Script" 	    export	all 	} 	parm { 	    name	"clear" 	    baseparm 	    label	"Re-load VEX Functions" 	    export	all 	} 	parm { 	    name	"vop_compiler" 	    baseparm 	    label	"Compiler" 	    export	none 	} 	parm { 	    name	"vop_forcecompile" 	    baseparm 	    label	"Force Compile" 	    export	none 	} 	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_multithread" 	    baseparm 	    label	"Enable Multithreading" 	    export	none 	}     }      group { 	name	"stdswitcher3_1" 	label	"Attribute Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	} 	parm { 	    name	"vex_inplace" 	    baseparm 	    label	"Compute Results In Place" 	    export	none 	} 	parm { 	    name	"vex_selectiongroup" 	    baseparm 	    label	"Output Selection Group" 	    export	none 	}     }      parm { 	name	"ptnum" 	label	"Point Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"vtxnum" 	label	"Vertex Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"primnum" 	label	"Primitive Number" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"id" 	label	"Id" 	type	integer 	invisible 	default	{ "-1" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numpt" 	label	"Number of Points" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numvtx" 	label	"Number of Vertices" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"numprim" 	label	"Number of Prims" 	type	integer 	invisible 	default	{ "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Time" 	label	"Time" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"TimeInc" 	label	"Time Inc" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Frame" 	label	"Frame" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"life" 	label	"Life" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"age" 	label	"Age" 	type	float 	invisible 	default	{ "0" } 	range	{ 0 1 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput2" 	label	"Second Input" 	type	string 	invisible 	default	{ "" } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput3" 	label	"Third Input" 	type	string 	invisible 	default	{ "" } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput4" 	label	"Fourth Input" 	type	string 	invisible 	default	{ "" } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"OpInput1" 	label	"First Input" 	type	string 	invisible 	default	{ "" } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"uv" 	label	"UV" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"P" 	label	"P" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"v" 	label	"Velocity" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"force" 	label	"Force" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"Cd" 	label	"Cd" 	type	float 	invisible 	size	3 	default	{ "1" "1" "1" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"N" 	label	"N" 	type	float 	invisible 	size	3 	default	{ "0" "0" "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"pt_0" 	label	"pt_0" 	type	integer 	default	{ "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"pt_1" 	label	"pt_1" 	type	integer 	default	{ "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     }     parm { 	name	"pt_2" 	label	"pt_2" 	type	integer 	default	{ "0" } 	range	{ 0 10 } 	parmtag	{ "parmvop" "1" } 	parmtag	{ "shaderparmcontexts" "cvex" }     } ' $_obj_geo1_trans_by_pt
+opspareds '    parm {   name    "bindgroup"     baseparm        label   "Group"         export  none    bindselector uvselect "Modify Points"       "Select the points to affect and press Enter to complete."      0 1 0xffffffff 0 bindgrouptype 0     }     parm {   name    "bindgrouptype"         baseparm        label   "Group Type"    export  none     }     parm {   name    "bindclass"     baseparm        label   "Run Over"      export  none     }     parm {   name    "vex_numcount"  baseparm        label   "Number Count"  export  none     }     parm {   name    "vex_threadjobsize"     baseparm        label   "Thread Job Size"       export  none     }     group {  name    "stdswitcher3"  label   "Vex Setup"     parm {      name        "vexsrc"            baseparm        label       "Vex Source"        export      all     }       parm {      name        "shoppath"          baseparm        label       "Shop Path"         export      all     }       parm {      name        "script"            baseparm        label       "Script"            export      all     }       parm {      name        "clear"             baseparm        label       "Re-load VEX Functions"             export      all     }       parm {      name        "vop_compiler"      baseparm        label       "Compiler"          export      none    }       parm {      name        "vop_forcecompile"          baseparm        label       "Force Compile"             export      none    }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_multithread"           baseparm        label       "Enable Multithreading"             export      none    }     }      group {    name    "stdswitcher3_1"        label   "Attribute Bindings"    parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }       parm {      name        "vex_inplace"       baseparm        label       "Compute Results In Place"          export      none    }       parm {      name        "vex_selectiongroup"        baseparm        label       "Output Selection Group"            export      none    }     }      parm {     name    "ptnum"         label   "Point Number"  type    integer         invisible       default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "vtxnum"        label   "Vertex Number"         type    integer         invisible       default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "primnum"       label   "Primitive Number"      type    integer         invisible       default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "id"    label   "Id"    type    integer         invisible       default { "-1" }        range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "numpt"         label   "Number of Points"      type    integer         invisible       default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "numvtx"        label   "Number of Vertices"    type    integer         invisible       default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "numprim"       label   "Number of Prims"       type    integer         invisible       default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "Time"  label   "Time"  type    float   invisible       default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "TimeInc"       label   "Time Inc"      type    float   invisible       default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "Frame"         label   "Frame"         type    float   invisible       default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "life"  label   "Life"  type    float   invisible       default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "age"   label   "Age"   type    float   invisible       default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput2"      label   "Second Input"  type    string  invisible       default { "" }  parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput3"      label   "Third Input"   type    string  invisible       default { "" }  parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput4"      label   "Fourth Input"  type    string  invisible       default { "" }  parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput1"      label   "First Input"   type    string  invisible       default { "" }  parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "uv"    label   "UV"    type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "P"     label   "P"     type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "v"     label   "Velocity"      type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "force"         label   "Force"         type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "Cd"    label   "Cd"    type    float   invisible       size    3       default { "1" "1" "1" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "N"     label   "N"     type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "pt_0"  label   "pt_0"  type    integer         default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "pt_1"  label   "pt_1"  type    integer         default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "pt_2"  label   "pt_2"  type    integer         default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     } ' $_obj_geo1_trans_by_pt
 opparm $_obj_geo1_trans_by_pt  bindings ( 0 ) groupbindings ( 0 )
 opparm -V 16.0.633 $_obj_geo1_trans_by_pt pt_1 ( 1 ) pt_2 ( 2 )
 opcolor -c 1 1 0.60000002384185791 $_obj_geo1_trans_by_pt
@@ -5079,6 +5093,7 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
     <toolMenuContext name="network">
       <contextOpType>Sop/attribwrangle</contextOpType>
     </toolMenuContext>
+    <toolSubmenu>kaTools/attribwrangle</toolSubmenu>
     <script scriptType="python"><![CDATA[
 import sys
 import toolutils
@@ -5667,5 +5682,1370 @@ opcf $saved_path
 '''
 hou.hscript(h_preamble + h_extra_args + h_cmd)
 ]]></script>
+  </tool>
+
+  <tool name="attribwrangle0" label="rev_slerp" icon="SOP_attribwrangle">
+    <helpURL>operator:Sop/attribwrangle</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/attribwrangle</contextOpType>
+    </toolMenuContext>
+    <toolSubmenu>kaTools/attribwrangle</toolSubmenu>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('attribwrangle'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_rev_slerp (Sop/attribwrangle)
+set _obj_geo1_rev_slerp = `run("opadd -e -n -v attribwrangle rev_slerp")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_rev_slerp
+opspareds '    group {  name    "folder1"       label   "Code"          parm {      name        "group"             baseparm        label       "Group"             export      none        bindselector points "Modify Points"                 "Select the points to affect and press Enter to complete."              0 1 0xffffffff 0 grouptype 0    }       parm {      name        "grouptype"         baseparm        label       "Group Type"        export      none    }       parm {      name        "class"             baseparm        label       "Run Over"          export      none    }       parm {      name        "vex_numcount"      baseparm        label       "Number Count"      export      none    }       parm {      name        "vex_threadjobsize"         baseparm        label       "Thread Job Size"           export      none    }       parm {      name        "snippet"           baseparm        label       "VEXpression"       export      all     }       parm {      name        "exportlist"        baseparm        label       "Attributes to Create"      export      none    }       parm {      name        "vex_strict"        baseparm        label       "Enforce Prototypes"        export      none    }     }      group {    name    "folder1_1"     label   "Bindings"      parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }       parm {      name        "vex_inplace"       baseparm        label       "Compute Results In Place"          export      none    }       parm {      name        "vex_selectiongroup"        baseparm        label       "Output Selection Group"            export      none    }     }      parm {     name    "bias"  label   "Bias"  type    float   default { "0" }         range   { 0 1 }     } ' $_obj_geo1_rev_slerp
+opparm $_obj_geo1_rev_slerp  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_rev_slerp snippet ( 'float qdotproduct(vector4 q1, q2)\n{\n    return q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;\n}\n\nvector4 qnormalize(vector4 q)\n{\n    int len = len(q);\n    float sum=0;\n    for(int i = 0; i < len; i++)\n    {\n        sum += pow(q[i],2);\n    }\n    sum = pow(sum,0.5);\n    \n    return q/sum;\n}\n\nvector4 q1 = p@orient;\nq1 = qnormalize(q1);\nvector4 q2 = p@opinput1_orient;\nq2 = qnormalize(q2);\nfloat dot = qdotproduct(q1, q2);\n\nif(dot>0)\n{\n    q2 = -q2;\n    dot = -dot;\n}\n\n\nfloat theta = acos(dot);\ntheta = theta * ch("bias");\n\nvector4 q3 = q2 - q1 * dot;\nq3 = qnormalize(q3);\n\np@orient = q1 * cos(theta) + q3 * sin(theta);\n' ) bias ( 1 )
+opcolor -c 1 0.80000001192092896 0 $_obj_geo1_rev_slerp
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_rev_slerp
+opexprlanguage -s hscript $_obj_geo1_rev_slerp
+opuserdata -n '___Version___' -v '' $_obj_geo1_rev_slerp
+opset -p on $_obj_geo1_rev_slerp
+
+opcf $arg1
+opwire -n $_obj_geo1_attribwrangle1 -0 $_obj_geo1_rev_slerp
+opwire -n $_obj_geo1_transform1 -1 $_obj_geo1_rev_slerp
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_rev_slerp
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_rev_slerp
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="attribwrangle1" label="ka_slerp" icon="SOP_attribwrangle">
+    <helpURL>operator:Sop/attribwrangle</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/attribwrangle</contextOpType>
+    </toolMenuContext>
+    <toolSubmenu>kaTools/attribwrangle</toolSubmenu>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('attribwrangle'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_slerp (Sop/attribwrangle)
+set _obj_geo1_slerp = `run("opadd -e -n -v attribwrangle slerp")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_slerp
+opspareds '    group {  name    "folder1"       label   "Code"          parm {      name        "group"             baseparm        label       "Group"             export      none        bindselector points "Modify Points"                 "Select the points to affect and press Enter to complete."              0 1 0xffffffff 0 grouptype 0    }       parm {      name        "grouptype"         baseparm        label       "Group Type"        export      none    }       parm {      name        "class"             baseparm        label       "Run Over"          export      none    }       parm {      name        "vex_numcount"      baseparm        label       "Number Count"      export      none    }       parm {      name        "vex_threadjobsize"         baseparm        label       "Thread Job Size"           export      none    }       parm {      name        "snippet"           baseparm        label       "VEXpression"       export      all     }       parm {      name        "exportlist"        baseparm        label       "Attributes to Create"      export      none    }       parm {      name        "vex_strict"        baseparm        label       "Enforce Prototypes"        export      none    }     }      group {    name    "folder1_1"     label   "Bindings"      parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }       parm {      name        "vex_inplace"       baseparm        label       "Compute Results In Place"          export      none    }       parm {      name        "vex_selectiongroup"        baseparm        label       "Output Selection Group"            export      none    }     }      parm {     name    "bias"  label   "Bias"  type    float   default { "0" }         range   { 0 1 }     } ' $_obj_geo1_slerp
+opparm $_obj_geo1_slerp  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_slerp snippet ( 'p@orient = slerp(p@orient, p@opinput1_orient,ch("bias"));' )
+opcolor -c 1 0.80000001192092896 0 $_obj_geo1_slerp
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_slerp
+opexprlanguage -s hscript $_obj_geo1_slerp
+opuserdata -n '___Version___' -v '' $_obj_geo1_slerp
+opuserdata -n '___toolcount___' -v '6' $_obj_geo1_slerp
+opuserdata -n '___toolid___' -v 'attribwrangle1' $_obj_geo1_slerp
+opset -p on $_obj_geo1_slerp
+
+opcf $arg1
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_slerp
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_slerp
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="attribwrangle2" label="ndc_culling" icon="SOP_attribwrangle">
+    <helpURL>operator:Sop/attribwrangle</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/attribwrangle</contextOpType>
+    </toolMenuContext>
+    <toolSubmenu>kaTools/attribwrangle</toolSubmenu>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('attribwrangle'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_ndc_culling (Sop/attribwrangle)
+set _obj_geo1_ndc_culling = `run("opadd -e -n -v attribwrangle ndc_culling")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_ndc_culling
+opspareds '    group {  name    "folder1"       label   "Code"          parm {      name        "group"             baseparm        label       "Group"             export      none        bindselector points "Modify Points"                 "Select the points to affect and press Enter to complete."              0 1 0xffffffff 0 grouptype 0    }       parm {      name        "grouptype"         baseparm        label       "Group Type"        export      none    }       parm {      name        "class"             baseparm        label       "Run Over"          export      none    }       parm {      name        "vex_numcount"      baseparm        label       "Number Count"      export      none    }       parm {      name        "vex_threadjobsize"         baseparm        label       "Thread Job Size"           export      none    }       parm {      name        "snippet"           baseparm        label       "VEXpression"       export      all     }       parm {      name        "exportlist"        baseparm        label       "Attributes to Create"      export      none    }       parm {      name        "vex_strict"        baseparm        label       "Enforce Prototypes"        export      none    }     }      group {    name    "folder1_1"     label   "Bindings"      parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }       parm {      name        "vex_inplace"       baseparm        label       "Compute Results In Place"          export      none    }       parm {      name        "vex_selectiongroup"        baseparm        label       "Output Selection Group"            export      none    }     }      parm {     name    "uvxx"  label   "Uvxx"  type    float   joinnext        default { "0" }         range   { 0 1 }     }     parm {        name    "uvxy"  label   "Uvxy"  type    float   default { "0" }         range   { 0 1 }     }     parm {        name    "uvyx"  label   "Uvyx"  type    float   joinnext        default { "0" }         range   { 0 1 }     }     parm {        name    "uvyy"  label   "Uvyy"  type    float   default { "0" }         range   { 0 1 }     }     parm {        name    "uvzx"  label   "Uvzx"  type    float   joinnext        default { "0" }         range   { 0 1 }     }     parm {        name    "uvzy"  label   "Uvzy"  type    float   default { "0" }         range   { 0 1 }     }     parm {        name    "cam"   label   "Cam"   type    string  default { "" }     } ' $_obj_geo1_ndc_culling
+opparm $_obj_geo1_ndc_culling  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_ndc_culling snippet ( 'vector ndcP = toNDC(chs("cam"),@P);\n\nif(ndcP.x<ch("uvxx") || ndcP.x>ch("uvxy"))removepoint(geoself(),@ptnum);\nelse if(ndcP.y<ch("uvyx") || ndcP.y>1+ch("uvyy"))removepoint(geoself(),@ptnum);\nelse if(ndcP.z<ch("uvzx") || ndcP.z>1+ch("uvzy"))removepoint(geoself(),@ptnum);' )
+opcolor -c 1 0.80000001192092896 0 $_obj_geo1_ndc_culling
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_ndc_culling
+opexprlanguage -s hscript $_obj_geo1_ndc_culling
+opuserdata -n '___Version___' -v '' $_obj_geo1_ndc_culling
+opset -p on $_obj_geo1_ndc_culling
+
+opcf $arg1
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_ndc_culling
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_ndc_culling
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="attribwrangle3" label="del_by_atr_list" icon="SOP_attribwrangle">
+    <helpURL>operator:Sop/attribwrangle</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/attribwrangle</contextOpType>
+    </toolMenuContext>
+    <toolSubmenu>kaTools/attribwrangle</toolSubmenu>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('attribwrangle'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_del_by_atr_list (Sop/attribwrangle)
+set _obj_geo1_del_by_atr_list = `run("opadd -e -n -v attribwrangle del_by_atr_list")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_del_by_atr_list
+opspareds '    group {  name    "folder1"       label   "Code"          parm {      name        "group"             baseparm        label       "Group"             export      none        bindselector points "Modify Points"                 "Select the points to affect and press Enter to complete."              0 1 0xffffffff 0 grouptype 0    }       parm {      name        "grouptype"         baseparm        label       "Group Type"        export      none    }       parm {      name        "class"             baseparm        label       "Run Over"          export      none    }       parm {      name        "vex_numcount"      baseparm        label       "Number Count"      export      none    }       parm {      name        "vex_threadjobsize"         baseparm        label       "Thread Job Size"           export      none    }       parm {      name        "snippet"           baseparm        label       "VEXpression"       export      all     }       parm {      name        "exportlist"        baseparm        label       "Attributes to Create"      export      none    }       parm {      name        "vex_strict"        baseparm        label       "Enforce Prototypes"        export      none    }     }      group {    name    "folder1_1"     label   "Bindings"      parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }       parm {      name        "vex_inplace"       baseparm        label       "Compute Results In Place"          export      none    }       parm {      name        "vex_selectiongroup"        baseparm        label       "Output Selection Group"            export      none    }     }      parm {     name    "val_list"      label   "Val List"      type    string  default { "" }     }     parm {         name    "atr"   label   "Atr"   type    string  default { "" }     } ' $_obj_geo1_del_by_atr_list
+opparm $_obj_geo1_del_by_atr_list  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_del_by_atr_list snippet ( 'string vals = chs("val_list");\nstring valList[] = split(vals, " ");\nint len = len(valList);\n\nfor(int i =0; i < len; i++)\n{\n    if(i@`chs("atr")`==atoi(valList[i]))\n    {\n        removepoint(geoself(),@ptnum);\n    }\n}' ) atr ( id )
+opcolor -c 1 0.80000001192092896 0 $_obj_geo1_del_by_atr_list
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_del_by_atr_list
+opexprlanguage -s hscript $_obj_geo1_del_by_atr_list
+opuserdata -n '___Version___' -v '' $_obj_geo1_del_by_atr_list
+opset -p on $_obj_geo1_del_by_atr_list
+
+opcf $arg1
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_del_by_atr_list
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_del_by_atr_list
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="attribwrangle4" label="del_by_atr_list_run_over_detail" icon="SOP_attribwrangle">
+    <helpURL>operator:Sop/attribwrangle</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/attribwrangle</contextOpType>
+    </toolMenuContext>
+    <toolSubmenu>kaTools/attribwrangle</toolSubmenu>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('attribwrangle'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_del_by_atr_list_run_over_detail (Sop/attribwrangle)
+set _obj_geo1_del_by_atr_list_run_over_detail = `run("opadd -e -n -v attribwrangle del_by_atr_list_run_over_detail")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_del_by_atr_list_run_over_detail
+opspareds '    group {  name    "folder1"       label   "Code"          parm {      name        "group"             baseparm        label       "Group"             export      none        bindselector points "Modify Points"                 "Select the points to affect and press Enter to complete."              0 1 0xffffffff 0 grouptype 0    }       parm {      name        "grouptype"         baseparm        label       "Group Type"        export      none    }       parm {      name        "class"             baseparm        label       "Run Over"          export      none    }       parm {      name        "vex_numcount"      baseparm        label       "Number Count"      export      none    }       parm {      name        "vex_threadjobsize"         baseparm        label       "Thread Job Size"           export      none    }       parm {      name        "snippet"           baseparm        label       "VEXpression"       export      all     }       parm {      name        "exportlist"        baseparm        label       "Attributes to Create"      export      none    }       parm {      name        "vex_strict"        baseparm        label       "Enforce Prototypes"        export      none    }     }      group {    name    "folder1_1"     label   "Bindings"      parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }       parm {      name        "vex_inplace"       baseparm        label       "Compute Results In Place"          export      none    }       parm {      name        "vex_selectiongroup"        baseparm        label       "Output Selection Group"            export      none    }     }      parm {     name    "val_list"      label   "Val List"      type    string  default { "" }     }     parm {         name    "atr"   label   "Atr"   type    string  default { "" }     } ' $_obj_geo1_del_by_atr_list_run_over_detail
+opparm $_obj_geo1_del_by_atr_list_run_over_detail  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_del_by_atr_list_run_over_detail class ( detail ) snippet ( 'string vals = chs("val_list");\nstring valList[] = split(vals, " ");\nint len = len(valList);\n\nfor(int i =0; i < len; i++)\n{\n    int pt = findattribval(0,"point",chs("atr"),atoi(valList[i]));\n    removepoint(geoself(),pt);\n\n}' ) atr ( id )
+opcolor -c 1 0.80000001192092896 0 $_obj_geo1_del_by_atr_list_run_over_detail
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_del_by_atr_list_run_over_detail
+opexprlanguage -s hscript $_obj_geo1_del_by_atr_list_run_over_detail
+opuserdata -n '___Version___' -v '' $_obj_geo1_del_by_atr_list_run_over_detail
+opset -p on $_obj_geo1_del_by_atr_list_run_over_detail
+
+opcf $arg1
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_del_by_atr_list_run_over_detail
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_del_by_atr_list_run_over_detail
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="attribwrangle5" label="rotate_rbd" icon="SOP_attribwrangle">
+    <helpURL>operator:Sop/attribwrangle</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/attribwrangle</contextOpType>
+    </toolMenuContext>
+    <toolSubmenu>kaTools/attribwrangle</toolSubmenu>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('attribwrangle'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_rotate_rbd (Sop/attribwrangle)
+set _obj_geo1_rotate_rbd = `run("opadd -e -n -v attribwrangle rotate_rbd")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_rotate_rbd
+opparm $_obj_geo1_rotate_rbd  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_rotate_rbd snippet ( '@P = qrotate(p@orient,(@P - v@pivot)) + v@packP;' )
+opcolor -c 1 0.80000001192092896 0 $_obj_geo1_rotate_rbd
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_rotate_rbd
+opexprlanguage -s hscript $_obj_geo1_rotate_rbd
+opuserdata -n '___Version___' -v '' $_obj_geo1_rotate_rbd
+opset -p on $_obj_geo1_rotate_rbd
+
+opcf $arg1
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_rotate_rbd
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_rotate_rbd
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="attribwrangle6" label="del_randomly" icon="SOP_attribwrangle">
+    <helpURL>operator:Sop/attribwrangle</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/attribwrangle</contextOpType>
+    </toolMenuContext>
+    <toolSubmenu>kaTools/attribwrangle</toolSubmenu>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('attribwrangle'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_del_randomly (Sop/attribwrangle)
+set _obj_geo1_del_randomly = `run("opadd -e -n -v attribwrangle del_randomly")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_del_randomly
+opspareds '    group {  name    "folder1"       label   "Code"          parm {      name        "group"             baseparm        label       "Group"             export      none        bindselector points "Modify Points"                 "Select the points to affect and press Enter to complete."              0 1 0xffffffff 0 grouptype 0    }       parm {      name        "grouptype"         baseparm        label       "Group Type"        export      none    }       parm {      name        "class"             baseparm        label       "Run Over"          export      none    }       parm {      name        "vex_numcount"      baseparm        label       "Number Count"      export      none    }       parm {      name        "vex_threadjobsize"         baseparm        label       "Thread Job Size"           export      none    }       parm {      name        "snippet"           baseparm        label       "VEXpression"       export      all     }       parm {      name        "exportlist"        baseparm        label       "Attributes to Create"      export      none    }       parm {      name        "vex_strict"        baseparm        label       "Enforce Prototypes"        export      none    }     }      group {    name    "folder1_1"     label   "Bindings"      parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }       parm {      name        "vex_inplace"       baseparm        label       "Compute Results In Place"          export      none    }       parm {      name        "vex_selectiongroup"        baseparm        label       "Output Selection Group"            export      none    }     }      parm {     name    "seed"  label   "Seed"  type    float   default { "0" }         range   { 0 1 }     }     parm {        name    "keep_rate"     label   "Keep Rate"     type    float   default { "0" }         range   { 0 1 }     } ' $_obj_geo1_del_randomly
+opparm $_obj_geo1_del_randomly  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_del_randomly snippet ( 'float rand = rand((i@id + ch("seed")+0.21) + (ch("seed")));\n\nif(rand > ch("keep_rate"))removepoint(geoself(),@ptnum);' )
+opcolor -c 1 0.80000001192092896 0 $_obj_geo1_del_randomly
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_del_randomly
+opexprlanguage -s hscript $_obj_geo1_del_randomly
+opuserdata -n '___Version___' -v '' $_obj_geo1_del_randomly
+opset -p on $_obj_geo1_del_randomly
+
+opcf $arg1
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_del_randomly
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_del_randomly
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="attribwrangle7" label="extract_n_up_from_orient" icon="SOP_attribwrangle">
+    <helpURL>operator:Sop/attribwrangle</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/attribwrangle</contextOpType>
+    </toolMenuContext>
+    <toolSubmenu>kaTools/attribwrangle</toolSubmenu>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('attribwrangle'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_extract_n_up_from_orient (Sop/attribwrangle)
+set _obj_geo1_extract_n_up_from_orient = `run("opadd -e -n -v attribwrangle extract_n_up_from_orient")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_extract_n_up_from_orient
+opparm $_obj_geo1_extract_n_up_from_orient  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_extract_n_up_from_orient snippet ( 'v@up = {0,1,0};\n@N = {0,0,1};\nv@up = qrotate(p@orient, v@up);\n@N = qrotate(p@orient, @N);' )
+opcolor -c 1 0.80000001192092896 0 $_obj_geo1_extract_n_up_from_orient
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_extract_n_up_from_orient
+opexprlanguage -s hscript $_obj_geo1_extract_n_up_from_orient
+opuserdata -n '___Version___' -v '' $_obj_geo1_extract_n_up_from_orient
+opset -p on $_obj_geo1_extract_n_up_from_orient
+
+opcf $arg1
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_extract_n_up_from_orient
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_extract_n_up_from_orient
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="attribwrangle8" label="fit" icon="SOP_attribwrangle">
+    <helpURL>operator:Sop/attribwrangle</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/attribwrangle</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('attribwrangle'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_fit (Sop/attribwrangle)
+set _obj_geo1_fit = `run("opadd -e -n -v attribwrangle fit")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_fit
+opspareds '    group {  name    "folder1"       label   "Code"          parm {      name        "group"             baseparm        label       "Group"             export      none        bindselector points "Modify Points"                 "Select the points to affect and press Enter to complete."              0 1 0xffffffff 0 grouptype 0    }       parm {      name        "grouptype"         baseparm        label       "Group Type"        export      none    }       parm {      name        "class"             baseparm        label       "Run Over"          export      none    }       parm {      name        "vex_numcount"      baseparm        label       "Number Count"      export      none    }       parm {      name        "vex_threadjobsize"         baseparm        label       "Thread Job Size"           export      none    }       parm {      name        "snippet"           baseparm        label       "VEXpression"       export      all     }       parm {      name        "exportlist"        baseparm        label       "Attributes to Create"      export      none    }       parm {      name        "vex_strict"        baseparm        label       "Enforce Prototypes"        export      none    }     }      group {    name    "folder1_1"     label   "Bindings"      parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }       parm {      name        "vex_inplace"       baseparm        label       "Compute Results In Place"          export      none    }       parm {      name        "vex_selectiongroup"        baseparm        label       "Output Selection Group"            export      none    }     }      parm {     name    "min"   label   "Min"   type    float   default { "0" }         range   { 0 1 }     }     parm {        name    "max"   label   "Max"   type    float   default { "0" }         range   { 0 1 }     }     parm {        name    "remap_grad"    label   "Remap Grad"    type    ramp_flt        default { "2" }         range   { 1! 10 }     } ' $_obj_geo1_fit
+opparm $_obj_geo1_fit  bindings ( 0 ) groupbindings ( 0 ) remap_grad ( 2 )
+opparm $_obj_geo1_fit snippet ( 'float grad = fit(@P.y,ch("min"),ch("max"),0,1);\ngrad = chramp("remap_grad",grad);' ) max ( 1 ) remap_grad2pos ( 1 ) remap_grad2value ( 1 )
+opcolor -c 1 0.80000001192092896 0 $_obj_geo1_fit
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_fit
+opexprlanguage -s hscript $_obj_geo1_fit
+opuserdata -n '___Version___' -v '' $_obj_geo1_fit
+opset -p on $_obj_geo1_fit
+
+opcf $arg1
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_fit
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_fit
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="tool_1" label="New Tool" icon="PLASMA_App">
+    <toolMenuContext name="network">
+      <contextOpType>Sop/attribwrangle</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[nodes = hou.selectedNodes()
+
+for node in nodes:
+    if node.type().name() == "attribwrangle":
+        parm = node.parm("snippet")
+        exp = parm.eval()
+        print exp
+        parm.set(exp + "\nfloat grad = fit(@P.y,ch(\"min\"),ch(\"max\"),0,1);\ngrad = chramp(\"remap_grad\",grad);")]]></script>
   </tool>
 </shelfDocument>
