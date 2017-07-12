@@ -46,6 +46,22 @@ changePath.relToAbs(kwargs)
         </scriptCode>
       </scriptItem>
       
+
+      <scriptItem id="saveExpression">
+        <label>saveExpression</label>
+      <context>
+      <networkCategory>Sop</networkCategory>
+      </context>
+        <scriptCode>
+        <![CDATA[
+import addExpression
+reload(addExpression)
+addExpression.saveXML(kwargs)
+]]>
+        </scriptCode>
+      </scriptItem>
+
+
       <scriptMenuStripDynamic  id="addExpression">
         <label>addExpression</label>
       <context>
@@ -56,8 +72,8 @@ changePath.relToAbs(kwargs)
 import addExpression
 
 reload(addExpression)
-
-menus = addExpression.readXML()
+preset = addExpression.wranglePrest()
+menus = preset.readXML()
 return menus
 ]]>
         </contentsScriptCode>
@@ -68,7 +84,7 @@ import addExpression
 
 reload(addExpression)
 
-expression = addExpression.paste(kwargs)
+expression = preset.paste(kwargs)
 
 print expression
 ]]>
