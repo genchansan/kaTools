@@ -42,7 +42,7 @@ eventCallBack.execute(hou.node("/"))]]></script>
 sanityCheck.execute(hou.node("/"))]]></script>
   </tool>
 
-  <tool name="connect" label="Connect" icon="PLASMA_App">
+  <tool name="connect" label="Connect" icon="SOP_join">
     <script scriptType="python"><![CDATA[import connectNodes
 
 connectNodes.execute()]]></script>
@@ -321,7 +321,7 @@ changeUpdateMode.execute()]]></script>
 copyRamp.execute()]]></script>
   </tool>
 
-  <tool name="gotToCam" label="gotToCam" icon="PLASMA_App">
+  <tool name="gotToCam" label="gotToCam" icon="OBJ_camera">
     <script scriptType="python"><![CDATA[import goToCam
 
 goToCam.executeAL()]]></script>
@@ -1470,7 +1470,7 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
 ]]></script>
   </tool>
 
-  <tool name="colorize" label="colorize" icon="PLASMA_App">
+  <tool name="colorize" label="colorize" icon="SOP_color">
     <script scriptType="python"><![CDATA[import colorize
 
 colorize.execute()]]></script>
@@ -1490,7 +1490,7 @@ reload(recursiveReferenceCopy)
 recursiveReferenceCopy.execute()]]></script>
   </tool>
 
-  <tool name="disconnectOutputNodes" label="disconnectOutputNodes" icon="PLASMA_App">
+  <tool name="disconnectOutputNodes" label="disconnectOutputNodes" icon="SOP_join">
     <script scriptType="python"><![CDATA[import disconnectOutputNodes
 
 disconnectOutputNodes.execute()]]></script>

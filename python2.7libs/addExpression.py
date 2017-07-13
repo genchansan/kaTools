@@ -25,6 +25,7 @@ class wranglePreset:
 	def handleStartElement(self, name, attrs):
 		if name == "set":
 			self.menus.append(attrs["name"])
+			self.menus.append(attrs["name"])
 			print 'Start element:', name, attrs
 	def handleEndElement(self, name):
 		print 'End element:', name
@@ -34,8 +35,7 @@ class wranglePreset:
 		root = self.tree.getroot()
 		expression = root.find("./set[@name='" + kwargs["selectedlabel"] +"']").find('expression').text
 
-		self.parser.ParseFile(open(self.XMLPath, "r"))
-		print self.menus
+		
 
 		kwargs["parms"][0].set(kwargs["parms"][0].eval() + expression)
 
@@ -48,13 +48,18 @@ class wranglePreset:
 
 
 	def readXML(self):
+		'''
 		root = self.tree.getroot()
 		menus = []
 		for menuset in root:
 			menus.append(menuset.attrib[("name")])
 			menus.append(menuset.attrib[("name")])
+		'''
 
-		return menus
+		self.parser.ParseFile(open(self.XMLPath, "r"))
+		self.menus
+
+		return self.menus
 
 
 	def saveXML(self,kwargs):
