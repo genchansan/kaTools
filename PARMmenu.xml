@@ -56,7 +56,7 @@ changePath.relToAbs(kwargs)
         <![CDATA[
 import addExpression
 reload(addExpression)
-preset = addExpression.wranglePreset()
+preset = addExpression.wranglePreset(2)
 preset.saveXML(kwargs)
 ]]>
         </scriptCode>
@@ -73,8 +73,8 @@ preset.saveXML(kwargs)
 import addExpression
 
 reload(addExpression)
-preset = addExpression.wranglePreset()
-menus = preset.readXML()
+preset = addExpression.wranglePreset(0)
+menus = preset.makeMenus()
 return menus
 ]]>
         </contentsScriptCode>
@@ -84,7 +84,7 @@ import hou
 import addExpression
 
 reload(addExpression)
-preset = addExpression.wranglePreset()
+preset = addExpression.wranglePreset(1)
 expression = preset.paste(kwargs)
 
 print expression

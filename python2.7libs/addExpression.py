@@ -9,20 +9,25 @@ class wranglePreset:
 	parser = ""
 	menus = []
 
-	def __init__(self):
+	#makeMenus = 0
+	#paste = 1
+	#saveXML = 2
+	#deleteXML = 3
+	def __init__(self, mode):
 		self.XMLPath = hou.expandString("$HOUDINI_PATH").split(";")[-2] + '/expressions.xml'
 		self.tree = ET.parse(self.XMLPath)
 
 		self.parser = ep.ParserCreate("UTF-8")
-		self.parser.CharacterDataHandler = self.handleCharData
-		self.parser.StartElementHandler = self.handleStartElement
-		self.parser.EndElementHandler = self.handleEndElement
+		if mode == 0:
+			#self.parser.CharacterDataHandler = self.handleCharData
+			self.parser.StartElementHandler = self.handleStartElementMakeMenus
+			#self.parser.EndElementHandler = self.handleEndElement
 
 
 
 	def handleCharData(self, data):
 		print 'Character data:', data
-	def handleStartElement(self, name, attrs):
+	def handleStartElementMakeMenus(self, name, attrs):
 		if name == "set":
 			self.menus.append(attrs["name"])
 			self.menus.append(attrs["name"])
@@ -47,7 +52,7 @@ class wranglePreset:
 
 
 
-	def readXML(self):
+	def makeMenus(self):
 		'''
 		root = self.tree.getroot()
 		menus = []
