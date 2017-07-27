@@ -5,21 +5,35 @@
     <subMenu id="kaTools">
       <label>kaTools</label>
       <scriptItem id="getReferencingThis">
-        <label>getReferencingThis</label>
+        <label>get geo referencing this</label>
       <context>
       <networkCategory>Sop</networkCategory>
       </context>
         <scriptCode>
         <![CDATA[
-import absToRel
-reload(absToRel)
-absToRel.execute(kwargs)
+import jumpTpDependency
+reload(jumpTpDependency)
+jumpTpDependency.execute(kwargs)
+]]>
+        </scriptCode>
+      </scriptItem>
+
+      <scriptItem id="getReferencedByThis">
+        <label>get geo referenced by this</label>
+      <context>
+      <networkCategory>Sop</networkCategory>
+      </context>
+        <scriptCode>
+        <![CDATA[
+import jumpTpDependency
+reload(jumpTpDependency)
+jumpTpDependency.findReferencedParm(kwargs)
 ]]>
         </scriptCode>
       </scriptItem>
 
       <scriptItem id="absToRel">
-        <label>absToRel</label>
+        <label>absolute path to relative</label>
       <context>
       <networkCategory>Sop</networkCategory>
       </context>
@@ -33,7 +47,7 @@ changePath.absToRel(kwargs)
       </scriptItem>
 
       <scriptItem id="relToAbs">
-        <label>relToAbs</label>
+        <label>relative path to absolute</label>
       <context>
       <networkCategory>Sop</networkCategory>
       </context>
@@ -45,10 +59,10 @@ changePath.relToAbs(kwargs)
 ]]>
         </scriptCode>
       </scriptItem>
-      
+      <separatorItem/>
 
       <scriptItem id="saveExpression">
-        <label>saveExpression</label>
+        <label>save expression</label>
       <context>
       <networkCategory>Sop</networkCategory>
       </context>
@@ -61,10 +75,10 @@ preset.saveXML(kwargs)
 ]]>
         </scriptCode>
       </scriptItem>
-
+      <separatorItem/>
 
       <scriptMenuStripDynamic  id="addExpression">
-        <label>addExpression</label>
+        <label>add expression</label>
       <context>
       <networkCategory>Sop</networkCategory>
       </context>
@@ -84,10 +98,8 @@ import hou
 import addExpression
 
 reload(addExpression)
-preset = addExpression.wranglePreset(1)
-expression = preset.paste(kwargs)
-
-print expression
+preset = addExpression.wranglePreset(1, kwargs)
+preset.paste(kwargs)
 ]]>
         </scriptCode>
       </scriptMenuStripDynamic>

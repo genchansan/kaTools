@@ -1,15 +1,96 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
 <expressionSets>
-	<set name="mix">
-		<expression>print a</expression>
-	</set>
+  <set name="slerp">
+    <expression><![CDATA[p@orient = slerp(p@orient, p@opinput1_orient,ch("bias"));]]></expression>
+  </set>
+  <set name="delete by attrib val list detail">
+    <expression><![CDATA[string vals = chs("val_list");
+string valList[] = split(vals, " ");
+int len = len(valList);
 
-	<set name="mix1">
-		<expression>
-		<![CDATA[
-print "1"
-		]]>
-		</expression>
-	</set>
+for(int i =0; i < len; i++)
+{
+    int pt = findattribval(0,"point",chs("atr"),atoi(valList[i]));
+    removepoint(geoself(),pt);
+
+}]]></expression>
+  </set>
+  <set name="fit and ramp">
+    <expression><![CDATA[float grad = fit(@P.y,ch("min"),ch("max"),0,1);
+grad = chramp("remap_grad",grad);]]></expression>
+  </set>
+  <set name="extract N and up">
+    <expression><![CDATA[v@up = {0,1,0};
+@N = {0,0,1};
+v@up = qrotate(p@orient, v@up);
+@N = qrotate(p@orient, @N);]]></expression>
+  </set>
+  <set name="delete randomly">
+    <expression><![CDATA[float rand = rand((i@id + ch("seed")+0.21) + (ch("seed")));
+
+if(rand > ch("keep_rate"))removepoint(geoself(),@ptnum);]]></expression>
+  </set>
+  <set name="delete by attrib val list pt">
+    <expression><![CDATA[string vals = chs("val_list");
+string valList[] = split(vals, " ");
+int len = len(valList);
+
+for(int i =0; i < len; i++)
+{
+    if(i@id==atoi(valList[i]))
+    {
+        removepoint(geoself(),@ptnum);
+    }
+}]]></expression>
+  </set>
+  <set name="delete by ndc">
+    <expression><![CDATA[vector ndcP = toNDC(chs("cam"),@P);
+
+if(ndcP.x<ch("uvxx") || ndcP.x>ch("uvxy"))removepoint(geoself(),@ptnum);
+else if(ndcP.y<ch("uvyx") || ndcP.y>1+ch("uvyy"))removepoint(geoself(),@ptnum);
+else if(ndcP.z<ch("uvzx") || ndcP.z>1+ch("uvzy"))removepoint(geoself(),@ptnum);]]></expression>
+  </set>
+  <set name="reverse slerp">
+    <expression><![CDATA[float qdotproduct(vector4 q1, q2)
+{
+    return q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
+}
+
+vector4 qnormalize(vector4 q)
+{
+    int len = len(q);
+    float sum=0;
+    for(int i = 0; i < len; i++)
+    {
+        sum += pow(q[i],2);
+    }
+    sum = pow(sum,0.5);
+    
+    return q/sum;
+}
+
+vector4 q1 = p@orient;
+q1 = qnormalize(q1);
+vector4 q2 = p@opinput1_orient;
+q2 = qnormalize(q2);
+float dot = qdotproduct(q1, q2);
+
+if(dot>0)
+{
+    q2 = -q2;
+    dot = -dot;
+}
+
+
+float theta = acos(dot);
+theta = theta * ch("bias");
+
+vector4 q3 = q2 - q1 * dot;
+q3 = qnormalize(q3);
+
+p@orient = q1 * cos(theta) + q3 * sin(theta);
+]]></expression>
+  </set>
+  <set name="rotate packed rbd">
+    <expression><![CDATA[@P = qrotate(p@orient,(@P - v@pivot)) + v@packP;]]></expression>
+  </set>
 </expressionSets>
