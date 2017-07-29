@@ -93,4 +93,36 @@ p@orient = q1 * cos(theta) + q3 * sin(theta);
   <set name="rotate packed rbd">
     <expression><![CDATA[@P = qrotate(p@orient,(@P - v@pivot)) + v@packP;]]></expression>
   </set>
+  <set name="volume sample">
+    <expression><![CDATA[int in = 1;
+
+float sample = volumesample(in,"collision",@P);
+vector grad = volumegradient(in,"collision",@P);]]></expression>
+  </set>
+  <set name="create id">
+    <expression><![CDATA[i@id = @ptnum;]]></expression>
+  </set>
+  <set name="add poins">
+    <expression><![CDATA[addpoint(geoself(),{0,0,0});]]></expression>
+  </set>
+  <set name="alphabet">
+    <expression><![CDATA[string alphabet[] = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
+]]></expression>
+  </set>
+  <set name="fit rand">
+    <expression><![CDATA[float rand = rand((i@id + ch("seed")+0.21) + (ch("seed")));
+
+rand= chramp("remap_grad",rand);
+rand = fit01(rand,ch("min"),ch("max"));
+
+]]></expression>
+  </set>
+  <set name="rand">
+    <expression><![CDATA[float rand = rand((@ptnum + ch("seed")+0.21) + (ch("seed")));
+
+]]></expression>
+  </set>
+  <set name="initialize v">
+    <expression><![CDATA[@v = set(chv("init"));]]></expression>
+  </set>
 </expressionSets>
