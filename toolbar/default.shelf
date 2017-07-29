@@ -25,6 +25,7 @@
     <memberTool name="subnet3"/>
     <memberTool name="opencl"/>
     <memberTool name="geo"/>
+    <memberTool name="GET_all_frames_geo"/>
   </toolshelf>
 
   <tool name="add_event_when_created" label="add_event_when_created" icon="PLASMA_App">
