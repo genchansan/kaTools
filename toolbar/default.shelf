@@ -25,7 +25,7 @@
     <memberTool name="subnet3"/>
     <memberTool name="opencl"/>
     <memberTool name="geo"/>
-    <memberTool name="GET_all_frames_geo"/>
+    <memberTool name="geo0"/>
   </toolshelf>
 
   <tool name="add_event_when_created" label="add_event_when_created" icon="PLASMA_App">
@@ -7293,6 +7293,390 @@ if ($argc >= 5 && "$arg4" != "") then
 endif
 if ($argc >= 6 && "$arg6" != "") then
     set input = $_obj_geo1
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="geo0" label="sc_crowd" icon="OBJ_geo">
+    <helpURL>operator:Object/geo</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Object/geo</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('geo'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_sc_crowd (Object/geo)
+set _obj_sc_crowd = `run("opadd -e -n -v geo sc_crowd")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_sc_crowd
+opspareds '    group { 	name	"stdswitcher4" 	label	"Transform"  	parm { 	    name	"xOrd" 	    baseparm 	    label	"Transform Order" 	    joinnext 	    export	none 	} 	parm { 	    name	"rOrd" 	    baseparm 	    label	"Rotate Order" 	    export	none 	} 	parm { 	    name	"t" 	    baseparm 	    label	"Translate" 	    export	all 	} 	parm { 	    name	"r" 	    baseparm 	    label	"Rotate" 	    export	all 	} 	parm { 	    name	"s" 	    baseparm 	    label	"Scale" 	    export	none 	} 	parm { 	    name	"p" 	    baseparm 	    label	"Pivot" 	    export	none 	} 	parm { 	    name	"scale" 	    baseparm 	    label	"Uniform Scale" 	    export	none 	} 	parm { 	    name	"pre_xform" 	    baseparm 	    label	"Modify Pre-Transform" 	    export	none 	} 	parm { 	    name	"keeppos" 	    baseparm 	    label	"Keep Position When Parenting" 	    export	none 	} 	parm { 	    name	"childcomp" 	    baseparm 	    label	"Child Compensation" 	    export	none 	} 	parm { 	    name	"constraints_on" 	    baseparm 	    label	"Enable Constraints" 	    export	none 	} 	parm { 	    name	"constraints_path" 	    baseparm 	    label	"Constraints" 	    export	none 	} 	parm { 	    name	"lookatpath" 	    baseparm 	    label	"Look At" 	    invisible 	    export	none 	} 	parm { 	    name	"lookupobjpath" 	    baseparm 	    label	"Look Up Object" 	    invisible 	    export	none 	} 	parm { 	    name	"lookup" 	    baseparm 	    label	"Look At Up Vector" 	    invisible 	    export	none 	} 	parm { 	    name	"pathobjpath" 	    baseparm 	    label	"Path Object" 	    invisible 	    export	none 	} 	parm { 	    name	"roll" 	    baseparm 	    label	"Roll" 	    invisible 	    export	none 	} 	parm { 	    name	"pos" 	    baseparm 	    label	"Position" 	    invisible 	    export	none 	} 	parm { 	    name	"uparmtype" 	    baseparm 	    label	"Parameterization" 	    invisible 	    export	none 	} 	parm { 	    name	"pathorient" 	    baseparm 	    label	"Orient Along Path" 	    invisible 	    export	none 	} 	parm { 	    name	"up" 	    baseparm 	    label	"Orient Up Vector" 	    invisible 	    export	none 	} 	parm { 	    name	"bank" 	    baseparm 	    label	"Auto-Bank factor" 	    invisible 	    export	none 	}     }      group { 	name	"stdswitcher4_1" 	label	"Render"  	parm { 	    name	"shop_materialpath" 	    baseparm 	    label	"Material" 	    export	none 	} 	parm { 	    name	"shop_materialopts" 	    baseparm 	    label	"Options" 	    invisible 	    export	none 	} 	parm { 	    name	"tdisplay" 	    baseparm 	    label	"Display" 	    joinnext 	    export	none 	} 	parm { 	    name	"display" 	    baseparm 	    label	"Display" 	    export	none 	} 	parm { 	    name	"viewportlod" 	    label	"Display As" 	    type	ordinal 	    default	{ "full" } 	    help	"Choose how the object\'s geometry should be rendered in the viewport" 	    menu	{ 		"full"	"Full Geometry" 		"points"	"Point Cloud" 		"box"	"Bounding Box" 		"centroid"	"Centroid" 		"hidden"	"Hidden" 		"subd"	"Subdivision Surface / Curves" 	    } 	    parmtag	{ "spare_category" "Render" } 	} 	parm { 	    name	"vm_rendervisibility" 	    label	"Render Visibility" 	    type	string 	    default	{ "*" } 	    menureplace	{ 		"*"	"Visible to all" 		"primary"	"Visible only to primary rays" 		"primary|shadow"	"Visible only to primary and shadow rays" 		"-primary"	"Invisible to primary rays (Phantom)" 		"-diffuse"	"Invisible to diffuse rays" 		"-diffuse&-reflect&-refract"	"Invisible to secondary rays" 		""	"Invisible (Unrenderable)" 	    } 	    parmtag	{ "mantra_class" "object" } 	    parmtag	{ "mantra_name" "rendervisibility" } 	    parmtag	{ "spare_category" "Render" } 	} 	parm { 	    name	"vm_rendersubd" 	    label	"Render Polygons As Subdivision (Mantra)" 	    type	toggle 	    default	{ "0" } 	    parmtag	{ "mantra_class" "object" } 	    parmtag	{ "mantra_name" "rendersubd" } 	    parmtag	{ "spare_category" "Geometry" } 	} 	parm { 	    name	"vm_subdstyle" 	    label	"Subdivision Style" 	    type	string 	    default	{ "mantra_catclark" } 	    hidewhen	"{ vm_rendersubd == 0 }" 	    menu	{ 		"mantra_catclark"	"Mantra Catmull-Clark" 		"osd_catclark"	"OpenSubdiv Catmull-Clark" 	    } 	    parmtag	{ "mantra_class" "object" } 	    parmtag	{ "mantra_name" "subdstyle" } 	    parmtag	{ "spare_category" "Geometry" } 	} 	parm { 	    name	"vm_subdgroup" 	    label	"Subdivision Group" 	    type	string 	    default	{ "" } 	    hidewhen	"{ vm_rendersubd == 0 }" 	    parmtag	{ "mantra_class" "object" } 	    parmtag	{ "mantra_name" "subdgroup" } 	    parmtag	{ "spare_category" "Geometry" } 	} 	group { 	    name	"folder0" 	    label	"Shading"  	    parm { 		name	"categories" 		label	"Categories" 		type	string 		default	{ "" } 		help	"A list of tags which can be used to select the object" 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"reflectmask" 		label	"Reflection Mask" 		type	oplist 		default	{ "*" } 		help	"Objects that will be reflected on this object." 		parmtag	{ "opexpand" "1" } 		parmtag	{ "opfilter" "!!OBJ/GEOMETRY!!" } 		parmtag	{ "oprelative" "/obj" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"refractmask" 		label	"Refraction Mask" 		type	oplist 		default	{ "*" } 		help	"Objects that will be refracted on this object." 		parmtag	{ "opexpand" "1" } 		parmtag	{ "opfilter" "!!OBJ/GEOMETRY!!" } 		parmtag	{ "oprelative" "/obj" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"lightmask" 		label	"Light Mask" 		type	oplist 		default	{ "*" } 		help	"Lights that illuminate this object." 		parmtag	{ "opexpand" "1" } 		parmtag	{ "opfilter" "!!OBJ/LIGHT!!" } 		parmtag	{ "oprelative" "/obj" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"lightcategories" 		label	"Light Selection" 		type	string 		default	{ "*" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"vm_volumefilter" 		label	"Volume Filter" 		type	string 		default	{ "box" } 		menu	{ 		    "box"	"Box Filter" 		    "gaussian"	"Gaussian" 		    "bartlett"	"Bartlett (triangle)" 		    "catrom"	"Catmull-Rom" 		    "hanning"	"Hanning" 		    "blackman"	"Blackman" 		    "sinc"	"Sinc (sharpening)" 		} 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "filter" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"vm_volumefilterwidth" 		label	"Volume Filter Width" 		type	float 		default	{ "1" } 		range	{ 0.001 5 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "filterwidth" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"vm_matte" 		label	"Matte shading" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "matte" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"vm_rayshade" 		label	"Raytrace Shading" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "rayshade" } 		parmtag	{ "spare_category" "Shading" } 	    } 	}  	group { 	    name	"folder0_1" 	    label	"Sampling"  	    parm { 		name	"geo_velocityblur" 		label	"Geometry Velocity Blur" 		type	toggle 		default	{ "0" } 		disablewhen	"{ allowmotionblur == 0 }" 		parmtag	{ "spare_category" "Sampling" } 	    } 	}  	group { 	    name	"folder0_2" 	    label	"Dicing"  	    parm { 		name	"vm_shadingquality" 		label	"Shading Quality" 		type	float 		default	{ "1" } 		range	{ 0 10 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "shadingquality" } 		parmtag	{ "spare_category" "Dicing" } 	    } 	    parm { 		name	"vm_flatness" 		label	"Dicing Flatness" 		type	float 		default	{ "0.05" } 		range	{ 0 1 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "flatness" } 		parmtag	{ "spare_category" "Dicing" } 	    } 	    parm { 		name	"vm_raypredice" 		label	"Ray Predicing" 		type	integer 		default	{ "0" } 		menu	{ 		    "0"	"Disable Predicing" 		    "1"	"Full Predicing" 		    "2"	"Precompute Bounds" 		} 		range	{ 0 10 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "raypredice" } 		parmtag	{ "spare_category" "Dicing" } 	    } 	    parm { 		name	"vm_curvesurface" 		label	"Shade Curves As Surfaces" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "curvesurface" } 		parmtag	{ "spare_category" "Dicing" } 	    } 	}  	group { 	    name	"folder0_3" 	    label	"Geometry"  	    parm { 		name	"vm_rmbackface" 		label	"Backface Removal" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "rmbackface" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"shop_geometrypath" 		label	"Procedural Shader" 		type	oppath 		default	{ "" } 		parmtag	{ "opfilter" "!!SHOP/GEOMETRY!!" } 		parmtag	{ "oprelative" "." } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_forcegeometry" 		label	"Force Procedural Geometry Output" 		type	toggle 		default	{ "1" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_rendersubdcurves" 		label	"Render Polygon Curves As Subdivision (Mantra)" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "rendersubdcurves" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_renderpoints" 		label	"Render As Points (Mantra)" 		type	integer 		default	{ "2" } 		menu	{ 		    "0"	"No Point Rendering" 		    "1"	"Render Only Points" 		    "2"	"Render Unconnected Points" 		} 		range	{ 0 10 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "renderpoints" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_renderpointsas" 		label	"Render Points As (Mantra)" 		type	integer 		default	{ "0" } 		disablewhen	"{ vm_renderpoints == 0 }" 		menu	{ 		    "0"	"Spheres" 		    "1"	"Circles" 		} 		range	{ 0 10 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "renderpointsas" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_usenforpoints" 		label	"Use N For Point Rendering" 		type	toggle 		default	{ "0" } 		disablewhen	"{ vm_renderpoints == 0 }" 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "usenforpoints" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_pointscale" 		label	"Point Scale" 		type	float 		default	{ "1" } 		disablewhen	"{ vm_renderpoints == 0 }" 		range	{ 0! 10 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "pointscale" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_pscalediameter" 		label	"Treat Point Scale as Diameter Instead of Radius" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "pscalediameter" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_metavolume" 		label	"Metaballs as Volume" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "metavolume" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_coving" 		label	"Coving" 		type	integer 		default	{ "1" } 		menu	{ 		    "0"	"Disable Coving" 		    "1"	"Coving for displacement/sub-d" 		    "2"	"Coving for all primitives" 		} 		range	{ 0 10 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "coving" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_materialoverride" 		label	"Material Override" 		type	string 		default	{ "compact" } 		menu	{ 		    "none"	"Disabled" 		    "full"	"Evaluate for Each Primitve/Point" 		    "compact"	"Evaluate Once" 		} 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_overridedetail" 		label	"Ignore Geometry Attribute Shaders" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "overridedetail" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_procuseroottransform" 		label	"Proc Use Root Transform" 		type	toggle 		default	{ "1" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "procuseroottransform" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	}      }      group { 	name	"stdswitcher4_2" 	label	"Misc"  	parm { 	    name	"use_dcolor" 	    baseparm 	    label	"Set Wireframe Color" 	    export	none 	} 	parm { 	    name	"dcolor" 	    baseparm 	    label	"Wireframe Color" 	    export	none 	} 	parm { 	    name	"picking" 	    baseparm 	    label	"Viewport Selecting Enabled" 	    export	none 	} 	parm { 	    name	"pickscript" 	    baseparm 	    label	"Select Script" 	    export	none 	} 	parm { 	    name	"caching" 	    baseparm 	    label	"Cache Object Transform" 	    export	none 	} 	parm { 	    name	"vport_shadeopen" 	    baseparm 	    label	"Shade Open Curves In Viewport" 	    export	none 	} 	parm { 	    name	"vport_displayassubdiv" 	    baseparm 	    label	"Display as Subdivision in Viewport" 	    invisible 	    export	none 	} 	parm { 	    name	"vport_onionskin" 	    baseparm 	    label	"Onion Skinning" 	    export	none 	}     }  ' $_obj_sc_crowd
+opset -S on $_obj_sc_crowd
+opparm -V 16.0.633 $_obj_sc_crowd use_dcolor ( off )
+chautoscope $_obj_sc_crowd +tx +ty +tz +rx +ry +rz +sx +sy +sz
+opset -d on -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -x off $_obj_sc_crowd
+opexprlanguage -s hscript $_obj_sc_crowd
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd
+opcf $_obj_sc_crowd
+
+# Node $_obj_sc_crowd_mountain1 (Sop/mountain::2.0)
+set _obj_sc_crowd_mountain1 = `run("opadd -e -n -v mountain::2.0 mountain1")`
+oplocate -x `$arg2 + 0.247059` -y `$arg3 + 4.3940799999999998` $_obj_sc_crowd_mountain1
+opparm $_obj_sc_crowd_mountain1 height ( 21.600000000000001 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_mountain1
+opexprlanguage -s hscript $_obj_sc_crowd_mountain1
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_mountain1
+opuserdata -n '___toolcount___' -v '20' $_obj_sc_crowd_mountain1
+opuserdata -n '___toolid___' -v 'sop_mountain::2.0' $_obj_sc_crowd_mountain1
+
+# Node $_obj_sc_crowd_crt_targetP (Sop/attribwrangle)
+set _obj_sc_crowd_crt_targetP = `run("opadd -e -n -v attribwrangle crt_targetP")`
+oplocate -x `$arg2 + -2.7342399999999998` -y `$arg3 + -3.35127` $_obj_sc_crowd_crt_targetP
+opparm $_obj_sc_crowd_crt_targetP  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_crt_targetP snippet ( 'v@targetP = v@opinput1_P;' )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_crt_targetP
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_crt_targetP
+opexprlanguage -s hscript $_obj_sc_crowd_crt_targetP
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_crt_targetP
+
+# Node $_obj_sc_crowd_crt_source (Sop/attribwrangle)
+set _obj_sc_crowd_crt_source = `run("opadd -e -n -v attribwrangle crt_source")`
+oplocate -x `$arg2 + -2.7342399999999998` -y `$arg3 + -4.5402400000000007` $_obj_sc_crowd_crt_source
+opparm $_obj_sc_crowd_crt_source  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_crt_source snippet ( 'i@source=1;' )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_crt_source
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_crt_source
+opexprlanguage -s hscript $_obj_sc_crowd_crt_source
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_crt_source
+
+# Node $_obj_sc_crowd_crt_terrain (Sop/attribwrangle)
+set _obj_sc_crowd_crt_terrain = `run("opadd -e -n -v attribwrangle crt_terrain")`
+oplocate -x `$arg2 + 0.244059` -y `$arg3 + -3.8374799999999998` $_obj_sc_crowd_crt_terrain
+opparm $_obj_sc_crowd_crt_terrain  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_crt_terrain snippet ( 'i@terrain=1;' )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_crt_terrain
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_crt_terrain
+opexprlanguage -s hscript $_obj_sc_crowd_crt_terrain
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_crt_terrain
+
+# Node $_obj_sc_crowd_DOP_space_colonization_crowd (Sop/solver)
+set _obj_sc_crowd_DOP_space_colonization_crowd = `run("opadd -e -n -v solver DOP_space_colonization_crowd")`
+oplocate -x `$arg2 + -2.7300900000000001` -y `$arg3 + -8.1926199999999998` $_obj_sc_crowd_DOP_space_colonization_crowd
+opcolor -c 0.40000000596046448 1 1 $_obj_sc_crowd_DOP_space_colonization_crowd
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_DOP_space_colonization_crowd
+opexprlanguage -s hscript $_obj_sc_crowd_DOP_space_colonization_crowd
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_DOP_space_colonization_crowd
+
+# Node $_obj_sc_crowd_attribwrangle1 (Sop/attribwrangle)
+set _obj_sc_crowd_attribwrangle1 = `run("opadd -e -n -v attribwrangle attribwrangle1")`
+oplocate -x `$arg2 + -2.7330899965336175` -y `$arg3 + -9.9643588235294143` $_obj_sc_crowd_attribwrangle1
+opparm $_obj_sc_crowd_attribwrangle1  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_attribwrangle1 snippet ( '@N = normalize(@v);' )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_attribwrangle1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b on $_obj_sc_crowd_attribwrangle1
+opexprlanguage -s hscript $_obj_sc_crowd_attribwrangle1
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_attribwrangle1
+opcf ..
+opcf $_obj_sc_crowd
+
+# Node $_obj_sc_crowd_grid1 (Sop/grid)
+set _obj_sc_crowd_grid1 = `run("opadd -e -n -v grid grid1")`
+oplocate -x `$arg2 + 0.247059` -y `$arg3 + 5.5117199999999995` $_obj_sc_crowd_grid1
+opparm -V 16.0.633 $_obj_sc_crowd_grid1 size ( 50 50 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_grid1
+opexprlanguage -s hscript $_obj_sc_crowd_grid1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_grid1
+
+# Node $_obj_sc_crowd_scatter1 (Sop/scatter::2.0)
+set _obj_sc_crowd_scatter1 = `run("opadd -e -n -v scatter::2.0 scatter1")`
+oplocate -x `$arg2 + 0.24705899999999995` -y `$arg3 + 0.84860730000000006` $_obj_sc_crowd_scatter1
+opparm -V 16.0.633 $_obj_sc_crowd_scatter1 forcetotal ( off )
+opset -d off -r off -h off -f off -y off -t on -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_scatter1
+opexprlanguage -s hscript $_obj_sc_crowd_scatter1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_scatter1
+
+# Node $_obj_sc_crowd_scatter2 (Sop/scatter::2.0)
+set _obj_sc_crowd_scatter2 = `run("opadd -e -n -v scatter::2.0 scatter2")`
+oplocate -x `$arg2 + -2.7312400000000001` -y `$arg3 + -1.0686800000000001` $_obj_sc_crowd_scatter2
+opparm -V 16.0.633 $_obj_sc_crowd_scatter2 npts ( 20 ) relaxpoints ( off )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_scatter2
+opexprlanguage -s hscript $_obj_sc_crowd_scatter2
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_scatter2
+
+# Node $_obj_sc_crowd_scatter3 (Sop/scatter::2.0)
+set _obj_sc_crowd_scatter3 = `run("opadd -e -n -v scatter::2.0 scatter3")`
+oplocate -x `$arg2 + -5.4940899999999999` -y `$arg3 + -1.3168099999999998` $_obj_sc_crowd_scatter3
+chblockbegin
+chadd -t 0 0 $_obj_sc_crowd_scatter3 npts
+chkey -t 0 -v 10 -m 0 -a 0 -A 0 -T a  -F 'ch("../scatter2/npts")' $_obj_sc_crowd_scatter3/npts
+chblockend
+opparm -V 16.0.633 $_obj_sc_crowd_scatter3 npts ( npts ) seed ( 3.3799999999999999 ) scaleradiiby ( 1.8 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_scatter3
+opexprlanguage -s hscript $_obj_sc_crowd_scatter3
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_scatter3
+
+# Node $_obj_sc_crowd_object_merge1 (Sop/object_merge)
+set _obj_sc_crowd_object_merge1 = `run("opadd -e -n -v object_merge object_merge1")`
+oplocate -x `$arg2 + 0.196802` -y `$arg3 + -8.3455100000000009` $_obj_sc_crowd_object_merge1
+opparm $_obj_sc_crowd_object_merge1  numobj ( 1 )
+opparm -V 16.0.633 $_obj_sc_crowd_object_merge1 xformtype ( local ) objpath1 ( ../DOP_space_colonization_crowd/d/s/null1/ )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_object_merge1
+opexprlanguage -s hscript $_obj_sc_crowd_object_merge1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_object_merge1
+
+# Node $_obj_sc_crowd_null1 (Sop/null)
+set _obj_sc_crowd_null1 = `run("opadd -e -n -v null null1")`
+oplocate -x `$arg2 + -2.7300900000000001` -y `$arg3 + -11.56846941176471` $_obj_sc_crowd_null1
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_null1
+opexprlanguage -s hscript $_obj_sc_crowd_null1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_null1
+
+# Node $_obj_sc_crowd_box1 (Sop/box)
+set _obj_sc_crowd_box1 = `run("opadd -e -n -v box box1")`
+oplocate -x `$arg2 + -6.5566199999999997` -y `$arg3 + -11.3622` $_obj_sc_crowd_box1
+opparm -V 16.0.633 $_obj_sc_crowd_box1 size ( 1 1 0.59999999999999998 ) t ( 0 0.5 0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_box1
+opexprlanguage -s hscript $_obj_sc_crowd_box1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_box1
+
+# Node $_obj_sc_crowd_sphere1 (Sop/sphere)
+set _obj_sc_crowd_sphere1 = `run("opadd -e -n -v sphere sphere1")`
+oplocate -x `$arg2 + -9.9206599999999998` -y `$arg3 + -11.3622` $_obj_sc_crowd_sphere1
+chblockbegin
+chadd -t 0 0 $_obj_sc_crowd_sphere1 rady
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("radx")' $_obj_sc_crowd_sphere1/rady
+chadd -t 0 0 $_obj_sc_crowd_sphere1 radz
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("radx")' $_obj_sc_crowd_sphere1/radz
+chblockend
+opparm -V 16.0.633 $_obj_sc_crowd_sphere1 type ( poly ) rad ( 0.69999999999999996 rady radz ) t ( 0 1.6000000000000001 0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_sphere1
+opexprlanguage -s hscript $_obj_sc_crowd_sphere1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_sphere1
+
+# Node $_obj_sc_crowd_merge1 (Sop/merge)
+set _obj_sc_crowd_merge1 = `run("opadd -e -n -v merge merge1")`
+oplocate -x `$arg2 + -7.6420899999999996` -y `$arg3 + -13.053900000000001` $_obj_sc_crowd_merge1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_merge1
+opexprlanguage -s hscript $_obj_sc_crowd_merge1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_merge1
+
+# Node $_obj_sc_crowd_copytopoints1 (Sop/copytopoints)
+set _obj_sc_crowd_copytopoints1 = `run("opadd -e -n -v copytopoints copytopoints1")`
+oplocate -x `$arg2 + -2.7300900000000001` -y `$arg3 + -15.309199999999999` $_obj_sc_crowd_copytopoints1
+opparm -V 16.0.633 $_obj_sc_crowd_copytopoints1 setpt ( Cd ) mulpt ( "" ) addpt ( "" )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_copytopoints1
+opexprlanguage -s hscript $_obj_sc_crowd_copytopoints1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_copytopoints1
+
+# Node $_obj_sc_crowd_sphere2 (Sop/sphere)
+set _obj_sc_crowd_sphere2 = `run("opadd -e -n -v sphere sphere2")`
+oplocate -x `$arg2 + -8.1143300000000007` -y `$arg3 + -11.2661` $_obj_sc_crowd_sphere2
+opparm -V 16.0.633 $_obj_sc_crowd_sphere2 type ( poly ) rad ( 0.10000000000000001 0.10000000000000001 0.29999999999999999 ) t ( 0 1.6000000000000001 0.69999999999999996 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_sphere2
+opexprlanguage -s hscript $_obj_sc_crowd_sphere2
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_sphere2
+
+# Node $_obj_sc_crowd_sort1 (Sop/sort)
+set _obj_sc_crowd_sort1 = `run("opadd -e -n -v sort sort1")`
+oplocate -x `$arg2 + -5.4940899999999999` -y `$arg3 + 0.84860729999999995` $_obj_sc_crowd_sort1
+opparm -V 16.0.633 $_obj_sc_crowd_sort1 ptsort ( seed )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_sc_crowd_sort1
+opexprlanguage -s hscript $_obj_sc_crowd_sort1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_sort1
+
+# Node $_obj_sc_crowd_blast2 (Sop/blast)
+set _obj_sc_crowd_blast2 = `run("opadd -e -n -v blast blast2")`
+oplocate -x `$arg2 + -5.4940899999999999` -y `$arg3 + 0.041595999999999966` $_obj_sc_crowd_blast2
+opparm -V 16.0.633 $_obj_sc_crowd_blast2 group ( 0-19 ) grouptype ( points ) negate ( on )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_sc_crowd_blast2
+opexprlanguage -s hscript $_obj_sc_crowd_blast2
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_blast2
+
+# Node $_obj_sc_crowd_sort2 (Sop/sort)
+set _obj_sc_crowd_sort2 = `run("opadd -e -n -v sort sort2")`
+oplocate -x `$arg2 + -2.7312400000000001` -y `$arg3 + 0.84860729999999995` $_obj_sc_crowd_sort2
+opparm -V 16.0.633 $_obj_sc_crowd_sort2 ptsort ( seed ) pointseed ( 82 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_sc_crowd_sort2
+opexprlanguage -s hscript $_obj_sc_crowd_sort2
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_sort2
+
+# Node $_obj_sc_crowd_blast3 (Sop/blast)
+set _obj_sc_crowd_blast3 = `run("opadd -e -n -v blast blast3")`
+oplocate -x `$arg2 + -2.7312400000000001` -y `$arg3 + 0.041595999999999966` $_obj_sc_crowd_blast3
+opparm -V 16.0.633 $_obj_sc_crowd_blast3 group ( 0-19 ) grouptype ( points ) negate ( on )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_sc_crowd_blast3
+opexprlanguage -s hscript $_obj_sc_crowd_blast3
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_blast3
+
+# Node $_obj_sc_crowd_facet1 (Sop/facet)
+set _obj_sc_crowd_facet1 = `run("opadd -e -n -v facet facet1")`
+oplocate -x `$arg2 + 0.247059` -y `$arg3 + 3.2337000000000002` $_obj_sc_crowd_facet1
+opparm -V 16.0.633 $_obj_sc_crowd_facet1 postnml ( on )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_facet1
+opexprlanguage -s hscript $_obj_sc_crowd_facet1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_facet1
+
+# Node $_obj_sc_crowd_blast1 (Sop/blast)
+set _obj_sc_crowd_blast1 = `run("opadd -e -n -v blast blast1")`
+oplocate -x `$arg2 + 0.24705900000000003` -y `$arg3 + 2.3395000000000001` $_obj_sc_crowd_blast1
+opparm -V 16.0.633 $_obj_sc_crowd_blast1 group ( '15-16 20-21 24-25 46 48-52' ) grouptype ( prims ) removegrp ( on )
+opset -d off -r off -h on -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_blast1
+opexprlanguage -s hscript $_obj_sc_crowd_blast1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_blast1
+opuserdata -n '___toolcount___' -v '16' $_obj_sc_crowd_blast1
+opuserdata -n '___toolid___' -v 'generic_delete' $_obj_sc_crowd_blast1
+oporder -e grid1 mountain1 scatter1 scatter2 crt_targetP crt_source crt_terrain DOP_space_colonization_crowd scatter3 object_merge1 null1 attribwrangle1 box1 sphere1 merge1 copytopoints1 sphere2 sort1 blast2 sort2 blast3 facet1 blast1 
+opcf ..
+opset -p on $_obj_sc_crowd
+
+opcf $arg1
+opcf $_obj_sc_crowd
+opwire -n $_obj_sc_crowd_grid1 -0 $_obj_sc_crowd_mountain1
+opwire -n $_obj_sc_crowd_blast1 -0 $_obj_sc_crowd_scatter1
+opwire -n $_obj_sc_crowd_blast3 -0 $_obj_sc_crowd_scatter2
+opwire -n $_obj_sc_crowd_scatter2 -0 $_obj_sc_crowd_crt_targetP
+opwire -n $_obj_sc_crowd_scatter3 -1 $_obj_sc_crowd_crt_targetP
+opwire -n $_obj_sc_crowd_crt_targetP -0 $_obj_sc_crowd_crt_source
+opwire -n $_obj_sc_crowd_scatter1 -0 $_obj_sc_crowd_crt_terrain
+opwire -n $_obj_sc_crowd_crt_source -0 $_obj_sc_crowd_DOP_space_colonization_crowd
+opwire -n $_obj_sc_crowd_crt_terrain -1 $_obj_sc_crowd_DOP_space_colonization_crowd
+opwire -n $_obj_sc_crowd_blast2 -0 $_obj_sc_crowd_scatter3
+opwire -n $_obj_sc_crowd_attribwrangle1 -0 $_obj_sc_crowd_null1
+opwire -n $_obj_sc_crowd_DOP_space_colonization_crowd -0 $_obj_sc_crowd_attribwrangle1
+opwire -n $_obj_sc_crowd_sphere1 -0 $_obj_sc_crowd_merge1
+opwire -n $_obj_sc_crowd_box1 -1 $_obj_sc_crowd_merge1
+opwire -n $_obj_sc_crowd_sphere2 -2 $_obj_sc_crowd_merge1
+opwire -n $_obj_sc_crowd_merge1 -0 $_obj_sc_crowd_copytopoints1
+opwire -n $_obj_sc_crowd_null1 -1 $_obj_sc_crowd_copytopoints1
+opwire -n $_obj_sc_crowd_blast1 -0 $_obj_sc_crowd_sort1
+opwire -n $_obj_sc_crowd_sort1 -0 $_obj_sc_crowd_blast2
+opwire -n $_obj_sc_crowd_blast1 -0 $_obj_sc_crowd_sort2
+opwire -n $_obj_sc_crowd_sort2 -0 $_obj_sc_crowd_blast3
+opwire -n $_obj_sc_crowd_mountain1 -0 $_obj_sc_crowd_facet1
+opwire -n $_obj_sc_crowd_facet1 -0 $_obj_sc_crowd_blast1
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_sc_crowd
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_sc_crowd
     if ($arg8) then
         opwire -n -i $arg6 -0 $input
     else

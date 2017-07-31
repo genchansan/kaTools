@@ -125,4 +125,13 @@ rand = fit01(rand,ch("min"),ch("max"));
   <set name="initialize v">
     <expression><![CDATA[@v = set(chv("init"));]]></expression>
   </set>
+  <set name="basic point cloud">
+    <expression><![CDATA[int handle = pcopen(1,"P",@P,ch("rad"),chi("max_pts"));
+
+int num = pcnumfound(handle);
+if(num > 0)
+{
+    vector p = pcfilter(handle, "P");
+}]]></expression>
+  </set>
 </expressionSets>
