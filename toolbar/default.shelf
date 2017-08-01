@@ -7451,7 +7451,7 @@ opuserdata -n '___Version___' -v '' $_obj_sc_crowd_crt_targetP
 
 # Node $_obj_sc_crowd_crt_source (Sop/attribwrangle)
 set _obj_sc_crowd_crt_source = `run("opadd -e -n -v attribwrangle crt_source")`
-oplocate -x `$arg2 + -2.7342399999999998` -y `$arg3 + -4.5402400000000007` $_obj_sc_crowd_crt_source
+oplocate -x `$arg2 + -2.7342399999999998` -y `$arg3 + -4.5402399999999998` $_obj_sc_crowd_crt_source
 opparm $_obj_sc_crowd_crt_source  bindings ( 0 ) groupbindings ( 0 )
 opparm $_obj_sc_crowd_crt_source snippet ( 'i@source=1;' )
 opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_crt_source
@@ -7479,19 +7479,104 @@ opuserdata -n '___Version___' -v '' $_obj_sc_crowd_DOP_space_colonization_crowd
 
 # Node $_obj_sc_crowd_attribwrangle1 (Sop/attribwrangle)
 set _obj_sc_crowd_attribwrangle1 = `run("opadd -e -n -v attribwrangle attribwrangle1")`
-oplocate -x `$arg2 + -2.7330899965336175` -y `$arg3 + -9.9643588235294143` $_obj_sc_crowd_attribwrangle1
+oplocate -x `$arg2 + -2.7330899999999998` -y `$arg3 + -9.9643599999999992` $_obj_sc_crowd_attribwrangle1
 opparm $_obj_sc_crowd_attribwrangle1  bindings ( 0 ) groupbindings ( 0 )
 opparm $_obj_sc_crowd_attribwrangle1 snippet ( '@N = normalize(@v);' )
 opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_attribwrangle1
 opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b on $_obj_sc_crowd_attribwrangle1
 opexprlanguage -s hscript $_obj_sc_crowd_attribwrangle1
 opuserdata -n '___Version___' -v '' $_obj_sc_crowd_attribwrangle1
+
+# Node $_obj_sc_crowd_attribwrangle2 (Sop/attribwrangle)
+set _obj_sc_crowd_attribwrangle2 = `run("opadd -e -n -v attribwrangle attribwrangle2")`
+oplocate -x `$arg2 + 10.888595357827874` -y `$arg3 + -10.286617559130118` $_obj_sc_crowd_attribwrangle2
+opspareds '    group { 	name	"folder1" 	label	"Code"  	parm { 	    name	"group" 	    baseparm 	    label	"Group" 	    export	none 	    bindselector points "Modify Points" 	        "Select the points to affect and press Enter to complete." 	        0 1 0xffffffff 0 grouptype 0 	} 	parm { 	    name	"grouptype" 	    baseparm 	    label	"Group Type" 	    export	none 	} 	parm { 	    name	"class" 	    baseparm 	    label	"Run Over" 	    export	none 	} 	parm { 	    name	"vex_numcount" 	    baseparm 	    label	"Number Count" 	    export	none 	} 	parm { 	    name	"vex_threadjobsize" 	    baseparm 	    label	"Thread Job Size" 	    export	none 	} 	parm { 	    name	"snippet" 	    baseparm 	    label	"VEXpression" 	    export	all 	} 	parm { 	    name	"exportlist" 	    baseparm 	    label	"Attributes to Create" 	    export	none 	} 	parm { 	    name	"vex_strict" 	    baseparm 	    label	"Enforce Prototypes" 	    export	none 	}     }      group { 	name	"folder1_1" 	label	"Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	} 	parm { 	    name	"vex_inplace" 	    baseparm 	    label	"Compute Results In Place" 	    export	none 	} 	parm { 	    name	"vex_selectiongroup" 	    baseparm 	    label	"Output Selection Group" 	    export	none 	}     }      parm { 	name	"rad" 	label	"Rad" 	type	float 	default	{ "0" } 	range	{ 0 1 }     }     parm { 	name	"max_pts" 	label	"Max Pts" 	type	integer 	default	{ "0" } 	range	{ 0 10 }     }     parm { 	name	"extra_overwrite_rad" 	label	"Extra Overwrite Rad" 	type	float 	default	{ "0" } 	range	{ 0 1 }     } ' $_obj_sc_crowd_attribwrangle2
+opparm $_obj_sc_crowd_attribwrangle2  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_attribwrangle2 snippet ( 'int pts[]= pcfind(1, "P", @P, ch("rad") + ch("extra_overwrite_rad"), chi("max_pts"));\n\nforeach(int pt; pts)\n{\n    vector nearP = point(1, "P",pt);\n    vector nearV = point(1, "v",pt);\n    if(distance(@P + nearV * @TimeInc, nearP)<ch("rad"))\n    {\n        removepoint(geoself(),@ptnum);\n    }\n    else\n    {\n        @N = normalize((@P + nearV * @TimeInc) - nearP);\n    }\n}' ) rad ( 1.8 ) max_pts ( 1 ) extra_overwrite_rad ( 10 )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_attribwrangle2
+opset -d off -r off -h off -f off -y off -t on -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_attribwrangle2
+opexprlanguage -s hscript $_obj_sc_crowd_attribwrangle2
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_attribwrangle2
+
+# Node $_obj_sc_crowd_calc_new_v (Sop/attribwrangle)
+set _obj_sc_crowd_calc_new_v = `run("opadd -e -n -v attribwrangle calc_new_v")`
+oplocate -x `$arg2 + 7.0536053578278732` -y `$arg3 + -11.714287559130121` $_obj_sc_crowd_calc_new_v
+opspareds '    group { 	name	"folder1" 	label	"Code"  	parm { 	    name	"group" 	    baseparm 	    label	"Group" 	    export	none 	    bindselector points "Modify Points" 	        "Select the points to affect and press Enter to complete." 	        0 1 0xffffffff 0 grouptype 0 	} 	parm { 	    name	"grouptype" 	    baseparm 	    label	"Group Type" 	    export	none 	} 	parm { 	    name	"class" 	    baseparm 	    label	"Run Over" 	    export	none 	} 	parm { 	    name	"vex_numcount" 	    baseparm 	    label	"Number Count" 	    export	none 	} 	parm { 	    name	"vex_threadjobsize" 	    baseparm 	    label	"Thread Job Size" 	    export	none 	} 	parm { 	    name	"snippet" 	    baseparm 	    label	"VEXpression" 	    export	all 	} 	parm { 	    name	"exportlist" 	    baseparm 	    label	"Attributes to Create" 	    export	none 	} 	parm { 	    name	"vex_strict" 	    baseparm 	    label	"Enforce Prototypes" 	    export	none 	}     }      group { 	name	"folder1_1" 	label	"Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	} 	parm { 	    name	"vex_inplace" 	    baseparm 	    label	"Compute Results In Place" 	    export	none 	} 	parm { 	    name	"vex_selectiongroup" 	    baseparm 	    label	"Output Selection Group" 	    export	none 	}     }      parm { 	name	"rad" 	label	"Rad" 	type	float 	default	{ "0" } 	range	{ 0 1 }     }     parm { 	name	"max_pts" 	label	"Max Pts" 	type	integer 	default	{ "0" } 	range	{ 0 10 }     }     parm { 	name	"dot" 	label	"Dot" 	type	float 	default	{ "0" } 	range	{ 0 1 }     }     parm { 	name	"max_deg" 	label	"Max Deg" 	type	float 	default	{ "0" } 	range	{ 0 1 }     } ' $_obj_sc_crowd_calc_new_v
+opparm $_obj_sc_crowd_calc_new_v  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_calc_new_v snippet ( 'float dot = ch("dot");\nint handle = pcopen(@OpInput2, "P", @P + @v * @TimeInc, ch("rad"), chi("max_pts"));\n//"N", normalize(v@targetP - @P), \n//,"ndot",dot\n\nint num = pcnumfound(handle);\nvector filterP;\n//vector filterN;\n\nif(num > 0)\n{\n    //filterN = pcimportbyidxf(handle, "N", 0);\n    //filterN = normalize(filterN);\n    filterP = pcfilter(handle, "P");\n    \n    vector avoidDir = normalize(filterP - @P);\n    \n    dot = dot(avoidDir, normalize(@v));\n    vector cross = normalize(cross(avoidDir, normalize(@v)));\n    float maxRad = radians(ch("max_deg"));\n    \n    acos(dot);\n    \n    @v = avoidDir * length(@v);\n    v@aaaa = cross;\n    //v@up = filterN;\n}\n\n\n' ) rad ( 8 ) max_pts ( 100 ) dot ( -0.5 ) max_deg ( 20 )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_calc_new_v
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_calc_new_v
+opexprlanguage -s hscript $_obj_sc_crowd_calc_new_v
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_calc_new_v
+
+# Node $_obj_sc_crowd_advect (Sop/attribwrangle)
+set _obj_sc_crowd_advect = `run("opadd -e -n -v attribwrangle advect")`
+oplocate -x `$arg2 + 7.0536053578278732` -y `$arg3 + -15.441077559130118` $_obj_sc_crowd_advect
+opparm $_obj_sc_crowd_advect  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_advect snippet ( 'if(distance(v@targetP, @P) > length(@v * @TimeInc))\n{\n    @P += @v * @TimeInc;\n}\nelse\n{\n    @Cd = set(1,0,0);\n}\n\n' )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_advect
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_advect
+opexprlanguage -s hscript $_obj_sc_crowd_advect
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_advect
+
+# Node $_obj_sc_crowd_init_v (Sop/attribwrangle)
+set _obj_sc_crowd_init_v = `run("opadd -e -n -v attribwrangle init_v")`
+oplocate -x `$arg2 + 9.2952353578278739` -y `$arg3 + -7.1446075591301188` $_obj_sc_crowd_init_v
+opspareds '    group { 	name	"folder1" 	label	"Code"  	parm { 	    name	"group" 	    baseparm 	    label	"Group" 	    export	none 	    bindselector points "Modify Points" 	        "Select the points to affect and press Enter to complete." 	        0 1 0xffffffff 0 grouptype 0 	} 	parm { 	    name	"grouptype" 	    baseparm 	    label	"Group Type" 	    export	none 	} 	parm { 	    name	"class" 	    baseparm 	    label	"Run Over" 	    export	none 	} 	parm { 	    name	"vex_numcount" 	    baseparm 	    label	"Number Count" 	    export	none 	} 	parm { 	    name	"vex_threadjobsize" 	    baseparm 	    label	"Thread Job Size" 	    export	none 	} 	parm { 	    name	"snippet" 	    baseparm 	    label	"VEXpression" 	    export	all 	} 	parm { 	    name	"exportlist" 	    baseparm 	    label	"Attributes to Create" 	    export	none 	} 	parm { 	    name	"vex_strict" 	    baseparm 	    label	"Enforce Prototypes" 	    export	none 	}     }      group { 	name	"folder1_1" 	label	"Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	} 	parm { 	    name	"vex_inplace" 	    baseparm 	    label	"Compute Results In Place" 	    export	none 	} 	parm { 	    name	"vex_selectiongroup" 	    baseparm 	    label	"Output Selection Group" 	    export	none 	}     }      parm { 	name	"spped" 	label	"Spped" 	type	float 	default	{ "0" } 	range	{ 0 1 }     } ' $_obj_sc_crowd_init_v
+opparm $_obj_sc_crowd_init_v  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_init_v snippet ( 'if(length(@v) == 0)\n{\n    @v += normalize(v@targetP - @P) * ch("spped");\n}' ) spped ( 0.5 )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_init_v
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_init_v
+opexprlanguage -s hscript $_obj_sc_crowd_init_v
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_init_v
+
+# Node $_obj_sc_crowd_add_v (Sop/attribwrangle)
+set _obj_sc_crowd_add_v = `run("opadd -e -n -v attribwrangle add_v")`
+oplocate -x `$arg2 + 7.0536053578278732` -y `$arg3 + -13.197827559130118` $_obj_sc_crowd_add_v
+opspareds '    group { 	name	"folder1" 	label	"Code"  	parm { 	    name	"group" 	    baseparm 	    label	"Group" 	    export	none 	    bindselector points "Modify Points" 	        "Select the points to affect and press Enter to complete." 	        0 1 0xffffffff 0 grouptype 0 	} 	parm { 	    name	"grouptype" 	    baseparm 	    label	"Group Type" 	    export	none 	} 	parm { 	    name	"class" 	    baseparm 	    label	"Run Over" 	    export	none 	} 	parm { 	    name	"vex_numcount" 	    baseparm 	    label	"Number Count" 	    export	none 	} 	parm { 	    name	"vex_threadjobsize" 	    baseparm 	    label	"Thread Job Size" 	    export	none 	} 	parm { 	    name	"snippet" 	    baseparm 	    label	"VEXpression" 	    export	all 	} 	parm { 	    name	"exportlist" 	    baseparm 	    label	"Attributes to Create" 	    export	none 	} 	parm { 	    name	"vex_strict" 	    baseparm 	    label	"Enforce Prototypes" 	    export	none 	}     }      group { 	name	"folder1_1" 	label	"Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	} 	parm { 	    name	"vex_inplace" 	    baseparm 	    label	"Compute Results In Place" 	    export	none 	} 	parm { 	    name	"vex_selectiongroup" 	    baseparm 	    label	"Output Selection Group" 	    export	none 	}     }      parm { 	name	"add_speed" 	label	"Add Speed" 	type	float 	default	{ "0" } 	range	{ 0 1 }     } ' $_obj_sc_crowd_add_v
+opparm $_obj_sc_crowd_add_v  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_add_v snippet ( '@v += normalize(@v) * ch("add_speed");' ) add_speed ( 0.20000000000000001 )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_add_v
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_add_v
+opexprlanguage -s hscript $_obj_sc_crowd_add_v
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_add_v
+
+# Node $_obj_sc_crowd_limit_v (Sop/attribwrangle)
+set _obj_sc_crowd_limit_v = `run("opadd -e -n -v attribwrangle limit_v")`
+oplocate -x `$arg2 + 7.0566053578278733` -y `$arg3 + -14.27557755913012` $_obj_sc_crowd_limit_v
+opspareds '    group { 	name	"folder1" 	label	"Code"  	parm { 	    name	"group" 	    baseparm 	    label	"Group" 	    export	none 	    bindselector points "Modify Points" 	        "Select the points to affect and press Enter to complete." 	        0 1 0xffffffff 0 grouptype 0 	} 	parm { 	    name	"grouptype" 	    baseparm 	    label	"Group Type" 	    export	none 	} 	parm { 	    name	"class" 	    baseparm 	    label	"Run Over" 	    export	none 	} 	parm { 	    name	"vex_numcount" 	    baseparm 	    label	"Number Count" 	    export	none 	} 	parm { 	    name	"vex_threadjobsize" 	    baseparm 	    label	"Thread Job Size" 	    export	none 	} 	parm { 	    name	"snippet" 	    baseparm 	    label	"VEXpression" 	    export	all 	} 	parm { 	    name	"exportlist" 	    baseparm 	    label	"Attributes to Create" 	    export	none 	} 	parm { 	    name	"vex_strict" 	    baseparm 	    label	"Enforce Prototypes" 	    export	none 	}     }      group { 	name	"folder1_1" 	label	"Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	} 	parm { 	    name	"vex_inplace" 	    baseparm 	    label	"Compute Results In Place" 	    export	none 	} 	parm { 	    name	"vex_selectiongroup" 	    baseparm 	    label	"Output Selection Group" 	    export	none 	}     }      parm { 	name	"max_speed" 	label	"Max Speed" 	type	float 	default	{ "0" } 	range	{ 0 1 }     } ' $_obj_sc_crowd_limit_v
+opparm $_obj_sc_crowd_limit_v  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_limit_v snippet ( 'if(length(@v) > ch("max_speed"))\n{\n    @v = normalize(@v) * ch("max_speed");\n}' ) max_speed ( 3 )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_limit_v
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_limit_v
+opexprlanguage -s hscript $_obj_sc_crowd_limit_v
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_limit_v
+
+# Node $_obj_sc_crowd_update_N (Sop/attribwrangle)
+set _obj_sc_crowd_update_N = `run("opadd -e -n -v attribwrangle update_N")`
+oplocate -x `$arg2 + 7.0536053578278732` -y `$arg3 + -18.026877559130121` $_obj_sc_crowd_update_N
+opparm $_obj_sc_crowd_update_N  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_update_N snippet ( 'if(length(@v)>0)@N = normalize(@v);' )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_update_N
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_update_N
+opexprlanguage -s hscript $_obj_sc_crowd_update_N
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_update_N
+
+# Node $_obj_sc_crowd_update_up (Sop/attribwrangle)
+set _obj_sc_crowd_update_up = `run("opadd -e -n -v attribwrangle update_up")`
+oplocate -x `$arg2 + 7.0536053578278732` -y `$arg3 + -16.593577559130118` $_obj_sc_crowd_update_up
+opparm $_obj_sc_crowd_update_up  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_update_up snippet ( 'int near = nearpoint(1,@P);\n\n@up = point(1,"N",near);' )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_update_up
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_update_up
+opexprlanguage -s hscript $_obj_sc_crowd_update_up
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_update_up
 opcf ..
 opcf $_obj_sc_crowd
 
 # Node $_obj_sc_crowd_grid1 (Sop/grid)
 set _obj_sc_crowd_grid1 = `run("opadd -e -n -v grid grid1")`
-oplocate -x `$arg2 + 0.247059` -y `$arg3 + 5.5117199999999995` $_obj_sc_crowd_grid1
+oplocate -x `$arg2 + 0.247059` -y `$arg3 + 5.5117200000000004` $_obj_sc_crowd_grid1
 opparm -V 16.0.633 $_obj_sc_crowd_grid1 size ( 50 50 )
 opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_grid1
 opexprlanguage -s hscript $_obj_sc_crowd_grid1
@@ -7499,9 +7584,9 @@ opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_grid1
 
 # Node $_obj_sc_crowd_scatter1 (Sop/scatter::2.0)
 set _obj_sc_crowd_scatter1 = `run("opadd -e -n -v scatter::2.0 scatter1")`
-oplocate -x `$arg2 + 0.24705899999999995` -y `$arg3 + 0.84860730000000006` $_obj_sc_crowd_scatter1
+oplocate -x `$arg2 + 0.247059` -y `$arg3 + 0.848607` $_obj_sc_crowd_scatter1
 opparm -V 16.0.633 $_obj_sc_crowd_scatter1 forcetotal ( off )
-opset -d off -r off -h off -f off -y off -t on -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_scatter1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_scatter1
 opexprlanguage -s hscript $_obj_sc_crowd_scatter1
 opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_scatter1
 
@@ -7515,7 +7600,7 @@ opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_scatter2
 
 # Node $_obj_sc_crowd_scatter3 (Sop/scatter::2.0)
 set _obj_sc_crowd_scatter3 = `run("opadd -e -n -v scatter::2.0 scatter3")`
-oplocate -x `$arg2 + -5.4940899999999999` -y `$arg3 + -1.3168099999999998` $_obj_sc_crowd_scatter3
+oplocate -x `$arg2 + -5.4940899999999999` -y `$arg3 + -1.31681` $_obj_sc_crowd_scatter3
 chblockbegin
 chadd -t 0 0 $_obj_sc_crowd_scatter3 npts
 chkey -t 0 -v 10 -m 0 -a 0 -A 0 -T a  -F 'ch("../scatter2/npts")' $_obj_sc_crowd_scatter3/npts
@@ -7527,7 +7612,7 @@ opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_scatter3
 
 # Node $_obj_sc_crowd_object_merge1 (Sop/object_merge)
 set _obj_sc_crowd_object_merge1 = `run("opadd -e -n -v object_merge object_merge1")`
-oplocate -x `$arg2 + 0.196802` -y `$arg3 + -8.3455100000000009` $_obj_sc_crowd_object_merge1
+oplocate -x `$arg2 + 1.6144240366064295` -y `$arg3 + -7.2048945682477008` $_obj_sc_crowd_object_merge1
 opparm $_obj_sc_crowd_object_merge1  numobj ( 1 )
 opparm -V 16.0.633 $_obj_sc_crowd_object_merge1 xformtype ( local ) objpath1 ( ../DOP_space_colonization_crowd/d/s/null1/ )
 opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_object_merge1
@@ -7536,8 +7621,8 @@ opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_object_merge1
 
 # Node $_obj_sc_crowd_null1 (Sop/null)
 set _obj_sc_crowd_null1 = `run("opadd -e -n -v null null1")`
-oplocate -x `$arg2 + -2.7300900000000001` -y `$arg3 + -11.56846941176471` $_obj_sc_crowd_null1
-opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_null1
+oplocate -x `$arg2 + -2.7300900000000001` -y `$arg3 + -11.5685` $_obj_sc_crowd_null1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_null1
 opexprlanguage -s hscript $_obj_sc_crowd_null1
 opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_null1
 
@@ -7572,7 +7657,7 @@ opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_merge1
 
 # Node $_obj_sc_crowd_copytopoints1 (Sop/copytopoints)
 set _obj_sc_crowd_copytopoints1 = `run("opadd -e -n -v copytopoints copytopoints1")`
-oplocate -x `$arg2 + -2.7300900000000001` -y `$arg3 + -15.309199999999999` $_obj_sc_crowd_copytopoints1
+oplocate -x `$arg2 + -2.7300900000000001` -y `$arg3 + -15.309200000000001` $_obj_sc_crowd_copytopoints1
 opparm -V 16.0.633 $_obj_sc_crowd_copytopoints1 setpt ( Cd ) mulpt ( "" ) addpt ( "" )
 opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_copytopoints1
 opexprlanguage -s hscript $_obj_sc_crowd_copytopoints1
@@ -7588,7 +7673,7 @@ opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_sphere2
 
 # Node $_obj_sc_crowd_sort1 (Sop/sort)
 set _obj_sc_crowd_sort1 = `run("opadd -e -n -v sort sort1")`
-oplocate -x `$arg2 + -5.4940899999999999` -y `$arg3 + 0.84860729999999995` $_obj_sc_crowd_sort1
+oplocate -x `$arg2 + -5.4940899999999999` -y `$arg3 + 0.848607` $_obj_sc_crowd_sort1
 opparm -V 16.0.633 $_obj_sc_crowd_sort1 ptsort ( seed )
 opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_sc_crowd_sort1
 opexprlanguage -s hscript $_obj_sc_crowd_sort1
@@ -7596,7 +7681,7 @@ opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_sort1
 
 # Node $_obj_sc_crowd_blast2 (Sop/blast)
 set _obj_sc_crowd_blast2 = `run("opadd -e -n -v blast blast2")`
-oplocate -x `$arg2 + -5.4940899999999999` -y `$arg3 + 0.041595999999999966` $_obj_sc_crowd_blast2
+oplocate -x `$arg2 + -5.4940899999999999` -y `$arg3 + 0.041596000000000001` $_obj_sc_crowd_blast2
 opparm -V 16.0.633 $_obj_sc_crowd_blast2 group ( 0-19 ) grouptype ( points ) negate ( on )
 opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_sc_crowd_blast2
 opexprlanguage -s hscript $_obj_sc_crowd_blast2
@@ -7604,7 +7689,7 @@ opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_blast2
 
 # Node $_obj_sc_crowd_sort2 (Sop/sort)
 set _obj_sc_crowd_sort2 = `run("opadd -e -n -v sort sort2")`
-oplocate -x `$arg2 + -2.7312400000000001` -y `$arg3 + 0.84860729999999995` $_obj_sc_crowd_sort2
+oplocate -x `$arg2 + -2.7312400000000001` -y `$arg3 + 0.848607` $_obj_sc_crowd_sort2
 opparm -V 16.0.633 $_obj_sc_crowd_sort2 ptsort ( seed ) pointseed ( 82 )
 opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_sc_crowd_sort2
 opexprlanguage -s hscript $_obj_sc_crowd_sort2
@@ -7612,7 +7697,7 @@ opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_sort2
 
 # Node $_obj_sc_crowd_blast3 (Sop/blast)
 set _obj_sc_crowd_blast3 = `run("opadd -e -n -v blast blast3")`
-oplocate -x `$arg2 + -2.7312400000000001` -y `$arg3 + 0.041595999999999966` $_obj_sc_crowd_blast3
+oplocate -x `$arg2 + -2.7312400000000001` -y `$arg3 + 0.041596000000000001` $_obj_sc_crowd_blast3
 opparm -V 16.0.633 $_obj_sc_crowd_blast3 group ( 0-19 ) grouptype ( points ) negate ( on )
 opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_sc_crowd_blast3
 opexprlanguage -s hscript $_obj_sc_crowd_blast3
@@ -7620,7 +7705,7 @@ opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_blast3
 
 # Node $_obj_sc_crowd_facet1 (Sop/facet)
 set _obj_sc_crowd_facet1 = `run("opadd -e -n -v facet facet1")`
-oplocate -x `$arg2 + 0.247059` -y `$arg3 + 3.2337000000000002` $_obj_sc_crowd_facet1
+oplocate -x `$arg2 + 0.247059` -y `$arg3 + 3.2336999999999998` $_obj_sc_crowd_facet1
 opparm -V 16.0.633 $_obj_sc_crowd_facet1 postnml ( on )
 opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_facet1
 opexprlanguage -s hscript $_obj_sc_crowd_facet1
@@ -7628,14 +7713,89 @@ opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_facet1
 
 # Node $_obj_sc_crowd_blast1 (Sop/blast)
 set _obj_sc_crowd_blast1 = `run("opadd -e -n -v blast blast1")`
-oplocate -x `$arg2 + 0.24705900000000003` -y `$arg3 + 2.3395000000000001` $_obj_sc_crowd_blast1
+oplocate -x `$arg2 + 0.247059` -y `$arg3 + 2.3395000000000001` $_obj_sc_crowd_blast1
 opparm -V 16.0.633 $_obj_sc_crowd_blast1 group ( '15-16 20-21 24-25 46 48-52' ) grouptype ( prims ) removegrp ( on )
 opset -d off -r off -h on -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_blast1
 opexprlanguage -s hscript $_obj_sc_crowd_blast1
 opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_blast1
 opuserdata -n '___toolcount___' -v '16' $_obj_sc_crowd_blast1
 opuserdata -n '___toolid___' -v 'generic_delete' $_obj_sc_crowd_blast1
-oporder -e grid1 mountain1 scatter1 scatter2 crt_targetP crt_source crt_terrain DOP_space_colonization_crowd scatter3 object_merge1 null1 attribwrangle1 box1 sphere1 merge1 copytopoints1 sphere2 sort1 blast2 sort2 blast3 facet1 blast1 
+
+# Node $_obj_sc_crowd_Prev_Frame (Sop/dopimport)
+set _obj_sc_crowd_Prev_Frame = `run("opadd -e -n -v dopimport Prev_Frame")`
+oplocate -x `$arg2 + 7.0566053578278733` -y `$arg3 + -5.4283275591301194` $_obj_sc_crowd_Prev_Frame
+chblockbegin
+chadd -t 0 0 $_obj_sc_crowd_Prev_Frame doposxform
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../transformsopoutput")' $_obj_sc_crowd_Prev_Frame/doposxform
+chadd -t 0 0 $_obj_sc_crowd_Prev_Frame doxform
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../transformsopoutput")' $_obj_sc_crowd_Prev_Frame/doxform
+chadd -t 0 0 $_obj_sc_crowd_Prev_Frame integrateovertime
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '1/$FPS' $_obj_sc_crowd_Prev_Frame/integrateovertime
+chblockend
+opparm -V 16.0.633 $_obj_sc_crowd_Prev_Frame doppath ( '`stamps("..", "DOPNET", "../..")`' ) objpattern ( '`stamps("..", "OBJID", arg(dopnodeobjs(".."),0))`' ) singleobject ( on ) importstyle ( fetch ) geodatapath ( '`stamps("..", "DATANAME", chs("../datapath"))`' ) doposxform ( doposxform ) doxform ( doxform ) centeratpivot ( off ) adddopobjectname ( off ) pointvels ( none ) donotsim ( on )
+opcolor -c 0.60000002384185791 0.40000000596046448 1 $_obj_sc_crowd_Prev_Frame
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_Prev_Frame
+opexprlanguage -s hscript $_obj_sc_crowd_Prev_Frame
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_Prev_Frame
+
+# Node $_obj_sc_crowd_Input_1 (Sop/object_merge)
+set _obj_sc_crowd_Input_1 = `run("opadd -e -n -v object_merge Input_1")`
+oplocate -x `$arg2 + 9.2969853578278734` -y `$arg3 + -5.2067675591301192` $_obj_sc_crowd_Input_1
+opparm $_obj_sc_crowd_Input_1  numobj ( 1 )
+opparm -V 16.0.633 $_obj_sc_crowd_Input_1 objpath1 ( '`opinputpath("../..", 0)`' )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_sc_crowd_Input_1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_Input_1
+opexprlanguage -s hscript $_obj_sc_crowd_Input_1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_Input_1
+
+# Node $_obj_sc_crowd_Input_2 (Sop/object_merge)
+set _obj_sc_crowd_Input_2 = `run("opadd -e -n -v object_merge Input_2")`
+oplocate -x `$arg2 + 10.890345357827874` -y `$arg3 + -5.761297559130119` $_obj_sc_crowd_Input_2
+opparm $_obj_sc_crowd_Input_2  numobj ( 1 )
+opparm -V 16.0.633 $_obj_sc_crowd_Input_2 objpath1 ( '`opinputpath("../..", 1)`' )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_sc_crowd_Input_2
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_Input_2
+opexprlanguage -s hscript $_obj_sc_crowd_Input_2
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_Input_2
+
+# Node $_obj_sc_crowd_Input_3 (Sop/object_merge)
+set _obj_sc_crowd_Input_3 = `run("opadd -e -n -v object_merge Input_3")`
+oplocate -x `$arg2 + 12.199095357827874` -y `$arg3 + -6.3768075591301194` $_obj_sc_crowd_Input_3
+opparm $_obj_sc_crowd_Input_3  numobj ( 1 )
+opparm -V 16.0.633 $_obj_sc_crowd_Input_3 objpath1 ( '`opinputpath("../..", 2)`' )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_sc_crowd_Input_3
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_Input_3
+opexprlanguage -s hscript $_obj_sc_crowd_Input_3
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_Input_3
+
+# Node $_obj_sc_crowd_Input_4 (Sop/object_merge)
+set _obj_sc_crowd_Input_4 = `run("opadd -e -n -v object_merge Input_4")`
+oplocate -x `$arg2 + 13.711145357827874` -y `$arg3 + -6.9313275591301196` $_obj_sc_crowd_Input_4
+opparm $_obj_sc_crowd_Input_4  numobj ( 1 )
+opparm -V 16.0.633 $_obj_sc_crowd_Input_4 objpath1 ( '`opinputpath("../..", 3)`' )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_sc_crowd_Input_4
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_Input_4
+opexprlanguage -s hscript $_obj_sc_crowd_Input_4
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_Input_4
+
+# Node $_obj_sc_crowd_switch1 (Sop/switch)
+set _obj_sc_crowd_switch1 = `run("opadd -e -n -v switch switch1")`
+oplocate -x `$arg2 + 7.0566053578278733` -y `$arg3 + -8.5880375591301181` $_obj_sc_crowd_switch1
+chblockbegin
+chadd -t 0 0 $_obj_sc_crowd_switch1 input
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FF==ch("../../../startframe")' $_obj_sc_crowd_switch1/input
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_switch1
+opexprlanguage -s hscript $_obj_sc_crowd_switch1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_switch1
+
+# Node $_obj_sc_crowd_null2 (Sop/null)
+set _obj_sc_crowd_null2 = `run("opadd -e -n -v null null2")`
+oplocate -x `$arg2 + 11.738315357827874` -y `$arg3 + -12.843087559130119` $_obj_sc_crowd_null2
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_null2
+opexprlanguage -s hscript $_obj_sc_crowd_null2
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_null2
+oporder -e grid1 mountain1 scatter1 scatter2 crt_targetP crt_source crt_terrain DOP_space_colonization_crowd scatter3 object_merge1 null1 attribwrangle1 box1 sphere1 merge1 copytopoints1 sphere2 sort1 blast2 sort2 blast3 facet1 blast1 attribwrangle2 calc_new_v advect init_v add_v limit_v update_N update_up Prev_Frame Input_1 Input_2 Input_3 Input_4 switch1 null2 
 opcf ..
 opset -p on $_obj_sc_crowd
 
@@ -7664,6 +7824,20 @@ opwire -n $_obj_sc_crowd_blast1 -0 $_obj_sc_crowd_sort2
 opwire -n $_obj_sc_crowd_sort2 -0 $_obj_sc_crowd_blast3
 opwire -n $_obj_sc_crowd_mountain1 -0 $_obj_sc_crowd_facet1
 opwire -n $_obj_sc_crowd_facet1 -0 $_obj_sc_crowd_blast1
+opwire -n $_obj_sc_crowd_Input_2 -0 $_obj_sc_crowd_attribwrangle2
+opwire -n $_obj_sc_crowd_switch1 -1 $_obj_sc_crowd_attribwrangle2
+opwire -n $_obj_sc_crowd_switch1 -0 $_obj_sc_crowd_calc_new_v
+opwire -n $_obj_sc_crowd_attribwrangle2 -1 $_obj_sc_crowd_calc_new_v
+opwire -n $_obj_sc_crowd_limit_v -0 $_obj_sc_crowd_advect
+opwire -n $_obj_sc_crowd_Input_1 -0 $_obj_sc_crowd_init_v
+opwire -n $_obj_sc_crowd_calc_new_v -0 $_obj_sc_crowd_add_v
+opwire -n $_obj_sc_crowd_add_v -0 $_obj_sc_crowd_limit_v
+opwire -n $_obj_sc_crowd_update_up -0 $_obj_sc_crowd_update_N
+opwire -n $_obj_sc_crowd_advect -0 $_obj_sc_crowd_update_up
+opwire -n $_obj_sc_crowd_Input_2 -1 $_obj_sc_crowd_update_up
+opwire -n $_obj_sc_crowd_Prev_Frame -0 $_obj_sc_crowd_switch1
+opwire -n $_obj_sc_crowd_init_v -1 $_obj_sc_crowd_switch1
+opwire -n $_obj_sc_crowd_attribwrangle2 -0 $_obj_sc_crowd_null2
 opcf ..
 
 set oidx = 0
