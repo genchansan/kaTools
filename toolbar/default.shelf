@@ -26,6 +26,7 @@
     <memberTool name="opencl"/>
     <memberTool name="graph"/>
     <memberTool name="geo0"/>
+    <memberTool name="subnet6"/>
   </toolshelf>
 
   <tool name="add_event_when_created" label="add_event_when_created" icon="PLASMA_App">
@@ -3500,6 +3501,7 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
     <memberTool name="attribwrangle6"/>
     <memberTool name="attribwrangle7"/>
     <memberTool name="attribwrangle8"/>
+    <memberTool name="attribvop3"/>
   </toolshelf>
 
   <tool name="attribvop1" label="trans_by_n_up" icon="SOP_attribvop">
