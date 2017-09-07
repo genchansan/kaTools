@@ -24,8 +24,9 @@
     <memberTool name="timeblend"/>
     <memberTool name="subnet3"/>
     <memberTool name="opencl"/>
-    <memberTool name="geo"/>
+    <memberTool name="graph"/>
     <memberTool name="geo0"/>
+    <memberTool name="subnet6"/>
   </toolshelf>
 
   <tool name="add_event_when_created" label="add_event_when_created" icon="PLASMA_App">
@@ -3500,6 +3501,7 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
     <memberTool name="attribwrangle6"/>
     <memberTool name="attribwrangle7"/>
     <memberTool name="attribwrangle8"/>
+    <memberTool name="attribvop3"/>
   </toolshelf>
 
   <tool name="attribvop1" label="trans_by_n_up" icon="SOP_attribvop">
@@ -6883,428 +6885,6 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
 ]]></script>
   </tool>
 
-  <tool name="geo" label="geo1" icon="OBJ_geo">
-    <helpURL>operator:Object/geo</helpURL>
-    <toolMenuContext name="network">
-      <contextOpType>Object/geo</contextOpType>
-    </toolMenuContext>
-    <script scriptType="python"><![CDATA[
-import sys
-import toolutils
-
-outputitem = None
-inputindex = -1
-inputitem = None
-outputindex = -1
-
-num_args = 1
-h_extra_args = ''
-pane = toolutils.activePane(kwargs)
-if not isinstance(pane, hou.NetworkEditor):
-    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
-    if pane is None:
-       hou.ui.displayMessage(
-               'Cannot create node: cannot find any network pane')
-       sys.exit(0)
-else: # We're creating this tool from the TAB menu inside a network editor
-    pane_node = pane.pwd()
-    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
-        outputitem = pane_node.item(kwargs["outputnodename"])
-        inputindex = kwargs["inputindex"]
-        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
-        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
-        num_args = 6
-    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
-        inputitem = pane_node.item(kwargs["inputnodename"])
-        outputindex = kwargs["outputindex"]
-        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
-        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
-        num_args = 9 
-    if kwargs.has_key("autoplace"):
-        autoplace = kwargs["autoplace"]
-    else:
-        autoplace = False
-    # If shift-clicked we want to auto append to the current
-    # node
-    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
-        if inputitem is None:
-            inputitem = pane.currentNode()
-            outputindex = 0
-    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
-        try:
-            pos = [ float( kwargs["nodepositionx"] ),
-                    float( kwargs["nodepositiony"] )]
-        except:
-            pos = None
-    else:
-        pos = None
-
-    if not autoplace and not pane.listMode():
-        if pos is not None:
-            pass
-        elif outputitem is None:
-            pos = pane.selectPosition(inputitem, outputindex, None, -1)
-        else:
-            pos = pane.selectPosition(inputitem, outputindex,
-                                      outputitem, inputindex)
-
-    if pos is not None:
-        if kwargs.has_key("node_bbox"):
-            size = kwargs["node_bbox"]
-            pos[0] -= size[0] / 2
-            pos[1] -= size[1] / 2
-        else:
-            pos[0] -= 0.573625
-            pos[1] -= 0.220625
-        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
-        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
-h_extra_args += 'set argc = "' + str(num_args) + '"\n'
-            
-pane_node = pane.pwd()
-child_type = pane_node.childTypeCategory().nodeTypes()
-
-if not child_type.has_key('geo'):
-   hou.ui.displayMessage(
-           'Cannot create node: incompatible pane network type')
-   sys.exit(0)
-
-# First clear the node selection
-pane_node.setSelected(False, True)
-
-h_path = pane_node.path()
-h_preamble = 'set arg1 = "' + h_path + '"\n'
-h_cmd = r''' 
-if ($argc < 2 || "$arg2" == "") then
-   set arg2 = 0
-endif
-if ($argc < 3 || "$arg3" == "") then
-   set arg3 = 0
-endif
-# Automatically generated script
-# $arg1 - the path to add this node
-# $arg2 - x position of the tile
-# $arg3 - y position of the tile
-# $arg4 - input node to wire to
-# $arg5 - which input to wire to
-# $arg6 - output node to wire to
-# $arg7 - the type of this node
-# $arg8 - the node is an indirect input
-# $arg9 - index of output from $arg6
-
-\set noalias = 1
-set saved_path = `execute("oppwf")`
-opcf $arg1
-
-# Node $_obj_geo1 (Object/geo)
-set _obj_geo1 = `run("opadd -e -n -v geo geo1")`
-oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1
-opspareds '    group { 	name	"stdswitcher4" 	label	"Transform"  	parm { 	    name	"xOrd" 	    baseparm 	    label	"Transform Order" 	    joinnext 	    export	none 	} 	parm { 	    name	"rOrd" 	    baseparm 	    label	"Rotate Order" 	    export	none 	} 	parm { 	    name	"t" 	    baseparm 	    label	"Translate" 	    export	all 	} 	parm { 	    name	"r" 	    baseparm 	    label	"Rotate" 	    export	all 	} 	parm { 	    name	"s" 	    baseparm 	    label	"Scale" 	    export	none 	} 	parm { 	    name	"p" 	    baseparm 	    label	"Pivot" 	    export	none 	} 	parm { 	    name	"scale" 	    baseparm 	    label	"Uniform Scale" 	    export	none 	} 	parm { 	    name	"pre_xform" 	    baseparm 	    label	"Modify Pre-Transform" 	    export	none 	} 	parm { 	    name	"keeppos" 	    baseparm 	    label	"Keep Position When Parenting" 	    export	none 	} 	parm { 	    name	"childcomp" 	    baseparm 	    label	"Child Compensation" 	    export	none 	} 	parm { 	    name	"constraints_on" 	    baseparm 	    label	"Enable Constraints" 	    export	none 	} 	parm { 	    name	"constraints_path" 	    baseparm 	    label	"Constraints" 	    export	none 	} 	parm { 	    name	"lookatpath" 	    baseparm 	    label	"Look At" 	    invisible 	    export	none 	} 	parm { 	    name	"lookupobjpath" 	    baseparm 	    label	"Look Up Object" 	    invisible 	    export	none 	} 	parm { 	    name	"lookup" 	    baseparm 	    label	"Look At Up Vector" 	    invisible 	    export	none 	} 	parm { 	    name	"pathobjpath" 	    baseparm 	    label	"Path Object" 	    invisible 	    export	none 	} 	parm { 	    name	"roll" 	    baseparm 	    label	"Roll" 	    invisible 	    export	none 	} 	parm { 	    name	"pos" 	    baseparm 	    label	"Position" 	    invisible 	    export	none 	} 	parm { 	    name	"uparmtype" 	    baseparm 	    label	"Parameterization" 	    invisible 	    export	none 	} 	parm { 	    name	"pathorient" 	    baseparm 	    label	"Orient Along Path" 	    invisible 	    export	none 	} 	parm { 	    name	"up" 	    baseparm 	    label	"Orient Up Vector" 	    invisible 	    export	none 	} 	parm { 	    name	"bank" 	    baseparm 	    label	"Auto-Bank factor" 	    invisible 	    export	none 	}     }      group { 	name	"stdswitcher4_1" 	label	"Render"  	parm { 	    name	"shop_materialpath" 	    baseparm 	    label	"Material" 	    export	none 	} 	parm { 	    name	"shop_materialopts" 	    baseparm 	    label	"Options" 	    invisible 	    export	none 	} 	parm { 	    name	"tdisplay" 	    baseparm 	    label	"Display" 	    joinnext 	    export	none 	} 	parm { 	    name	"display" 	    baseparm 	    label	"Display" 	    export	none 	} 	parm { 	    name	"viewportlod" 	    label	"Display As" 	    type	ordinal 	    default	{ "full" } 	    help	"Choose how the object\'s geometry should be rendered in the viewport" 	    menu	{ 		"full"	"Full Geometry" 		"points"	"Point Cloud" 		"box"	"Bounding Box" 		"centroid"	"Centroid" 		"hidden"	"Hidden" 		"subd"	"Subdivision Surface / Curves" 	    } 	    parmtag	{ "spare_category" "Render" } 	} 	parm { 	    name	"vm_rendervisibility" 	    label	"Render Visibility" 	    type	string 	    default	{ "*" } 	    menureplace	{ 		"*"	"Visible to all" 		"primary"	"Visible only to primary rays" 		"primary|shadow"	"Visible only to primary and shadow rays" 		"-primary"	"Invisible to primary rays (Phantom)" 		"-diffuse"	"Invisible to diffuse rays" 		"-diffuse&-reflect&-refract"	"Invisible to secondary rays" 		""	"Invisible (Unrenderable)" 	    } 	    parmtag	{ "mantra_class" "object" } 	    parmtag	{ "mantra_name" "rendervisibility" } 	    parmtag	{ "spare_category" "Render" } 	} 	parm { 	    name	"vm_rendersubd" 	    label	"Render Polygons As Subdivision (Mantra)" 	    type	toggle 	    default	{ "0" } 	    parmtag	{ "mantra_class" "object" } 	    parmtag	{ "mantra_name" "rendersubd" } 	    parmtag	{ "spare_category" "Geometry" } 	} 	parm { 	    name	"vm_subdstyle" 	    label	"Subdivision Style" 	    type	string 	    default	{ "mantra_catclark" } 	    hidewhen	"{ vm_rendersubd == 0 }" 	    menu	{ 		"mantra_catclark"	"Mantra Catmull-Clark" 		"osd_catclark"	"OpenSubdiv Catmull-Clark" 	    } 	    parmtag	{ "mantra_class" "object" } 	    parmtag	{ "mantra_name" "subdstyle" } 	    parmtag	{ "spare_category" "Geometry" } 	} 	parm { 	    name	"vm_subdgroup" 	    label	"Subdivision Group" 	    type	string 	    default	{ "" } 	    hidewhen	"{ vm_rendersubd == 0 }" 	    parmtag	{ "mantra_class" "object" } 	    parmtag	{ "mantra_name" "subdgroup" } 	    parmtag	{ "spare_category" "Geometry" } 	} 	group { 	    name	"folder0" 	    label	"Shading"  	    parm { 		name	"categories" 		label	"Categories" 		type	string 		default	{ "" } 		help	"A list of tags which can be used to select the object" 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"reflectmask" 		label	"Reflection Mask" 		type	oplist 		default	{ "*" } 		help	"Objects that will be reflected on this object." 		parmtag	{ "opexpand" "1" } 		parmtag	{ "opfilter" "!!OBJ/GEOMETRY!!" } 		parmtag	{ "oprelative" "/obj" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"refractmask" 		label	"Refraction Mask" 		type	oplist 		default	{ "*" } 		help	"Objects that will be refracted on this object." 		parmtag	{ "opexpand" "1" } 		parmtag	{ "opfilter" "!!OBJ/GEOMETRY!!" } 		parmtag	{ "oprelative" "/obj" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"lightmask" 		label	"Light Mask" 		type	oplist 		default	{ "*" } 		help	"Lights that illuminate this object." 		parmtag	{ "opexpand" "1" } 		parmtag	{ "opfilter" "!!OBJ/LIGHT!!" } 		parmtag	{ "oprelative" "/obj" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"lightcategories" 		label	"Light Selection" 		type	string 		default	{ "*" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"vm_volumefilter" 		label	"Volume Filter" 		type	string 		default	{ "box" } 		menu	{ 		    "box"	"Box Filter" 		    "gaussian"	"Gaussian" 		    "bartlett"	"Bartlett (triangle)" 		    "catrom"	"Catmull-Rom" 		    "hanning"	"Hanning" 		    "blackman"	"Blackman" 		    "sinc"	"Sinc (sharpening)" 		} 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "filter" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"vm_volumefilterwidth" 		label	"Volume Filter Width" 		type	float 		default	{ "1" } 		range	{ 0.001 5 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "filterwidth" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"vm_matte" 		label	"Matte shading" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "matte" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"vm_rayshade" 		label	"Raytrace Shading" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "rayshade" } 		parmtag	{ "spare_category" "Shading" } 	    } 	}  	group { 	    name	"folder0_1" 	    label	"Sampling"  	    parm { 		name	"geo_velocityblur" 		label	"Geometry Velocity Blur" 		type	toggle 		default	{ "0" } 		disablewhen	"{ allowmotionblur == 0 }" 		parmtag	{ "spare_category" "Sampling" } 	    } 	}  	group { 	    name	"folder0_2" 	    label	"Dicing"  	    parm { 		name	"vm_shadingquality" 		label	"Shading Quality" 		type	float 		default	{ "1" } 		range	{ 0 10 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "shadingquality" } 		parmtag	{ "spare_category" "Dicing" } 	    } 	    parm { 		name	"vm_flatness" 		label	"Dicing Flatness" 		type	float 		default	{ "0.05" } 		range	{ 0 1 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "flatness" } 		parmtag	{ "spare_category" "Dicing" } 	    } 	    parm { 		name	"vm_raypredice" 		label	"Ray Predicing" 		type	integer 		default	{ "0" } 		menu	{ 		    "0"	"Disable Predicing" 		    "1"	"Full Predicing" 		    "2"	"Precompute Bounds" 		} 		range	{ 0 10 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "raypredice" } 		parmtag	{ "spare_category" "Dicing" } 	    } 	    parm { 		name	"vm_curvesurface" 		label	"Shade Curves As Surfaces" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "curvesurface" } 		parmtag	{ "spare_category" "Dicing" } 	    } 	}  	group { 	    name	"folder0_3" 	    label	"Geometry"  	    parm { 		name	"vm_rmbackface" 		label	"Backface Removal" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "rmbackface" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"shop_geometrypath" 		label	"Procedural Shader" 		type	oppath 		default	{ "" } 		parmtag	{ "opfilter" "!!SHOP/GEOMETRY!!" } 		parmtag	{ "oprelative" "." } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_forcegeometry" 		label	"Force Procedural Geometry Output" 		type	toggle 		default	{ "1" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_rendersubdcurves" 		label	"Render Polygon Curves As Subdivision (Mantra)" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "rendersubdcurves" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_renderpoints" 		label	"Render As Points (Mantra)" 		type	integer 		default	{ "2" } 		menu	{ 		    "0"	"No Point Rendering" 		    "1"	"Render Only Points" 		    "2"	"Render Unconnected Points" 		} 		range	{ 0 10 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "renderpoints" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_renderpointsas" 		label	"Render Points As (Mantra)" 		type	integer 		default	{ "0" } 		disablewhen	"{ vm_renderpoints == 0 }" 		menu	{ 		    "0"	"Spheres" 		    "1"	"Circles" 		} 		range	{ 0 10 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "renderpointsas" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_usenforpoints" 		label	"Use N For Point Rendering" 		type	toggle 		default	{ "0" } 		disablewhen	"{ vm_renderpoints == 0 }" 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "usenforpoints" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_pointscale" 		label	"Point Scale" 		type	float 		default	{ "1" } 		disablewhen	"{ vm_renderpoints == 0 }" 		range	{ 0! 10 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "pointscale" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_pscalediameter" 		label	"Treat Point Scale as Diameter Instead of Radius" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "pscalediameter" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_metavolume" 		label	"Metaballs as Volume" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "metavolume" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_coving" 		label	"Coving" 		type	integer 		default	{ "1" } 		menu	{ 		    "0"	"Disable Coving" 		    "1"	"Coving for displacement/sub-d" 		    "2"	"Coving for all primitives" 		} 		range	{ 0 10 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "coving" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_materialoverride" 		label	"Material Override" 		type	string 		default	{ "compact" } 		menu	{ 		    "none"	"Disabled" 		    "full"	"Evaluate for Each Primitve/Point" 		    "compact"	"Evaluate Once" 		} 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_overridedetail" 		label	"Ignore Geometry Attribute Shaders" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "overridedetail" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_procuseroottransform" 		label	"Proc Use Root Transform" 		type	toggle 		default	{ "1" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "procuseroottransform" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	}      }      group { 	name	"stdswitcher4_2" 	label	"Misc"  	parm { 	    name	"use_dcolor" 	    baseparm 	    label	"Set Wireframe Color" 	    export	none 	} 	parm { 	    name	"dcolor" 	    baseparm 	    label	"Wireframe Color" 	    export	none 	} 	parm { 	    name	"picking" 	    baseparm 	    label	"Viewport Selecting Enabled" 	    export	none 	} 	parm { 	    name	"pickscript" 	    baseparm 	    label	"Select Script" 	    export	none 	} 	parm { 	    name	"caching" 	    baseparm 	    label	"Cache Object Transform" 	    export	none 	} 	parm { 	    name	"vport_shadeopen" 	    baseparm 	    label	"Shade Open Curves In Viewport" 	    export	none 	} 	parm { 	    name	"vport_displayassubdiv" 	    baseparm 	    label	"Display as Subdivision in Viewport" 	    invisible 	    export	none 	} 	parm { 	    name	"vport_onionskin" 	    baseparm 	    label	"Onion Skinning" 	    export	none 	}     }  ' $_obj_geo1
-opset -S on $_obj_geo1
-opparm -V 16.0.633 $_obj_geo1 use_dcolor ( off )
-chautoscope $_obj_geo1 +tx +ty +tz +rx +ry +rz +sx +sy +sz
-opset -d on -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -x off $_obj_geo1
-opexprlanguage -s hscript $_obj_geo1
-opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1
-opcf $_obj_geo1
-
-# Network Box $_obj_geo1_Delaunay_triangulation
-set _obj_geo1_Delaunay_triangulation = `run("nbadd -v Delaunay_triangulation")`
-nblocate -x `$arg2 + -12.1672` -y  `$arg3 + 0.186008` $_obj_geo1_Delaunay_triangulation
-nbsize -w 3.03239 -h 1.75661 $_obj_geo1_Delaunay_triangulation
-nbset  -m off $_obj_geo1_Delaunay_triangulation
-nbcolor -c 0.52 0.52 0.52 $_obj_geo1_Delaunay_triangulation
-
-# Network Box $_obj_geo1_Urquhart_graph
-set _obj_geo1_Urquhart_graph = `run("nbadd -v Urquhart_graph")`
-nblocate -x `$arg2 + -12.0548` -y  `$arg3 + -5.34338` $_obj_geo1_Urquhart_graph
-nbsize -w 3.83824 -h 4.3818 $_obj_geo1_Urquhart_graph
-nbset  -m off $_obj_geo1_Urquhart_graph
-nbcolor -c 0.52 0.52 0.52 $_obj_geo1_Urquhart_graph
-
-# Network Box $_obj_geo1_Gabriel_graph
-set _obj_geo1_Gabriel_graph = `run("nbadd -v Gabriel_graph")`
-nblocate -x `$arg2 + -3.24413` -y  `$arg3 + -3.61456` $_obj_geo1_Gabriel_graph
-nbsize -w 3.15842 -h 2.65297 $_obj_geo1_Gabriel_graph
-nbset  -m off $_obj_geo1_Gabriel_graph
-nbcolor -c 0.52 0.52 0.52 $_obj_geo1_Gabriel_graph
-
-# Network Box $_obj_geo1_Relative_neighborhood_graph
-set _obj_geo1_Relative_neighborhood_graph = `run("nbadd -v Relative_neighborhood_graph")`
-nblocate -x `$arg2 + -7.71801` -y  `$arg3 + -3.61456` $_obj_geo1_Relative_neighborhood_graph
-nbsize -w 3.89378 -h 2.65297 $_obj_geo1_Relative_neighborhood_graph
-nbset  -m off $_obj_geo1_Relative_neighborhood_graph
-nbcolor -c 0.52 0.52 0.52 $_obj_geo1_Relative_neighborhood_graph
-
-# Network Box $_obj_geo1___netbox1
-set _obj_geo1___netbox1 = `run("nbadd -v __netbox1")`
-nblocate -x `$arg2 + 0.703362` -y  `$arg3 + -3.61456` $_obj_geo1___netbox1
-nbsize -w 2.89477 -h 2.65297 $_obj_geo1___netbox1
-nbset  -m off $_obj_geo1___netbox1
-nbcolor -c 0.52 0.52 0.52 $_obj_geo1___netbox1
-
-# Network Box $_obj_geo1___netbox2
-set _obj_geo1___netbox2 = `run("nbadd -v __netbox2")`
-nblocate -x `$arg2 + 4.43717` -y  `$arg3 + -2.49005` $_obj_geo1___netbox2
-nbsize -w 3.11001 -h 1.52846 $_obj_geo1___netbox2
-nbset  -m off $_obj_geo1___netbox2
-nbcolor -c 0.52 0.52 0.52 $_obj_geo1___netbox2
-
-# Network Box $_obj_geo1___netbox3
-set _obj_geo1___netbox3 = `run("nbadd -v __netbox3")`
-nblocate -x `$arg2 + 9.29739` -y  `$arg3 + -6.72872` $_obj_geo1___netbox3
-nbsize -w 4.18742 -h 5.76713 $_obj_geo1___netbox3
-nbset  -m off $_obj_geo1___netbox3
-nbcolor -c 0.52 0.52 0.52 $_obj_geo1___netbox3
-
-# Node $_obj_geo1_mark_longest_edges (Sop/attribwrangle)
-set _obj_geo1_mark_longest_edges = `run("opadd -e -n -v attribwrangle mark_longest_edges")`
-oplocate -x `$arg2 + -11.654400000000001` -y `$arg3 + -1.8485400000000001` $_obj_geo1_mark_longest_edges
-opparm $_obj_geo1_mark_longest_edges  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_geo1_mark_longest_edges class ( primitive ) snippet ( 'int edge[];\nfloat longest = 0.0;\n\nint vertices[] = primvertices(0, @primnum);\nfor(int i=0; i<len(vertices); i++)\n{\n    int vtx1 = vertices[i];\n    int vtx2 = vertices[(i + 1) % len(vertices)];\n    \n    int pt1 = vertexpoint(0, vtx1);\n    int pt2 = vertexpoint(0, vtx2);\n    \n    vector p1 = point(0, \'P\', pt1);\n    vector p2 = point(0, \'P\', pt2);\n    \n    float dist = distance(p1, p2);\n    \n    if(dist > longest)\n    {\n        longest = dist;\n        \n        int e[];\n        push(e, pt1);\n        push(e, pt2);\n        edge = e;\n    }\n}\n\nif(len(edge) != 0)\n{\n    s@edges = \' p\' + itoa(edge[0]) + \'-\' + itoa(edge[1]);\n}' )
-opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_mark_longest_edges
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_geo1_mark_longest_edges
-nbop $_obj_geo1_Urquhart_graph add $_obj_geo1_mark_longest_edges
-opexprlanguage -s hscript $_obj_geo1_mark_longest_edges
-opuserdata -n '___Version___' -v '' $_obj_geo1_mark_longest_edges
-
-# Node $_obj_geo1_relative_neighborhood_graph (Sop/attribwrangle)
-set _obj_geo1_relative_neighborhood_graph = `run("opadd -e -n -v attribwrangle relative_neighborhood_graph")`
-oplocate -x `$arg2 + -7.3210100000000002` -y `$arg3 + -1.8485400000000001` $_obj_geo1_relative_neighborhood_graph
-opparm $_obj_geo1_relative_neighborhood_graph  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_geo1_relative_neighborhood_graph snippet ( '//for(int pt = @ptnum + 1; pt < @numpt; pt++)\nforeach(int pt; nearpoints(0, @P, 1.0, 10))\n{\n    if(pt == @ptnum) continue;\n    \n    vector p = point(0, \'P\', pt);\n    float dist = distance(p, @P);\n    \n    int ptsA[] = nearpoints(0, @P, dist);\n    int ptsB[] = nearpoints(0, p, dist);\n    \n    int chk = 0;\n    foreach(int cpt; ptsB)\n    {\n        if(cpt == @ptnum || cpt == pt) continue;\n        \n        chk = removevalue(ptsA, cpt);\n        if(chk) break;\n    }\n    \n    if(!chk)\n    {\n        int pr = addprim(0, \'polyline\');\n        addvertex(0, pr, @ptnum);\n        addvertex(0, pr, pt);\n    }\n}' )
-opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_relative_neighborhood_graph
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_geo1_relative_neighborhood_graph
-nbop $_obj_geo1_Relative_neighborhood_graph add $_obj_geo1_relative_neighborhood_graph
-opexprlanguage -s hscript $_obj_geo1_relative_neighborhood_graph
-opuserdata -n '___Version___' -v '' $_obj_geo1_relative_neighborhood_graph
-
-# Node $_obj_geo1_gabriel_graph (Sop/attribwrangle)
-set _obj_geo1_gabriel_graph = `run("opadd -e -n -v attribwrangle gabriel_graph")`
-oplocate -x `$arg2 + -2.8471299999999999` -y `$arg3 + -1.8485400000000001` $_obj_geo1_gabriel_graph
-opparm $_obj_geo1_gabriel_graph  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_geo1_gabriel_graph snippet ( '//for(int pt = @ptnum + 1; pt < @numpt; pt++)\nforeach(int pt; nearpoints(0, @P, 1.0, 10))\n{\n    if(pt == @ptnum) continue;\n    \n    vector p = point(0, \'P\', pt);\n    vector v = p - @P;\n    vector center = @P + v * 0.5;\n    float dist = length(v) * 0.5;\n    \n    int pts[] = nearpoints(0, center, dist);\n    \n    int chk = 0;\n    foreach(int cpt; pts)\n    {\n        if(cpt == @ptnum || cpt == pt) continue;\n        \n        chk = 1;\n        break;\n    }\n    \n    if(!chk)\n    {\n        int pr = addprim(0, \'polyline\');\n        addvertex(0, pr, @ptnum);\n        addvertex(0, pr, pt);\n    }\n}' )
-opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_gabriel_graph
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_geo1_gabriel_graph
-nbop $_obj_geo1_Gabriel_graph add $_obj_geo1_gabriel_graph
-opexprlanguage -s hscript $_obj_geo1_gabriel_graph
-opuserdata -n '___Version___' -v '' $_obj_geo1_gabriel_graph
-
-# Node $_obj_geo1_clean1 (Sop/clean)
-set _obj_geo1_clean1 = `run("opadd -e -n -v clean clean1")`
-oplocate -x `$arg2 + -2.8441299999999998` -y `$arg3 + -2.8864399999999999` $_obj_geo1_clean1
-opparm $_obj_geo1_clean1 fixoverlap ( on ) deleteoverlap ( off )
-chautoscope $_obj_geo1_clean1 +delete_small
-opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_clean1
-opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_geo1_clean1
-nbop $_obj_geo1_Gabriel_graph add $_obj_geo1_clean1
-opexprlanguage -s hscript $_obj_geo1_clean1
-opuserdata -n '___Version___' -v '' $_obj_geo1_clean1
-
-# Node $_obj_geo1_clean2 (Sop/clean)
-set _obj_geo1_clean2 = `run("opadd -e -n -v clean clean2")`
-oplocate -x `$arg2 + -7.3180100000000001` -y `$arg3 + -2.8864399999999999` $_obj_geo1_clean2
-opparm $_obj_geo1_clean2 fixoverlap ( on ) deleteoverlap ( off )
-chautoscope $_obj_geo1_clean2 +delete_small
-opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_clean2
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_geo1_clean2
-nbop $_obj_geo1_Relative_neighborhood_graph add $_obj_geo1_clean2
-opexprlanguage -s hscript $_obj_geo1_clean2
-opuserdata -n '___Version___' -v '' $_obj_geo1_clean2
-
-# Node $_obj_geo1_convertline2 (Sop/convertline)
-set _obj_geo1_convertline2 = `run("opadd -e -n -v convertline convertline2")`
-oplocate -x `$arg2 + -11.651400000000001` -y `$arg3 + -4.8864400000000003` $_obj_geo1_convertline2
-opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_convertline2
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_geo1_convertline2
-nbop $_obj_geo1_Urquhart_graph add $_obj_geo1_convertline2
-opexprlanguage -s hscript $_obj_geo1_convertline2
-opuserdata -n '___Version___' -v '' $_obj_geo1_convertline2
-
-# Node $_obj_geo1_nearest_neighbor_graph (Sop/attribwrangle)
-set _obj_geo1_nearest_neighbor_graph = `run("opadd -e -n -v attribwrangle nearest_neighbor_graph")`
-oplocate -x `$arg2 + 1.12374` -y `$arg3 + -1.96912` $_obj_geo1_nearest_neighbor_graph
-opparm $_obj_geo1_nearest_neighbor_graph  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_geo1_nearest_neighbor_graph snippet ( 'int pts[] = nearpoints(0, @P, 1.0, 2);\n\nint pr = addprim(0, \'polyline\');\naddvertex(0, pr, @ptnum);\naddvertex(0, pr, pts[1]);\n' )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_nearest_neighbor_graph
-nbop $_obj_geo1___netbox1 add $_obj_geo1_nearest_neighbor_graph
-opexprlanguage -s hscript $_obj_geo1_nearest_neighbor_graph
-opuserdata -n '___Version___' -v '' $_obj_geo1_nearest_neighbor_graph
-
-# Node $_obj_geo1_clean8 (Sop/clean)
-set _obj_geo1_clean8 = `run("opadd -e -n -v clean clean8")`
-oplocate -x `$arg2 + 1.1267400000000001` -y `$arg3 + -3.0448300000000001` $_obj_geo1_clean8
-opparm $_obj_geo1_clean8 fixoverlap ( on ) deleteoverlap ( off )
-chautoscope $_obj_geo1_clean8 +delete_small
-opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_clean8
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_geo1_clean8
-nbop $_obj_geo1___netbox1 add $_obj_geo1_clean8
-opexprlanguage -s hscript $_obj_geo1_clean8
-opuserdata -n '___Version___' -v '' $_obj_geo1_clean8
-
-# Node $_obj_geo1_connectadjacentpieces1 (Sop/connectadjacentpieces)
-set _obj_geo1_connectadjacentpieces1 = `run("opadd -e -n -v connectadjacentpieces connectadjacentpieces1")`
-oplocate -x `$arg2 + 4.8371700000000004` -y `$arg3 + -1.9681200000000001` $_obj_geo1_connectadjacentpieces1
-opparm -V 1 $_obj_geo1_connectadjacentpieces1 connecttype ( pointcloud )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_connectadjacentpieces1
-nbop $_obj_geo1___netbox2 add $_obj_geo1_connectadjacentpieces1
-opexprlanguage -s hscript $_obj_geo1_connectadjacentpieces1
-opuserdata -n '___Version___' -v '1' $_obj_geo1_connectadjacentpieces1
-opuserdata -n '___toolcount___' -v '6' $_obj_geo1_connectadjacentpieces1
-opuserdata -n '___toolid___' -v 'dynamics_gluenetwork' $_obj_geo1_connectadjacentpieces1
-
-# Node $_obj_geo1_clean3 (Sop/clean)
-set _obj_geo1_clean3 = `run("opadd -e -n -v clean clean3")`
-oplocate -x `$arg2 + 9.6974` -y `$arg3 + -3.0070199999999998` $_obj_geo1_clean3
-opparm $_obj_geo1_clean3 fixoverlap ( on ) deleteoverlap ( off )
-chautoscope $_obj_geo1_clean3 +delete_small
-opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_clean3
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_geo1_clean3
-nbop $_obj_geo1___netbox3 add $_obj_geo1_clean3
-opexprlanguage -s hscript $_obj_geo1_clean3
-opuserdata -n '___Version___' -v '' $_obj_geo1_clean3
-
-# Node $_obj_geo1_prims_algorithm (Sop/attribwrangle)
-set _obj_geo1_prims_algorithm = `run("opadd -e -n -v attribwrangle prims_algorithm")`
-oplocate -x `$arg2 + 9.6943999999999999` -y `$arg3 + -5.0469200000000001` $_obj_geo1_prims_algorithm
-opparm $_obj_geo1_prims_algorithm  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_geo1_prims_algorithm class ( detail ) snippet ( 'int ptlist[];\nfor(int pt=0; pt<@numpt; pt++)\n    push(ptlist, pt);\n    \nint newlist[];\npush(newlist, 0);\nremovevalue(ptlist, 0);\n\nwhile(len(ptlist) > 0)\n{\n    float mindist = 10000;\n    int newpt = -1;\n    int newedge = -1;\n    \n    foreach(int pt; newlist)\n    {\n        foreach(int prim; pointprims(0, pt))\n        {\n            int targetpt = primpoint(0, prim, 0);\n            if(targetpt == pt) targetpt = primpoint(0, prim, 1);\n            \n            if(find(newlist, targetpt) > -1) continue;\n            \n            float dist = prim(0, \'restlength\', prim);\n            if(dist <= mindist)\n            {\n                mindist = dist;\n                newpt = targetpt;\n                newedge = prim;\n            }\n        }\n    }\n    \n    if(newpt == -1) break;\n    \n    push(newlist, newpt);\n    removevalue(ptlist, newpt);\n    setprimgroup(0, \'newedge\', newedge, 1);\n}' )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_prims_algorithm
-nbop $_obj_geo1___netbox3 add $_obj_geo1_prims_algorithm
-opexprlanguage -s hscript $_obj_geo1_prims_algorithm
-opuserdata -n '___Version___' -v '' $_obj_geo1_prims_algorithm
-
-# Node $_obj_geo1_convertline1 (Sop/convertline)
-set _obj_geo1_convertline1 = `run("opadd -e -n -v convertline convertline1")`
-oplocate -x `$arg2 + 9.6974` -y `$arg3 + -4.0070199999999998` $_obj_geo1_convertline1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_convertline1
-nbop $_obj_geo1___netbox3 add $_obj_geo1_convertline1
-opexprlanguage -s hscript $_obj_geo1_convertline1
-opuserdata -n '___Version___' -v '' $_obj_geo1_convertline1
-
-# Node $_obj_geo1_relative_neighborhood_graph1 (Sop/attribwrangle)
-set _obj_geo1_relative_neighborhood_graph1 = `run("opadd -e -n -v attribwrangle relative_neighborhood_graph1")`
-oplocate -x `$arg2 + 9.6943999999999999` -y `$arg3 + -1.96912` $_obj_geo1_relative_neighborhood_graph1
-opparm $_obj_geo1_relative_neighborhood_graph1  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_geo1_relative_neighborhood_graph1 snippet ( '//for(int pt = @ptnum + 1; pt < @numpt; pt++)\nforeach(int pt; nearpoints(0, @P, 1.0, 10))\n{\n    if(pt == @ptnum) continue;\n    \n    vector p = point(0, \'P\', pt);\n    float dist = distance(p, @P);\n    \n    int ptsA[] = nearpoints(0, @P, dist);\n    int ptsB[] = nearpoints(0, p, dist);\n    \n    int chk = 0;\n    foreach(int cpt; ptsB)\n    {\n        if(cpt == @ptnum || cpt == pt) continue;\n        \n        chk = removevalue(ptsA, cpt);\n        if(chk) break;\n    }\n    \n    if(!chk)\n    {\n        int pr = addprim(0, \'polyline\');\n        addvertex(0, pr, @ptnum);\n        addvertex(0, pr, pt);\n    }\n}' )
-opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_relative_neighborhood_graph1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_geo1_relative_neighborhood_graph1
-nbop $_obj_geo1___netbox3 add $_obj_geo1_relative_neighborhood_graph1
-opexprlanguage -s hscript $_obj_geo1_relative_neighborhood_graph1
-opuserdata -n '___Version___' -v '' $_obj_geo1_relative_neighborhood_graph1
-opcf ..
-opcf $_obj_geo1
-
-# Node $_obj_geo1_scatter6 (Sop/scatter::2.0)
-set _obj_geo1_scatter6 = `run("opadd -e -n -v scatter::2.0 scatter6")`
-oplocate -x `$arg2 + -5.9353100000000003` -y `$arg3 + 3.2320500000000001` $_obj_geo1_scatter6
-opparm -V 16.0.633 $_obj_geo1_scatter6 npts ( 100 ) relaxpoints ( off )
-opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_scatter6
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_scatter6
-opexprlanguage -s hscript $_obj_geo1_scatter6
-opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_scatter6
-
-# Node $_obj_geo1_circle7 (Sop/circle)
-set _obj_geo1_circle7 = `run("opadd -e -n -v circle circle7")`
-oplocate -x `$arg2 + -5.9353100000000003` -y `$arg3 + 4.4422499999999996` $_obj_geo1_circle7
-opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_circle7
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_circle7
-opexprlanguage -s hscript $_obj_geo1_circle7
-opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_circle7
-
-# Node $_obj_geo1_null1 (Sop/null)
-set _obj_geo1_null1 = `run("opadd -e -n -v null null1")`
-oplocate -x `$arg2 + -5.9353100000000003` -y `$arg3 + 2.0660500000000002` $_obj_geo1_null1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_null1
-opexprlanguage -s hscript $_obj_geo1_null1
-opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_null1
-
-# Node $_obj_geo1_triangulate2d1 (Sop/triangulate2d::2.0)
-set _obj_geo1_triangulate2d1 = `run("opadd -e -n -v triangulate2d::2.0 triangulate2d1")`
-oplocate -x `$arg2 + -11.938700000000001` -y `$arg3 + 0.90674600000000005` $_obj_geo1_triangulate2d1
-opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_triangulate2d1
-opset -d off -r off -h on -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_triangulate2d1
-nbop $_obj_geo1_Delaunay_triangulation add $_obj_geo1_triangulate2d1
-opexprlanguage -s hscript $_obj_geo1_triangulate2d1
-opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_triangulate2d1
-
-# Node $_obj_geo1_dissolve1 (Sop/dissolve::2.0)
-set _obj_geo1_dissolve1 = `run("opadd -e -n -v dissolve::2.0 dissolve1")`
-oplocate -x `$arg2 + -11.651400000000001` -y `$arg3 + -3.8864399999999999` $_obj_geo1_dissolve1
-opparm -V 16.0.633 $_obj_geo1_dissolve1 group ( '`details(opinputpath(\'.\', 0), \'edges\')' ) reminlinepts ( off )
-opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_dissolve1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_dissolve1
-nbop $_obj_geo1_Urquhart_graph add $_obj_geo1_dissolve1
-opexprlanguage -s hscript $_obj_geo1_dissolve1
-opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_dissolve1
-
-# Node $_obj_geo1_attribpromote1 (Sop/attribpromote)
-set _obj_geo1_attribpromote1 = `run("opadd -e -n -v attribpromote attribpromote1")`
-oplocate -x `$arg2 + -11.6548` -y `$arg3 + -2.8864399999999999` $_obj_geo1_attribpromote1
-opparm -V 16.0.633 $_obj_geo1_attribpromote1 inname ( edges ) inclass ( primitive ) outclass ( detail ) method ( sum )
-opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_attribpromote1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_attribpromote1
-nbop $_obj_geo1_Urquhart_graph add $_obj_geo1_attribpromote1
-opexprlanguage -s hscript $_obj_geo1_attribpromote1
-opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_attribpromote1
-
-# Node $_obj_geo1_blast1 (Sop/blast)
-set _obj_geo1_blast1 = `run("opadd -e -n -v blast blast1")`
-oplocate -x `$arg2 + 9.6974` -y `$arg3 + -6.0848199999999997` $_obj_geo1_blast1
-opparm -V 16.0.633 $_obj_geo1_blast1 group ( newedge ) negate ( on )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_blast1
-nbop $_obj_geo1___netbox3 add $_obj_geo1_blast1
-opexprlanguage -s hscript $_obj_geo1_blast1
-opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_blast1
-oporder -e scatter6 circle7 null1 mark_longest_edges relative_neighborhood_graph gabriel_graph clean1 clean2 convertline2 nearest_neighbor_graph clean8 connectadjacentpieces1 clean3 prims_algorithm convertline1 relative_neighborhood_graph1 triangulate2d1 dissolve1 attribpromote1 blast1 
-opcf ..
-opset -p on $_obj_geo1
-
-opcf $arg1
-opcf $_obj_geo1
-opwire -n $_obj_geo1_circle7 -0 $_obj_geo1_scatter6
-opwire -n $_obj_geo1_scatter6 -0 $_obj_geo1_null1
-opwire -n $_obj_geo1_triangulate2d1 -0 $_obj_geo1_mark_longest_edges
-opwire -n $_obj_geo1_null1 -0 $_obj_geo1_relative_neighborhood_graph
-opwire -n $_obj_geo1_null1 -0 $_obj_geo1_gabriel_graph
-opwire -n $_obj_geo1_gabriel_graph -0 $_obj_geo1_clean1
-opwire -n $_obj_geo1_relative_neighborhood_graph -0 $_obj_geo1_clean2
-opwire -n $_obj_geo1_dissolve1 -0 $_obj_geo1_convertline2
-opwire -n $_obj_geo1_null1 -0 $_obj_geo1_nearest_neighbor_graph
-opwire -n $_obj_geo1_nearest_neighbor_graph -0 $_obj_geo1_clean8
-opwire -n $_obj_geo1_null1 -0 $_obj_geo1_connectadjacentpieces1
-opwire -n $_obj_geo1_relative_neighborhood_graph1 -0 $_obj_geo1_clean3
-opwire -n $_obj_geo1_convertline1 -0 $_obj_geo1_prims_algorithm
-opwire -n $_obj_geo1_clean3 -0 $_obj_geo1_convertline1
-opwire -n $_obj_geo1_null1 -0 $_obj_geo1_relative_neighborhood_graph1
-opwire -n $_obj_geo1_null1 -0 $_obj_geo1_triangulate2d1
-opwire -n $_obj_geo1_attribpromote1 -0 $_obj_geo1_dissolve1
-opwire -n $_obj_geo1_mark_longest_edges -0 $_obj_geo1_attribpromote1
-opwire -n $_obj_geo1_prims_algorithm -0 $_obj_geo1_blast1
-opcf ..
-
-set oidx = 0
-if ($argc >= 9 && "$arg9" != "") then
-    set oidx = $arg9
-endif
-
-if ($argc >= 5 && "$arg4" != "") then
-    set output = $_obj_geo1
-    opwire -n $output -$arg5 $arg4
-endif
-if ($argc >= 6 && "$arg6" != "") then
-    set input = $_obj_geo1
-    if ($arg8) then
-        opwire -n -i $arg6 -0 $input
-    else
-        opwire -n -o $oidx $arg6 -0 $input
-    endif
-endif
-opcf $saved_path
-'''
-hou.hscript(h_preamble + h_extra_args + h_cmd)
-]]></script>
-  </tool>
-
   <tool name="geo0" label="sc_crowd" icon="OBJ_geo">
     <helpURL>operator:Object/geo</helpURL>
     <toolMenuContext name="network">
@@ -7851,6 +7431,428 @@ if ($argc >= 5 && "$arg4" != "") then
 endif
 if ($argc >= 6 && "$arg6" != "") then
     set input = $_obj_sc_crowd
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="graph" label="graph" icon="OBJ_geo">
+    <helpURL>operator:Object/geo</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Object/geo</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('geo'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1 (Object/geo)
+set _obj_geo1 = `run("opadd -e -n -v geo geo1")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1
+opspareds '    group {  name    "stdswitcher4"  label   "Transform"     parm {      name        "xOrd"      baseparm        label       "Transform Order"           joinnext        export      none    }       parm {      name        "rOrd"      baseparm        label       "Rotate Order"      export      none    }       parm {      name        "t"         baseparm        label       "Translate"         export      all     }       parm {      name        "r"         baseparm        label       "Rotate"            export      all     }       parm {      name        "s"         baseparm        label       "Scale"             export      none    }       parm {      name        "p"         baseparm        label       "Pivot"             export      none    }       parm {      name        "scale"             baseparm        label       "Uniform Scale"             export      none    }       parm {      name        "pre_xform"         baseparm        label       "Modify Pre-Transform"      export      none    }       parm {      name        "keeppos"           baseparm        label       "Keep Position When Parenting"      export      none    }       parm {      name        "childcomp"         baseparm        label       "Child Compensation"        export      none    }       parm {      name        "constraints_on"            baseparm        label       "Enable Constraints"        export      none    }       parm {      name        "constraints_path"          baseparm        label       "Constraints"       export      none    }       parm {      name        "lookatpath"        baseparm        label       "Look At"           invisible       export      none    }       parm {      name        "lookupobjpath"             baseparm        label       "Look Up Object"            invisible       export      none    }       parm {      name        "lookup"            baseparm        label       "Look At Up Vector"         invisible       export      none    }       parm {      name        "pathobjpath"       baseparm        label       "Path Object"       invisible       export      none    }       parm {      name        "roll"      baseparm        label       "Roll"      invisible       export      none    }       parm {      name        "pos"       baseparm        label       "Position"          invisible       export      none    }       parm {      name        "uparmtype"         baseparm        label       "Parameterization"          invisible       export      none    }       parm {      name        "pathorient"        baseparm        label       "Orient Along Path"         invisible       export      none    }       parm {      name        "up"        baseparm        label       "Orient Up Vector"          invisible       export      none    }       parm {      name        "bank"      baseparm        label       "Auto-Bank factor"          invisible       export      none    }     }      group {    name    "stdswitcher4_1"        label   "Render"        parm {      name        "shop_materialpath"         baseparm        label       "Material"          export      none    }       parm {      name        "shop_materialopts"         baseparm        label       "Options"           invisible       export      none    }       parm {      name        "tdisplay"          baseparm        label       "Display"           joinnext        export      none    }       parm {      name        "display"           baseparm        label       "Display"           export      none    }       parm {      name        "viewportlod"       label       "Display As"        type        ordinal             default     { "full" }          help        "Choose how the object\'s geometry should be rendered in the viewport"      menu        {               "full"  "Full Geometry"                 "points"        "Point Cloud"           "box"   "Bounding Box"          "centroid"      "Centroid"              "hidden"        "Hidden"                "subd"  "Subdivision Surface / Curves"      }       parmtag     { "spare_category" "Render" }   }       parm {      name        "vm_rendervisibility"       label       "Render Visibility"         type        string      default     { "*" }             menureplace {               "*"     "Visible to all"                "primary"       "Visible only to primary rays"          "primary|shadow"        "Visible only to primary and shadow rays"               "-primary"      "Invisible to primary rays (Phantom)"           "-diffuse"      "Invisible to diffuse rays"             "-diffuse&-reflect&-refract"    "Invisible to secondary rays"           ""      "Invisible (Unrenderable)"          }       parmtag     { "mantra_class" "object" }         parmtag     { "mantra_name" "rendervisibility" }        parmtag     { "spare_category" "Render" }   }       parm {      name        "vm_rendersubd"             label       "Render Polygons As Subdivision (Mantra)"           type        toggle      default     { "0" }             parmtag     { "mantra_class" "object" }         parmtag     { "mantra_name" "rendersubd" }      parmtag     { "spare_category" "Geometry" }         }       parm {      name        "vm_subdstyle"      label       "Subdivision Style"         type        string      default     { "mantra_catclark" }       hidewhen    "{ vm_rendersubd == 0 }"            menu        {               "mantra_catclark"       "Mantra Catmull-Clark"          "osd_catclark"  "OpenSubdiv Catmull-Clark"          }       parmtag     { "mantra_class" "object" }         parmtag     { "mantra_name" "subdstyle" }       parmtag     { "spare_category" "Geometry" }         }       parm {      name        "vm_subdgroup"      label       "Subdivision Group"         type        string      default     { "" }      hidewhen    "{ vm_rendersubd == 0 }"            parmtag     { "mantra_class" "object" }         parmtag     { "mantra_name" "subdgroup" }       parmtag     { "spare_category" "Geometry" }         }       group {             name        "folder0"           label       "Shading"           parm {              name    "categories"            label   "Categories"            type    string          default { "" }          help    "A list of tags which can be used to select the object"                 parmtag { "spare_category" "Shading" }      }       parm {              name    "reflectmask"           label   "Reflection Mask"               type    oplist          default { "*" }                 help    "Objects that will be reflected on this object."                parmtag { "opexpand" "1" }              parmtag { "opfilter" "!!OBJ/GEOMETRY!!" }               parmtag { "oprelative" "/obj" }                 parmtag { "spare_category" "Shading" }      }       parm {              name    "refractmask"           label   "Refraction Mask"               type    oplist          default { "*" }                 help    "Objects that will be refracted on this object."                parmtag { "opexpand" "1" }              parmtag { "opfilter" "!!OBJ/GEOMETRY!!" }               parmtag { "oprelative" "/obj" }                 parmtag { "spare_category" "Shading" }      }       parm {              name    "lightmask"             label   "Light Mask"            type    oplist          default { "*" }                 help    "Lights that illuminate this object."           parmtag { "opexpand" "1" }              parmtag { "opfilter" "!!OBJ/LIGHT!!" }          parmtag { "oprelative" "/obj" }                 parmtag { "spare_category" "Shading" }      }       parm {              name    "lightcategories"               label   "Light Selection"               type    string          default { "*" }                 parmtag { "spare_category" "Shading" }      }       parm {              name    "vm_volumefilter"               label   "Volume Filter"                 type    string          default { "box" }               menu    {                   "box"       "Box Filter"                "gaussian"  "Gaussian"                  "bartlett"  "Bartlett (triangle)"               "catrom"    "Catmull-Rom"               "hanning"   "Hanning"                   "blackman"  "Blackman"                  "sinc"      "Sinc (sharpening)"             }               parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "filter" }              parmtag { "spare_category" "Shading" }      }       parm {              name    "vm_volumefilterwidth"          label   "Volume Filter Width"           type    float           default { "1" }                 range   { 0.001 5 }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "filterwidth" }                 parmtag { "spare_category" "Shading" }      }       parm {              name    "vm_matte"              label   "Matte shading"                 type    toggle          default { "0" }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "matte" }               parmtag { "spare_category" "Shading" }      }       parm {              name    "vm_rayshade"           label   "Raytrace Shading"              type    toggle          default { "0" }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "rayshade" }            parmtag { "spare_category" "Shading" }      }   }       group {             name        "folder0_1"         label       "Sampling"          parm {              name    "geo_velocityblur"              label   "Geometry Velocity Blur"                type    toggle          default { "0" }                 disablewhen     "{ allowmotionblur == 0 }"              parmtag { "spare_category" "Sampling" }             }   }       group {             name        "folder0_2"         label       "Dicing"            parm {              name    "vm_shadingquality"             label   "Shading Quality"               type    float           default { "1" }                 range   { 0 10 }                parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "shadingquality" }              parmtag { "spare_category" "Dicing" }       }       parm {              name    "vm_flatness"           label   "Dicing Flatness"               type    float           default { "0.05" }              range   { 0 1 }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "flatness" }            parmtag { "spare_category" "Dicing" }       }       parm {              name    "vm_raypredice"                 label   "Ray Predicing"                 type    integer                 default { "0" }                 menu    {                   "0" "Disable Predicing"                 "1" "Full Predicing"                    "2" "Precompute Bounds"             }               range   { 0 10 }                parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "raypredice" }          parmtag { "spare_category" "Dicing" }       }       parm {              name    "vm_curvesurface"               label   "Shade Curves As Surfaces"              type    toggle          default { "0" }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "curvesurface" }                parmtag { "spare_category" "Dicing" }       }   }       group {             name        "folder0_3"         label       "Geometry"          parm {              name    "vm_rmbackface"                 label   "Backface Removal"              type    toggle          default { "0" }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "rmbackface" }          parmtag { "spare_category" "Geometry" }             }       parm {              name    "shop_geometrypath"             label   "Procedural Shader"             type    oppath          default { "" }          parmtag { "opfilter" "!!SHOP/GEOMETRY!!" }              parmtag { "oprelative" "." }            parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_forcegeometry"              label   "Force Procedural Geometry Output"              type    toggle          default { "1" }                 parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_rendersubdcurves"           label   "Render Polygon Curves As Subdivision (Mantra)"                 type    toggle          default { "0" }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "rendersubdcurves" }            parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_renderpoints"               label   "Render As Points (Mantra)"             type    integer                 default { "2" }                 menu    {                   "0" "No Point Rendering"                "1" "Render Only Points"                "2" "Render Unconnected Points"             }               range   { 0 10 }                parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "renderpoints" }                parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_renderpointsas"             label   "Render Points As (Mantra)"             type    integer                 default { "0" }                 disablewhen     "{ vm_renderpoints == 0 }"              menu    {                   "0" "Spheres"                   "1" "Circles"               }               range   { 0 10 }                parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "renderpointsas" }              parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_usenforpoints"              label   "Use N For Point Rendering"             type    toggle          default { "0" }                 disablewhen     "{ vm_renderpoints == 0 }"              parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "usenforpoints" }               parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_pointscale"                 label   "Point Scale"           type    float           default { "1" }                 disablewhen     "{ vm_renderpoints == 0 }"              range   { 0! 10 }               parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "pointscale" }          parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_pscalediameter"             label   "Treat Point Scale as Diameter Instead of Radius"               type    toggle          default { "0" }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "pscalediameter" }              parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_metavolume"                 label   "Metaballs as Volume"           type    toggle          default { "0" }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "metavolume" }          parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_coving"             label   "Coving"                type    integer                 default { "1" }                 menu    {                   "0" "Disable Coving"                    "1" "Coving for displacement/sub-d"                     "2" "Coving for all primitives"             }               range   { 0 10 }                parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "coving" }              parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_materialoverride"           label   "Material Override"             type    string          default { "compact" }           menu    {                   "none"      "Disabled"                  "full"      "Evaluate for Each Primitve/Point"                  "compact"   "Evaluate Once"                 }               parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_overridedetail"             label   "Ignore Geometry Attribute Shaders"             type    toggle          default { "0" }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "overridedetail" }              parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_procuseroottransform"               label   "Proc Use Root Transform"               type    toggle          default { "1" }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "procuseroottransform" }                parmtag { "spare_category" "Geometry" }             }   }      }      group {   name    "stdswitcher4_2"        label   "Misc"          parm {      name        "use_dcolor"        baseparm        label       "Set Wireframe Color"       export      none    }       parm {      name        "dcolor"            baseparm        label       "Wireframe Color"           export      none    }       parm {      name        "picking"           baseparm        label       "Viewport Selecting Enabled"        export      none    }       parm {      name        "pickscript"        baseparm        label       "Select Script"             export      none    }       parm {      name        "caching"           baseparm        label       "Cache Object Transform"            export      none    }       parm {      name        "vport_shadeopen"           baseparm        label       "Shade Open Curves In Viewport"             export      none    }       parm {      name        "vport_displayassubdiv"             baseparm        label       "Display as Subdivision in Viewport"        invisible       export      none    }       parm {      name        "vport_onionskin"           baseparm        label       "Onion Skinning"            export      none    }     }  ' $_obj_geo1
+opset -S on $_obj_geo1
+opparm -V 16.0.633 $_obj_geo1 use_dcolor ( off )
+chautoscope $_obj_geo1 +tx +ty +tz +rx +ry +rz +sx +sy +sz
+opset -d on -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -x off $_obj_geo1
+opexprlanguage -s hscript $_obj_geo1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1
+opcf $_obj_geo1
+
+# Network Box $_obj_geo1_Delaunay_triangulation
+set _obj_geo1_Delaunay_triangulation = `run("nbadd -v Delaunay_triangulation")`
+nblocate -x `$arg2 + -12.1672` -y  `$arg3 + 0.186008` $_obj_geo1_Delaunay_triangulation
+nbsize -w 3.03239 -h 1.75661 $_obj_geo1_Delaunay_triangulation
+nbset  -m off $_obj_geo1_Delaunay_triangulation
+nbcolor -c 0.52 0.52 0.52 $_obj_geo1_Delaunay_triangulation
+
+# Network Box $_obj_geo1_Urquhart_graph
+set _obj_geo1_Urquhart_graph = `run("nbadd -v Urquhart_graph")`
+nblocate -x `$arg2 + -12.0548` -y  `$arg3 + -5.34338` $_obj_geo1_Urquhart_graph
+nbsize -w 3.83824 -h 4.3818 $_obj_geo1_Urquhart_graph
+nbset  -m off $_obj_geo1_Urquhart_graph
+nbcolor -c 0.52 0.52 0.52 $_obj_geo1_Urquhart_graph
+
+# Network Box $_obj_geo1_Gabriel_graph
+set _obj_geo1_Gabriel_graph = `run("nbadd -v Gabriel_graph")`
+nblocate -x `$arg2 + -3.24413` -y  `$arg3 + -3.61456` $_obj_geo1_Gabriel_graph
+nbsize -w 3.15842 -h 2.65297 $_obj_geo1_Gabriel_graph
+nbset  -m off $_obj_geo1_Gabriel_graph
+nbcolor -c 0.52 0.52 0.52 $_obj_geo1_Gabriel_graph
+
+# Network Box $_obj_geo1_Relative_neighborhood_graph
+set _obj_geo1_Relative_neighborhood_graph = `run("nbadd -v Relative_neighborhood_graph")`
+nblocate -x `$arg2 + -7.71801` -y  `$arg3 + -3.61456` $_obj_geo1_Relative_neighborhood_graph
+nbsize -w 3.89378 -h 2.65297 $_obj_geo1_Relative_neighborhood_graph
+nbset  -m off $_obj_geo1_Relative_neighborhood_graph
+nbcolor -c 0.52 0.52 0.52 $_obj_geo1_Relative_neighborhood_graph
+
+# Network Box $_obj_geo1___netbox1
+set _obj_geo1___netbox1 = `run("nbadd -v __netbox1")`
+nblocate -x `$arg2 + 0.703362` -y  `$arg3 + -3.61456` $_obj_geo1___netbox1
+nbsize -w 2.89477 -h 2.65297 $_obj_geo1___netbox1
+nbset  -m off $_obj_geo1___netbox1
+nbcolor -c 0.52 0.52 0.52 $_obj_geo1___netbox1
+
+# Network Box $_obj_geo1___netbox2
+set _obj_geo1___netbox2 = `run("nbadd -v __netbox2")`
+nblocate -x `$arg2 + 4.43717` -y  `$arg3 + -2.49005` $_obj_geo1___netbox2
+nbsize -w 3.11001 -h 1.52846 $_obj_geo1___netbox2
+nbset  -m off $_obj_geo1___netbox2
+nbcolor -c 0.52 0.52 0.52 $_obj_geo1___netbox2
+
+# Network Box $_obj_geo1___netbox3
+set _obj_geo1___netbox3 = `run("nbadd -v __netbox3")`
+nblocate -x `$arg2 + 9.29739` -y  `$arg3 + -6.72872` $_obj_geo1___netbox3
+nbsize -w 4.18742 -h 5.76713 $_obj_geo1___netbox3
+nbset  -m off $_obj_geo1___netbox3
+nbcolor -c 0.52 0.52 0.52 $_obj_geo1___netbox3
+
+# Node $_obj_geo1_mark_longest_edges (Sop/attribwrangle)
+set _obj_geo1_mark_longest_edges = `run("opadd -e -n -v attribwrangle mark_longest_edges")`
+oplocate -x `$arg2 + -11.654400000000001` -y `$arg3 + -1.8485400000000001` $_obj_geo1_mark_longest_edges
+opparm $_obj_geo1_mark_longest_edges  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_mark_longest_edges class ( primitive ) snippet ( 'int edge[];\nfloat longest = 0.0;\n\nint vertices[] = primvertices(0, @primnum);\nfor(int i=0; i<len(vertices); i++)\n{\n    int vtx1 = vertices[i];\n    int vtx2 = vertices[(i + 1) % len(vertices)];\n    \n    int pt1 = vertexpoint(0, vtx1);\n    int pt2 = vertexpoint(0, vtx2);\n    \n    vector p1 = point(0, \'P\', pt1);\n    vector p2 = point(0, \'P\', pt2);\n    \n    float dist = distance(p1, p2);\n    \n    if(dist > longest)\n    {\n        longest = dist;\n        \n        int e[];\n        push(e, pt1);\n        push(e, pt2);\n        edge = e;\n    }\n}\n\nif(len(edge) != 0)\n{\n    s@edges = \' p\' + itoa(edge[0]) + \'-\' + itoa(edge[1]);\n}' )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_mark_longest_edges
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_geo1_mark_longest_edges
+nbop $_obj_geo1_Urquhart_graph add $_obj_geo1_mark_longest_edges
+opexprlanguage -s hscript $_obj_geo1_mark_longest_edges
+opuserdata -n '___Version___' -v '' $_obj_geo1_mark_longest_edges
+
+# Node $_obj_geo1_relative_neighborhood_graph (Sop/attribwrangle)
+set _obj_geo1_relative_neighborhood_graph = `run("opadd -e -n -v attribwrangle relative_neighborhood_graph")`
+oplocate -x `$arg2 + -7.3210100000000002` -y `$arg3 + -1.8485400000000001` $_obj_geo1_relative_neighborhood_graph
+opparm $_obj_geo1_relative_neighborhood_graph  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_relative_neighborhood_graph snippet ( '//for(int pt = @ptnum + 1; pt < @numpt; pt++)\nforeach(int pt; nearpoints(0, @P, 1.0, 10))\n{\n    if(pt == @ptnum) continue;\n    \n    vector p = point(0, \'P\', pt);\n    float dist = distance(p, @P);\n    \n    int ptsA[] = nearpoints(0, @P, dist);\n    int ptsB[] = nearpoints(0, p, dist);\n    \n    int chk = 0;\n    foreach(int cpt; ptsB)\n    {\n        if(cpt == @ptnum || cpt == pt) continue;\n        \n        chk = removevalue(ptsA, cpt);\n        if(chk) break;\n    }\n    \n    if(!chk)\n    {\n        int pr = addprim(0, \'polyline\');\n        addvertex(0, pr, @ptnum);\n        addvertex(0, pr, pt);\n    }\n}' )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_relative_neighborhood_graph
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_geo1_relative_neighborhood_graph
+nbop $_obj_geo1_Relative_neighborhood_graph add $_obj_geo1_relative_neighborhood_graph
+opexprlanguage -s hscript $_obj_geo1_relative_neighborhood_graph
+opuserdata -n '___Version___' -v '' $_obj_geo1_relative_neighborhood_graph
+
+# Node $_obj_geo1_gabriel_graph (Sop/attribwrangle)
+set _obj_geo1_gabriel_graph = `run("opadd -e -n -v attribwrangle gabriel_graph")`
+oplocate -x `$arg2 + -2.8471299999999999` -y `$arg3 + -1.8485400000000001` $_obj_geo1_gabriel_graph
+opparm $_obj_geo1_gabriel_graph  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_gabriel_graph snippet ( '//for(int pt = @ptnum + 1; pt < @numpt; pt++)\nforeach(int pt; nearpoints(0, @P, 1.0, 10))\n{\n    if(pt == @ptnum) continue;\n    \n    vector p = point(0, \'P\', pt);\n    vector v = p - @P;\n    vector center = @P + v * 0.5;\n    float dist = length(v) * 0.5;\n    \n    int pts[] = nearpoints(0, center, dist);\n    \n    int chk = 0;\n    foreach(int cpt; pts)\n    {\n        if(cpt == @ptnum || cpt == pt) continue;\n        \n        chk = 1;\n        break;\n    }\n    \n    if(!chk)\n    {\n        int pr = addprim(0, \'polyline\');\n        addvertex(0, pr, @ptnum);\n        addvertex(0, pr, pt);\n    }\n}' )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_gabriel_graph
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_geo1_gabriel_graph
+nbop $_obj_geo1_Gabriel_graph add $_obj_geo1_gabriel_graph
+opexprlanguage -s hscript $_obj_geo1_gabriel_graph
+opuserdata -n '___Version___' -v '' $_obj_geo1_gabriel_graph
+
+# Node $_obj_geo1_clean1 (Sop/clean)
+set _obj_geo1_clean1 = `run("opadd -e -n -v clean clean1")`
+oplocate -x `$arg2 + -2.8441299999999998` -y `$arg3 + -2.8864399999999999` $_obj_geo1_clean1
+opparm $_obj_geo1_clean1 fixoverlap ( on ) deleteoverlap ( off )
+chautoscope $_obj_geo1_clean1 +delete_small
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_clean1
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_geo1_clean1
+nbop $_obj_geo1_Gabriel_graph add $_obj_geo1_clean1
+opexprlanguage -s hscript $_obj_geo1_clean1
+opuserdata -n '___Version___' -v '' $_obj_geo1_clean1
+
+# Node $_obj_geo1_clean2 (Sop/clean)
+set _obj_geo1_clean2 = `run("opadd -e -n -v clean clean2")`
+oplocate -x `$arg2 + -7.3180100000000001` -y `$arg3 + -2.8864399999999999` $_obj_geo1_clean2
+opparm $_obj_geo1_clean2 fixoverlap ( on ) deleteoverlap ( off )
+chautoscope $_obj_geo1_clean2 +delete_small
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_clean2
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_geo1_clean2
+nbop $_obj_geo1_Relative_neighborhood_graph add $_obj_geo1_clean2
+opexprlanguage -s hscript $_obj_geo1_clean2
+opuserdata -n '___Version___' -v '' $_obj_geo1_clean2
+
+# Node $_obj_geo1_convertline2 (Sop/convertline)
+set _obj_geo1_convertline2 = `run("opadd -e -n -v convertline convertline2")`
+oplocate -x `$arg2 + -11.651400000000001` -y `$arg3 + -4.8864400000000003` $_obj_geo1_convertline2
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_convertline2
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_geo1_convertline2
+nbop $_obj_geo1_Urquhart_graph add $_obj_geo1_convertline2
+opexprlanguage -s hscript $_obj_geo1_convertline2
+opuserdata -n '___Version___' -v '' $_obj_geo1_convertline2
+
+# Node $_obj_geo1_nearest_neighbor_graph (Sop/attribwrangle)
+set _obj_geo1_nearest_neighbor_graph = `run("opadd -e -n -v attribwrangle nearest_neighbor_graph")`
+oplocate -x `$arg2 + 1.12374` -y `$arg3 + -1.96912` $_obj_geo1_nearest_neighbor_graph
+opparm $_obj_geo1_nearest_neighbor_graph  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_nearest_neighbor_graph snippet ( 'int pts[] = nearpoints(0, @P, 1.0, 2);\n\nint pr = addprim(0, \'polyline\');\naddvertex(0, pr, @ptnum);\naddvertex(0, pr, pts[1]);\n' )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_nearest_neighbor_graph
+nbop $_obj_geo1___netbox1 add $_obj_geo1_nearest_neighbor_graph
+opexprlanguage -s hscript $_obj_geo1_nearest_neighbor_graph
+opuserdata -n '___Version___' -v '' $_obj_geo1_nearest_neighbor_graph
+
+# Node $_obj_geo1_clean8 (Sop/clean)
+set _obj_geo1_clean8 = `run("opadd -e -n -v clean clean8")`
+oplocate -x `$arg2 + 1.1267400000000001` -y `$arg3 + -3.0448300000000001` $_obj_geo1_clean8
+opparm $_obj_geo1_clean8 fixoverlap ( on ) deleteoverlap ( off )
+chautoscope $_obj_geo1_clean8 +delete_small
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_clean8
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_geo1_clean8
+nbop $_obj_geo1___netbox1 add $_obj_geo1_clean8
+opexprlanguage -s hscript $_obj_geo1_clean8
+opuserdata -n '___Version___' -v '' $_obj_geo1_clean8
+
+# Node $_obj_geo1_connectadjacentpieces1 (Sop/connectadjacentpieces)
+set _obj_geo1_connectadjacentpieces1 = `run("opadd -e -n -v connectadjacentpieces connectadjacentpieces1")`
+oplocate -x `$arg2 + 4.8371700000000004` -y `$arg3 + -1.9681200000000001` $_obj_geo1_connectadjacentpieces1
+opparm -V 1 $_obj_geo1_connectadjacentpieces1 connecttype ( pointcloud )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_connectadjacentpieces1
+nbop $_obj_geo1___netbox2 add $_obj_geo1_connectadjacentpieces1
+opexprlanguage -s hscript $_obj_geo1_connectadjacentpieces1
+opuserdata -n '___Version___' -v '1' $_obj_geo1_connectadjacentpieces1
+opuserdata -n '___toolcount___' -v '6' $_obj_geo1_connectadjacentpieces1
+opuserdata -n '___toolid___' -v 'dynamics_gluenetwork' $_obj_geo1_connectadjacentpieces1
+
+# Node $_obj_geo1_clean3 (Sop/clean)
+set _obj_geo1_clean3 = `run("opadd -e -n -v clean clean3")`
+oplocate -x `$arg2 + 9.6974` -y `$arg3 + -3.0070199999999998` $_obj_geo1_clean3
+opparm $_obj_geo1_clean3 fixoverlap ( on ) deleteoverlap ( off )
+chautoscope $_obj_geo1_clean3 +delete_small
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_clean3
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_geo1_clean3
+nbop $_obj_geo1___netbox3 add $_obj_geo1_clean3
+opexprlanguage -s hscript $_obj_geo1_clean3
+opuserdata -n '___Version___' -v '' $_obj_geo1_clean3
+
+# Node $_obj_geo1_prims_algorithm (Sop/attribwrangle)
+set _obj_geo1_prims_algorithm = `run("opadd -e -n -v attribwrangle prims_algorithm")`
+oplocate -x `$arg2 + 9.6943999999999999` -y `$arg3 + -5.0469200000000001` $_obj_geo1_prims_algorithm
+opparm $_obj_geo1_prims_algorithm  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_prims_algorithm class ( detail ) snippet ( 'int ptlist[];\nfor(int pt=0; pt<@numpt; pt++)\n    push(ptlist, pt);\n    \nint newlist[];\npush(newlist, 0);\nremovevalue(ptlist, 0);\n\nwhile(len(ptlist) > 0)\n{\n    float mindist = 10000;\n    int newpt = -1;\n    int newedge = -1;\n    \n    foreach(int pt; newlist)\n    {\n        foreach(int prim; pointprims(0, pt))\n        {\n            int targetpt = primpoint(0, prim, 0);\n            if(targetpt == pt) targetpt = primpoint(0, prim, 1);\n            \n            if(find(newlist, targetpt) > -1) continue;\n            \n            float dist = prim(0, \'restlength\', prim);\n            if(dist <= mindist)\n            {\n                mindist = dist;\n                newpt = targetpt;\n                newedge = prim;\n            }\n        }\n    }\n    \n    if(newpt == -1) break;\n    \n    push(newlist, newpt);\n    removevalue(ptlist, newpt);\n    setprimgroup(0, \'newedge\', newedge, 1);\n}' )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_prims_algorithm
+nbop $_obj_geo1___netbox3 add $_obj_geo1_prims_algorithm
+opexprlanguage -s hscript $_obj_geo1_prims_algorithm
+opuserdata -n '___Version___' -v '' $_obj_geo1_prims_algorithm
+
+# Node $_obj_geo1_convertline1 (Sop/convertline)
+set _obj_geo1_convertline1 = `run("opadd -e -n -v convertline convertline1")`
+oplocate -x `$arg2 + 9.6974` -y `$arg3 + -4.0070199999999998` $_obj_geo1_convertline1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_convertline1
+nbop $_obj_geo1___netbox3 add $_obj_geo1_convertline1
+opexprlanguage -s hscript $_obj_geo1_convertline1
+opuserdata -n '___Version___' -v '' $_obj_geo1_convertline1
+
+# Node $_obj_geo1_relative_neighborhood_graph1 (Sop/attribwrangle)
+set _obj_geo1_relative_neighborhood_graph1 = `run("opadd -e -n -v attribwrangle relative_neighborhood_graph1")`
+oplocate -x `$arg2 + 9.6943999999999999` -y `$arg3 + -1.96912` $_obj_geo1_relative_neighborhood_graph1
+opparm $_obj_geo1_relative_neighborhood_graph1  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_relative_neighborhood_graph1 snippet ( '//for(int pt = @ptnum + 1; pt < @numpt; pt++)\nforeach(int pt; nearpoints(0, @P, 1.0, 10))\n{\n    if(pt == @ptnum) continue;\n    \n    vector p = point(0, \'P\', pt);\n    float dist = distance(p, @P);\n    \n    int ptsA[] = nearpoints(0, @P, dist);\n    int ptsB[] = nearpoints(0, p, dist);\n    \n    int chk = 0;\n    foreach(int cpt; ptsB)\n    {\n        if(cpt == @ptnum || cpt == pt) continue;\n        \n        chk = removevalue(ptsA, cpt);\n        if(chk) break;\n    }\n    \n    if(!chk)\n    {\n        int pr = addprim(0, \'polyline\');\n        addvertex(0, pr, @ptnum);\n        addvertex(0, pr, pt);\n    }\n}' )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_relative_neighborhood_graph1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_geo1_relative_neighborhood_graph1
+nbop $_obj_geo1___netbox3 add $_obj_geo1_relative_neighborhood_graph1
+opexprlanguage -s hscript $_obj_geo1_relative_neighborhood_graph1
+opuserdata -n '___Version___' -v '' $_obj_geo1_relative_neighborhood_graph1
+opcf ..
+opcf $_obj_geo1
+
+# Node $_obj_geo1_scatter6 (Sop/scatter::2.0)
+set _obj_geo1_scatter6 = `run("opadd -e -n -v scatter::2.0 scatter6")`
+oplocate -x `$arg2 + -5.9353100000000003` -y `$arg3 + 3.2320500000000001` $_obj_geo1_scatter6
+opparm -V 16.0.633 $_obj_geo1_scatter6 npts ( 100 ) relaxpoints ( off )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_scatter6
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_scatter6
+opexprlanguage -s hscript $_obj_geo1_scatter6
+opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_scatter6
+
+# Node $_obj_geo1_circle7 (Sop/circle)
+set _obj_geo1_circle7 = `run("opadd -e -n -v circle circle7")`
+oplocate -x `$arg2 + -5.9353100000000003` -y `$arg3 + 4.4422499999999996` $_obj_geo1_circle7
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_circle7
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_circle7
+opexprlanguage -s hscript $_obj_geo1_circle7
+opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_circle7
+
+# Node $_obj_geo1_null1 (Sop/null)
+set _obj_geo1_null1 = `run("opadd -e -n -v null null1")`
+oplocate -x `$arg2 + -5.9353100000000003` -y `$arg3 + 2.0660500000000002` $_obj_geo1_null1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_null1
+opexprlanguage -s hscript $_obj_geo1_null1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_null1
+
+# Node $_obj_geo1_triangulate2d1 (Sop/triangulate2d::2.0)
+set _obj_geo1_triangulate2d1 = `run("opadd -e -n -v triangulate2d::2.0 triangulate2d1")`
+oplocate -x `$arg2 + -11.938700000000001` -y `$arg3 + 0.90674600000000005` $_obj_geo1_triangulate2d1
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_triangulate2d1
+opset -d off -r off -h on -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_triangulate2d1
+nbop $_obj_geo1_Delaunay_triangulation add $_obj_geo1_triangulate2d1
+opexprlanguage -s hscript $_obj_geo1_triangulate2d1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_triangulate2d1
+
+# Node $_obj_geo1_dissolve1 (Sop/dissolve::2.0)
+set _obj_geo1_dissolve1 = `run("opadd -e -n -v dissolve::2.0 dissolve1")`
+oplocate -x `$arg2 + -11.651400000000001` -y `$arg3 + -3.8864399999999999` $_obj_geo1_dissolve1
+opparm -V 16.0.633 $_obj_geo1_dissolve1 group ( '`details(opinputpath(\'.\', 0), \'edges\')' ) reminlinepts ( off )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_dissolve1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_dissolve1
+nbop $_obj_geo1_Urquhart_graph add $_obj_geo1_dissolve1
+opexprlanguage -s hscript $_obj_geo1_dissolve1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_dissolve1
+
+# Node $_obj_geo1_attribpromote1 (Sop/attribpromote)
+set _obj_geo1_attribpromote1 = `run("opadd -e -n -v attribpromote attribpromote1")`
+oplocate -x `$arg2 + -11.6548` -y `$arg3 + -2.8864399999999999` $_obj_geo1_attribpromote1
+opparm -V 16.0.633 $_obj_geo1_attribpromote1 inname ( edges ) inclass ( primitive ) outclass ( detail ) method ( sum )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_attribpromote1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_attribpromote1
+nbop $_obj_geo1_Urquhart_graph add $_obj_geo1_attribpromote1
+opexprlanguage -s hscript $_obj_geo1_attribpromote1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_attribpromote1
+
+# Node $_obj_geo1_blast1 (Sop/blast)
+set _obj_geo1_blast1 = `run("opadd -e -n -v blast blast1")`
+oplocate -x `$arg2 + 9.6974` -y `$arg3 + -6.0848199999999997` $_obj_geo1_blast1
+opparm -V 16.0.633 $_obj_geo1_blast1 group ( newedge ) negate ( on )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_blast1
+nbop $_obj_geo1___netbox3 add $_obj_geo1_blast1
+opexprlanguage -s hscript $_obj_geo1_blast1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_blast1
+oporder -e scatter6 circle7 null1 mark_longest_edges relative_neighborhood_graph gabriel_graph clean1 clean2 convertline2 nearest_neighbor_graph clean8 connectadjacentpieces1 clean3 prims_algorithm convertline1 relative_neighborhood_graph1 triangulate2d1 dissolve1 attribpromote1 blast1 
+opcf ..
+opset -p on $_obj_geo1
+
+opcf $arg1
+opcf $_obj_geo1
+opwire -n $_obj_geo1_circle7 -0 $_obj_geo1_scatter6
+opwire -n $_obj_geo1_scatter6 -0 $_obj_geo1_null1
+opwire -n $_obj_geo1_triangulate2d1 -0 $_obj_geo1_mark_longest_edges
+opwire -n $_obj_geo1_null1 -0 $_obj_geo1_relative_neighborhood_graph
+opwire -n $_obj_geo1_null1 -0 $_obj_geo1_gabriel_graph
+opwire -n $_obj_geo1_gabriel_graph -0 $_obj_geo1_clean1
+opwire -n $_obj_geo1_relative_neighborhood_graph -0 $_obj_geo1_clean2
+opwire -n $_obj_geo1_dissolve1 -0 $_obj_geo1_convertline2
+opwire -n $_obj_geo1_null1 -0 $_obj_geo1_nearest_neighbor_graph
+opwire -n $_obj_geo1_nearest_neighbor_graph -0 $_obj_geo1_clean8
+opwire -n $_obj_geo1_null1 -0 $_obj_geo1_connectadjacentpieces1
+opwire -n $_obj_geo1_relative_neighborhood_graph1 -0 $_obj_geo1_clean3
+opwire -n $_obj_geo1_convertline1 -0 $_obj_geo1_prims_algorithm
+opwire -n $_obj_geo1_clean3 -0 $_obj_geo1_convertline1
+opwire -n $_obj_geo1_null1 -0 $_obj_geo1_relative_neighborhood_graph1
+opwire -n $_obj_geo1_null1 -0 $_obj_geo1_triangulate2d1
+opwire -n $_obj_geo1_attribpromote1 -0 $_obj_geo1_dissolve1
+opwire -n $_obj_geo1_mark_longest_edges -0 $_obj_geo1_attribpromote1
+opwire -n $_obj_geo1_prims_algorithm -0 $_obj_geo1_blast1
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1
     if ($arg8) then
         opwire -n -i $arg6 -0 $input
     else
