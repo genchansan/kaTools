@@ -134,4 +134,64 @@ if(num > 0)
     vector p = pcfilter(handle, "P");
 }]]></expression>
   </set>
+  <set name="remove points">
+    <expression><![CDATA[removepoint(geoself(),@ptnum);]]></expression>
+  </set>
+  <set name="delelte if atr val is 0">
+    <expression><![CDATA[node = hou.pwd()
+geo = node.geometry()
+
+# Add code to modify contents of geo.
+# Use drop down menu to select examples.
+
+
+
+atrs = [atr for atr in geo.pointAttribs() if atr.name().find("group_") != -1]
+print atrs
+pts = []
+
+for pt in geo.points():
+    delPt = True
+    for atr in atrs:
+        if pt.attribValue(atr) == 1:
+            delPt = False
+            break
+    if delPt == True:
+        pts.append(pt)
+        
+        
+geo.deletePoints(pts)
+        ]]></expression>
+  </set>
+  <set name="create orient">
+    <expression><![CDATA[@orient = set(0,0,0,1);]]></expression>
+  </set>
+  <set name="get near points">
+    <expression><![CDATA[int nearPts[] = nearpoints(1,@P,ch("max_dist",chi("max_pts")));]]></expression>
+  </set>
+  <set name="xyzdist">
+    <expression><![CDATA[int prim;
+vector uv;
+
+int in = 1;
+
+float dist = xyzdist(in, @P, prim, uv);
+vector hitP = primuv(in, "P", prim, uv);]]></expression>
+  </set>
+  <set name="get bounding box">
+    <expression><![CDATA[vector min,max;
+getbbox(0,min,max);]]></expression>
+  </set>
+  <set name="create grad">
+    <expression><![CDATA[v@grad = (@P - min)/(max-min);]]></expression>
+  </set>
+  <set name="del by fresnel">
+    <expression><![CDATA[vector localP= -ptransform(chs("to_space"), @P);
+vector localN= ntransform(chs("to_space"), @N);
+
+float dot = dot(normalize(localP),normalize(localN));
+dot = fit(dot,-1,1,0,1);
+
+if(dot<ch("val"))removepoint(geoself(),@ptnum);]]></expression>
+  </set>
 </expressionSets>
