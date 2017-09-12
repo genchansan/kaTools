@@ -25,8 +25,8 @@
     <memberTool name="subnet3"/>
     <memberTool name="opencl"/>
     <memberTool name="graph"/>
-    <memberTool name="geo0"/>
-    <memberTool name="subnet6"/>
+    <memberTool name="sc_crowd"/>
+    <memberTool name="GET_all_frames_geo0"/>
   </toolshelf>
 
   <tool name="add_event_when_created" label="add_event_when_created" icon="PLASMA_App">
@@ -3501,7 +3501,7 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
     <memberTool name="attribwrangle6"/>
     <memberTool name="attribwrangle7"/>
     <memberTool name="attribwrangle8"/>
-    <memberTool name="attribvop3"/>
+    <memberTool name="rotate_by_quar"/>
   </toolshelf>
 
   <tool name="attribvop1" label="trans_by_n_up" icon="SOP_attribvop">
@@ -6885,564 +6885,6 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
 ]]></script>
   </tool>
 
-  <tool name="geo0" label="sc_crowd" icon="OBJ_geo">
-    <helpURL>operator:Object/geo</helpURL>
-    <toolMenuContext name="network">
-      <contextOpType>Object/geo</contextOpType>
-    </toolMenuContext>
-    <script scriptType="python"><![CDATA[
-import sys
-import toolutils
-
-outputitem = None
-inputindex = -1
-inputitem = None
-outputindex = -1
-
-num_args = 1
-h_extra_args = ''
-pane = toolutils.activePane(kwargs)
-if not isinstance(pane, hou.NetworkEditor):
-    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
-    if pane is None:
-       hou.ui.displayMessage(
-               'Cannot create node: cannot find any network pane')
-       sys.exit(0)
-else: # We're creating this tool from the TAB menu inside a network editor
-    pane_node = pane.pwd()
-    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
-        outputitem = pane_node.item(kwargs["outputnodename"])
-        inputindex = kwargs["inputindex"]
-        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
-        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
-        num_args = 6
-    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
-        inputitem = pane_node.item(kwargs["inputnodename"])
-        outputindex = kwargs["outputindex"]
-        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
-        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
-        num_args = 9 
-    if kwargs.has_key("autoplace"):
-        autoplace = kwargs["autoplace"]
-    else:
-        autoplace = False
-    # If shift-clicked we want to auto append to the current
-    # node
-    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
-        if inputitem is None:
-            inputitem = pane.currentNode()
-            outputindex = 0
-    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
-        try:
-            pos = [ float( kwargs["nodepositionx"] ),
-                    float( kwargs["nodepositiony"] )]
-        except:
-            pos = None
-    else:
-        pos = None
-
-    if not autoplace and not pane.listMode():
-        if pos is not None:
-            pass
-        elif outputitem is None:
-            pos = pane.selectPosition(inputitem, outputindex, None, -1)
-        else:
-            pos = pane.selectPosition(inputitem, outputindex,
-                                      outputitem, inputindex)
-
-    if pos is not None:
-        if kwargs.has_key("node_bbox"):
-            size = kwargs["node_bbox"]
-            pos[0] -= size[0] / 2
-            pos[1] -= size[1] / 2
-        else:
-            pos[0] -= 0.573625
-            pos[1] -= 0.220625
-        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
-        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
-h_extra_args += 'set argc = "' + str(num_args) + '"\n'
-            
-pane_node = pane.pwd()
-child_type = pane_node.childTypeCategory().nodeTypes()
-
-if not child_type.has_key('geo'):
-   hou.ui.displayMessage(
-           'Cannot create node: incompatible pane network type')
-   sys.exit(0)
-
-# First clear the node selection
-pane_node.setSelected(False, True)
-
-h_path = pane_node.path()
-h_preamble = 'set arg1 = "' + h_path + '"\n'
-h_cmd = r''' 
-if ($argc < 2 || "$arg2" == "") then
-   set arg2 = 0
-endif
-if ($argc < 3 || "$arg3" == "") then
-   set arg3 = 0
-endif
-# Automatically generated script
-# $arg1 - the path to add this node
-# $arg2 - x position of the tile
-# $arg3 - y position of the tile
-# $arg4 - input node to wire to
-# $arg5 - which input to wire to
-# $arg6 - output node to wire to
-# $arg7 - the type of this node
-# $arg8 - the node is an indirect input
-# $arg9 - index of output from $arg6
-
-\set noalias = 1
-set saved_path = `execute("oppwf")`
-opcf $arg1
-
-# Node $_obj_sc_crowd (Object/geo)
-set _obj_sc_crowd = `run("opadd -e -n -v geo sc_crowd")`
-oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_sc_crowd
-opspareds '    group { 	name	"stdswitcher4" 	label	"Transform"  	parm { 	    name	"xOrd" 	    baseparm 	    label	"Transform Order" 	    joinnext 	    export	none 	} 	parm { 	    name	"rOrd" 	    baseparm 	    label	"Rotate Order" 	    export	none 	} 	parm { 	    name	"t" 	    baseparm 	    label	"Translate" 	    export	all 	} 	parm { 	    name	"r" 	    baseparm 	    label	"Rotate" 	    export	all 	} 	parm { 	    name	"s" 	    baseparm 	    label	"Scale" 	    export	none 	} 	parm { 	    name	"p" 	    baseparm 	    label	"Pivot" 	    export	none 	} 	parm { 	    name	"scale" 	    baseparm 	    label	"Uniform Scale" 	    export	none 	} 	parm { 	    name	"pre_xform" 	    baseparm 	    label	"Modify Pre-Transform" 	    export	none 	} 	parm { 	    name	"keeppos" 	    baseparm 	    label	"Keep Position When Parenting" 	    export	none 	} 	parm { 	    name	"childcomp" 	    baseparm 	    label	"Child Compensation" 	    export	none 	} 	parm { 	    name	"constraints_on" 	    baseparm 	    label	"Enable Constraints" 	    export	none 	} 	parm { 	    name	"constraints_path" 	    baseparm 	    label	"Constraints" 	    export	none 	} 	parm { 	    name	"lookatpath" 	    baseparm 	    label	"Look At" 	    invisible 	    export	none 	} 	parm { 	    name	"lookupobjpath" 	    baseparm 	    label	"Look Up Object" 	    invisible 	    export	none 	} 	parm { 	    name	"lookup" 	    baseparm 	    label	"Look At Up Vector" 	    invisible 	    export	none 	} 	parm { 	    name	"pathobjpath" 	    baseparm 	    label	"Path Object" 	    invisible 	    export	none 	} 	parm { 	    name	"roll" 	    baseparm 	    label	"Roll" 	    invisible 	    export	none 	} 	parm { 	    name	"pos" 	    baseparm 	    label	"Position" 	    invisible 	    export	none 	} 	parm { 	    name	"uparmtype" 	    baseparm 	    label	"Parameterization" 	    invisible 	    export	none 	} 	parm { 	    name	"pathorient" 	    baseparm 	    label	"Orient Along Path" 	    invisible 	    export	none 	} 	parm { 	    name	"up" 	    baseparm 	    label	"Orient Up Vector" 	    invisible 	    export	none 	} 	parm { 	    name	"bank" 	    baseparm 	    label	"Auto-Bank factor" 	    invisible 	    export	none 	}     }      group { 	name	"stdswitcher4_1" 	label	"Render"  	parm { 	    name	"shop_materialpath" 	    baseparm 	    label	"Material" 	    export	none 	} 	parm { 	    name	"shop_materialopts" 	    baseparm 	    label	"Options" 	    invisible 	    export	none 	} 	parm { 	    name	"tdisplay" 	    baseparm 	    label	"Display" 	    joinnext 	    export	none 	} 	parm { 	    name	"display" 	    baseparm 	    label	"Display" 	    export	none 	} 	parm { 	    name	"viewportlod" 	    label	"Display As" 	    type	ordinal 	    default	{ "full" } 	    help	"Choose how the object\'s geometry should be rendered in the viewport" 	    menu	{ 		"full"	"Full Geometry" 		"points"	"Point Cloud" 		"box"	"Bounding Box" 		"centroid"	"Centroid" 		"hidden"	"Hidden" 		"subd"	"Subdivision Surface / Curves" 	    } 	    parmtag	{ "spare_category" "Render" } 	} 	parm { 	    name	"vm_rendervisibility" 	    label	"Render Visibility" 	    type	string 	    default	{ "*" } 	    menureplace	{ 		"*"	"Visible to all" 		"primary"	"Visible only to primary rays" 		"primary|shadow"	"Visible only to primary and shadow rays" 		"-primary"	"Invisible to primary rays (Phantom)" 		"-diffuse"	"Invisible to diffuse rays" 		"-diffuse&-reflect&-refract"	"Invisible to secondary rays" 		""	"Invisible (Unrenderable)" 	    } 	    parmtag	{ "mantra_class" "object" } 	    parmtag	{ "mantra_name" "rendervisibility" } 	    parmtag	{ "spare_category" "Render" } 	} 	parm { 	    name	"vm_rendersubd" 	    label	"Render Polygons As Subdivision (Mantra)" 	    type	toggle 	    default	{ "0" } 	    parmtag	{ "mantra_class" "object" } 	    parmtag	{ "mantra_name" "rendersubd" } 	    parmtag	{ "spare_category" "Geometry" } 	} 	parm { 	    name	"vm_subdstyle" 	    label	"Subdivision Style" 	    type	string 	    default	{ "mantra_catclark" } 	    hidewhen	"{ vm_rendersubd == 0 }" 	    menu	{ 		"mantra_catclark"	"Mantra Catmull-Clark" 		"osd_catclark"	"OpenSubdiv Catmull-Clark" 	    } 	    parmtag	{ "mantra_class" "object" } 	    parmtag	{ "mantra_name" "subdstyle" } 	    parmtag	{ "spare_category" "Geometry" } 	} 	parm { 	    name	"vm_subdgroup" 	    label	"Subdivision Group" 	    type	string 	    default	{ "" } 	    hidewhen	"{ vm_rendersubd == 0 }" 	    parmtag	{ "mantra_class" "object" } 	    parmtag	{ "mantra_name" "subdgroup" } 	    parmtag	{ "spare_category" "Geometry" } 	} 	group { 	    name	"folder0" 	    label	"Shading"  	    parm { 		name	"categories" 		label	"Categories" 		type	string 		default	{ "" } 		help	"A list of tags which can be used to select the object" 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"reflectmask" 		label	"Reflection Mask" 		type	oplist 		default	{ "*" } 		help	"Objects that will be reflected on this object." 		parmtag	{ "opexpand" "1" } 		parmtag	{ "opfilter" "!!OBJ/GEOMETRY!!" } 		parmtag	{ "oprelative" "/obj" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"refractmask" 		label	"Refraction Mask" 		type	oplist 		default	{ "*" } 		help	"Objects that will be refracted on this object." 		parmtag	{ "opexpand" "1" } 		parmtag	{ "opfilter" "!!OBJ/GEOMETRY!!" } 		parmtag	{ "oprelative" "/obj" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"lightmask" 		label	"Light Mask" 		type	oplist 		default	{ "*" } 		help	"Lights that illuminate this object." 		parmtag	{ "opexpand" "1" } 		parmtag	{ "opfilter" "!!OBJ/LIGHT!!" } 		parmtag	{ "oprelative" "/obj" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"lightcategories" 		label	"Light Selection" 		type	string 		default	{ "*" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"vm_volumefilter" 		label	"Volume Filter" 		type	string 		default	{ "box" } 		menu	{ 		    "box"	"Box Filter" 		    "gaussian"	"Gaussian" 		    "bartlett"	"Bartlett (triangle)" 		    "catrom"	"Catmull-Rom" 		    "hanning"	"Hanning" 		    "blackman"	"Blackman" 		    "sinc"	"Sinc (sharpening)" 		} 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "filter" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"vm_volumefilterwidth" 		label	"Volume Filter Width" 		type	float 		default	{ "1" } 		range	{ 0.001 5 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "filterwidth" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"vm_matte" 		label	"Matte shading" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "matte" } 		parmtag	{ "spare_category" "Shading" } 	    } 	    parm { 		name	"vm_rayshade" 		label	"Raytrace Shading" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "rayshade" } 		parmtag	{ "spare_category" "Shading" } 	    } 	}  	group { 	    name	"folder0_1" 	    label	"Sampling"  	    parm { 		name	"geo_velocityblur" 		label	"Geometry Velocity Blur" 		type	toggle 		default	{ "0" } 		disablewhen	"{ allowmotionblur == 0 }" 		parmtag	{ "spare_category" "Sampling" } 	    } 	}  	group { 	    name	"folder0_2" 	    label	"Dicing"  	    parm { 		name	"vm_shadingquality" 		label	"Shading Quality" 		type	float 		default	{ "1" } 		range	{ 0 10 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "shadingquality" } 		parmtag	{ "spare_category" "Dicing" } 	    } 	    parm { 		name	"vm_flatness" 		label	"Dicing Flatness" 		type	float 		default	{ "0.05" } 		range	{ 0 1 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "flatness" } 		parmtag	{ "spare_category" "Dicing" } 	    } 	    parm { 		name	"vm_raypredice" 		label	"Ray Predicing" 		type	integer 		default	{ "0" } 		menu	{ 		    "0"	"Disable Predicing" 		    "1"	"Full Predicing" 		    "2"	"Precompute Bounds" 		} 		range	{ 0 10 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "raypredice" } 		parmtag	{ "spare_category" "Dicing" } 	    } 	    parm { 		name	"vm_curvesurface" 		label	"Shade Curves As Surfaces" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "curvesurface" } 		parmtag	{ "spare_category" "Dicing" } 	    } 	}  	group { 	    name	"folder0_3" 	    label	"Geometry"  	    parm { 		name	"vm_rmbackface" 		label	"Backface Removal" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "rmbackface" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"shop_geometrypath" 		label	"Procedural Shader" 		type	oppath 		default	{ "" } 		parmtag	{ "opfilter" "!!SHOP/GEOMETRY!!" } 		parmtag	{ "oprelative" "." } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_forcegeometry" 		label	"Force Procedural Geometry Output" 		type	toggle 		default	{ "1" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_rendersubdcurves" 		label	"Render Polygon Curves As Subdivision (Mantra)" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "rendersubdcurves" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_renderpoints" 		label	"Render As Points (Mantra)" 		type	integer 		default	{ "2" } 		menu	{ 		    "0"	"No Point Rendering" 		    "1"	"Render Only Points" 		    "2"	"Render Unconnected Points" 		} 		range	{ 0 10 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "renderpoints" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_renderpointsas" 		label	"Render Points As (Mantra)" 		type	integer 		default	{ "0" } 		disablewhen	"{ vm_renderpoints == 0 }" 		menu	{ 		    "0"	"Spheres" 		    "1"	"Circles" 		} 		range	{ 0 10 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "renderpointsas" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_usenforpoints" 		label	"Use N For Point Rendering" 		type	toggle 		default	{ "0" } 		disablewhen	"{ vm_renderpoints == 0 }" 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "usenforpoints" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_pointscale" 		label	"Point Scale" 		type	float 		default	{ "1" } 		disablewhen	"{ vm_renderpoints == 0 }" 		range	{ 0! 10 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "pointscale" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_pscalediameter" 		label	"Treat Point Scale as Diameter Instead of Radius" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "pscalediameter" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_metavolume" 		label	"Metaballs as Volume" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "metavolume" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_coving" 		label	"Coving" 		type	integer 		default	{ "1" } 		menu	{ 		    "0"	"Disable Coving" 		    "1"	"Coving for displacement/sub-d" 		    "2"	"Coving for all primitives" 		} 		range	{ 0 10 } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "coving" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_materialoverride" 		label	"Material Override" 		type	string 		default	{ "compact" } 		menu	{ 		    "none"	"Disabled" 		    "full"	"Evaluate for Each Primitve/Point" 		    "compact"	"Evaluate Once" 		} 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_overridedetail" 		label	"Ignore Geometry Attribute Shaders" 		type	toggle 		default	{ "0" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "overridedetail" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	    parm { 		name	"vm_procuseroottransform" 		label	"Proc Use Root Transform" 		type	toggle 		default	{ "1" } 		parmtag	{ "mantra_class" "object" } 		parmtag	{ "mantra_name" "procuseroottransform" } 		parmtag	{ "spare_category" "Geometry" } 	    } 	}      }      group { 	name	"stdswitcher4_2" 	label	"Misc"  	parm { 	    name	"use_dcolor" 	    baseparm 	    label	"Set Wireframe Color" 	    export	none 	} 	parm { 	    name	"dcolor" 	    baseparm 	    label	"Wireframe Color" 	    export	none 	} 	parm { 	    name	"picking" 	    baseparm 	    label	"Viewport Selecting Enabled" 	    export	none 	} 	parm { 	    name	"pickscript" 	    baseparm 	    label	"Select Script" 	    export	none 	} 	parm { 	    name	"caching" 	    baseparm 	    label	"Cache Object Transform" 	    export	none 	} 	parm { 	    name	"vport_shadeopen" 	    baseparm 	    label	"Shade Open Curves In Viewport" 	    export	none 	} 	parm { 	    name	"vport_displayassubdiv" 	    baseparm 	    label	"Display as Subdivision in Viewport" 	    invisible 	    export	none 	} 	parm { 	    name	"vport_onionskin" 	    baseparm 	    label	"Onion Skinning" 	    export	none 	}     }  ' $_obj_sc_crowd
-opset -S on $_obj_sc_crowd
-opparm -V 16.0.633 $_obj_sc_crowd use_dcolor ( off )
-chautoscope $_obj_sc_crowd +tx +ty +tz +rx +ry +rz +sx +sy +sz
-opset -d on -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -x off $_obj_sc_crowd
-opexprlanguage -s hscript $_obj_sc_crowd
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd
-opcf $_obj_sc_crowd
-
-# Node $_obj_sc_crowd_mountain1 (Sop/mountain::2.0)
-set _obj_sc_crowd_mountain1 = `run("opadd -e -n -v mountain::2.0 mountain1")`
-oplocate -x `$arg2 + 0.247059` -y `$arg3 + 4.3940799999999998` $_obj_sc_crowd_mountain1
-opparm $_obj_sc_crowd_mountain1 height ( 21.600000000000001 )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_mountain1
-opexprlanguage -s hscript $_obj_sc_crowd_mountain1
-opuserdata -n '___Version___' -v '' $_obj_sc_crowd_mountain1
-opuserdata -n '___toolcount___' -v '20' $_obj_sc_crowd_mountain1
-opuserdata -n '___toolid___' -v 'sop_mountain::2.0' $_obj_sc_crowd_mountain1
-
-# Node $_obj_sc_crowd_crt_targetP (Sop/attribwrangle)
-set _obj_sc_crowd_crt_targetP = `run("opadd -e -n -v attribwrangle crt_targetP")`
-oplocate -x `$arg2 + -2.7342399999999998` -y `$arg3 + -3.35127` $_obj_sc_crowd_crt_targetP
-opparm $_obj_sc_crowd_crt_targetP  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_sc_crowd_crt_targetP snippet ( 'v@targetP = v@opinput1_P;' )
-opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_crt_targetP
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_crt_targetP
-opexprlanguage -s hscript $_obj_sc_crowd_crt_targetP
-opuserdata -n '___Version___' -v '' $_obj_sc_crowd_crt_targetP
-
-# Node $_obj_sc_crowd_crt_source (Sop/attribwrangle)
-set _obj_sc_crowd_crt_source = `run("opadd -e -n -v attribwrangle crt_source")`
-oplocate -x `$arg2 + -2.7342399999999998` -y `$arg3 + -4.5402399999999998` $_obj_sc_crowd_crt_source
-opparm $_obj_sc_crowd_crt_source  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_sc_crowd_crt_source snippet ( 'i@source=1;' )
-opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_crt_source
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_crt_source
-opexprlanguage -s hscript $_obj_sc_crowd_crt_source
-opuserdata -n '___Version___' -v '' $_obj_sc_crowd_crt_source
-
-# Node $_obj_sc_crowd_crt_terrain (Sop/attribwrangle)
-set _obj_sc_crowd_crt_terrain = `run("opadd -e -n -v attribwrangle crt_terrain")`
-oplocate -x `$arg2 + 0.244059` -y `$arg3 + -3.8374799999999998` $_obj_sc_crowd_crt_terrain
-opparm $_obj_sc_crowd_crt_terrain  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_sc_crowd_crt_terrain snippet ( 'i@terrain=1;' )
-opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_crt_terrain
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_crt_terrain
-opexprlanguage -s hscript $_obj_sc_crowd_crt_terrain
-opuserdata -n '___Version___' -v '' $_obj_sc_crowd_crt_terrain
-
-# Node $_obj_sc_crowd_DOP_space_colonization_crowd (Sop/solver)
-set _obj_sc_crowd_DOP_space_colonization_crowd = `run("opadd -e -n -v solver DOP_space_colonization_crowd")`
-oplocate -x `$arg2 + -2.7300900000000001` -y `$arg3 + -8.1926199999999998` $_obj_sc_crowd_DOP_space_colonization_crowd
-opcolor -c 0.40000000596046448 1 1 $_obj_sc_crowd_DOP_space_colonization_crowd
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_DOP_space_colonization_crowd
-opexprlanguage -s hscript $_obj_sc_crowd_DOP_space_colonization_crowd
-opuserdata -n '___Version___' -v '' $_obj_sc_crowd_DOP_space_colonization_crowd
-
-# Node $_obj_sc_crowd_attribwrangle1 (Sop/attribwrangle)
-set _obj_sc_crowd_attribwrangle1 = `run("opadd -e -n -v attribwrangle attribwrangle1")`
-oplocate -x `$arg2 + -2.7330899999999998` -y `$arg3 + -9.9643599999999992` $_obj_sc_crowd_attribwrangle1
-opparm $_obj_sc_crowd_attribwrangle1  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_sc_crowd_attribwrangle1 snippet ( '@N = normalize(@v);' )
-opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_attribwrangle1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b on $_obj_sc_crowd_attribwrangle1
-opexprlanguage -s hscript $_obj_sc_crowd_attribwrangle1
-opuserdata -n '___Version___' -v '' $_obj_sc_crowd_attribwrangle1
-
-# Node $_obj_sc_crowd_attribwrangle2 (Sop/attribwrangle)
-set _obj_sc_crowd_attribwrangle2 = `run("opadd -e -n -v attribwrangle attribwrangle2")`
-oplocate -x `$arg2 + 10.888595357827874` -y `$arg3 + -10.286617559130118` $_obj_sc_crowd_attribwrangle2
-opspareds '    group { 	name	"folder1" 	label	"Code"  	parm { 	    name	"group" 	    baseparm 	    label	"Group" 	    export	none 	    bindselector points "Modify Points" 	        "Select the points to affect and press Enter to complete." 	        0 1 0xffffffff 0 grouptype 0 	} 	parm { 	    name	"grouptype" 	    baseparm 	    label	"Group Type" 	    export	none 	} 	parm { 	    name	"class" 	    baseparm 	    label	"Run Over" 	    export	none 	} 	parm { 	    name	"vex_numcount" 	    baseparm 	    label	"Number Count" 	    export	none 	} 	parm { 	    name	"vex_threadjobsize" 	    baseparm 	    label	"Thread Job Size" 	    export	none 	} 	parm { 	    name	"snippet" 	    baseparm 	    label	"VEXpression" 	    export	all 	} 	parm { 	    name	"exportlist" 	    baseparm 	    label	"Attributes to Create" 	    export	none 	} 	parm { 	    name	"vex_strict" 	    baseparm 	    label	"Enforce Prototypes" 	    export	none 	}     }      group { 	name	"folder1_1" 	label	"Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	} 	parm { 	    name	"vex_inplace" 	    baseparm 	    label	"Compute Results In Place" 	    export	none 	} 	parm { 	    name	"vex_selectiongroup" 	    baseparm 	    label	"Output Selection Group" 	    export	none 	}     }      parm { 	name	"rad" 	label	"Rad" 	type	float 	default	{ "0" } 	range	{ 0 1 }     }     parm { 	name	"max_pts" 	label	"Max Pts" 	type	integer 	default	{ "0" } 	range	{ 0 10 }     }     parm { 	name	"extra_overwrite_rad" 	label	"Extra Overwrite Rad" 	type	float 	default	{ "0" } 	range	{ 0 1 }     } ' $_obj_sc_crowd_attribwrangle2
-opparm $_obj_sc_crowd_attribwrangle2  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_sc_crowd_attribwrangle2 snippet ( 'int pts[]= pcfind(1, "P", @P, ch("rad") + ch("extra_overwrite_rad"), chi("max_pts"));\n\nforeach(int pt; pts)\n{\n    vector nearP = point(1, "P",pt);\n    vector nearV = point(1, "v",pt);\n    if(distance(@P + nearV * @TimeInc, nearP)<ch("rad"))\n    {\n        removepoint(geoself(),@ptnum);\n    }\n    else\n    {\n        @N = normalize((@P + nearV * @TimeInc) - nearP);\n    }\n}' ) rad ( 1.8 ) max_pts ( 1 ) extra_overwrite_rad ( 10 )
-opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_attribwrangle2
-opset -d off -r off -h off -f off -y off -t on -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_attribwrangle2
-opexprlanguage -s hscript $_obj_sc_crowd_attribwrangle2
-opuserdata -n '___Version___' -v '' $_obj_sc_crowd_attribwrangle2
-
-# Node $_obj_sc_crowd_calc_new_v (Sop/attribwrangle)
-set _obj_sc_crowd_calc_new_v = `run("opadd -e -n -v attribwrangle calc_new_v")`
-oplocate -x `$arg2 + 7.0536053578278732` -y `$arg3 + -11.714287559130121` $_obj_sc_crowd_calc_new_v
-opspareds '    group { 	name	"folder1" 	label	"Code"  	parm { 	    name	"group" 	    baseparm 	    label	"Group" 	    export	none 	    bindselector points "Modify Points" 	        "Select the points to affect and press Enter to complete." 	        0 1 0xffffffff 0 grouptype 0 	} 	parm { 	    name	"grouptype" 	    baseparm 	    label	"Group Type" 	    export	none 	} 	parm { 	    name	"class" 	    baseparm 	    label	"Run Over" 	    export	none 	} 	parm { 	    name	"vex_numcount" 	    baseparm 	    label	"Number Count" 	    export	none 	} 	parm { 	    name	"vex_threadjobsize" 	    baseparm 	    label	"Thread Job Size" 	    export	none 	} 	parm { 	    name	"snippet" 	    baseparm 	    label	"VEXpression" 	    export	all 	} 	parm { 	    name	"exportlist" 	    baseparm 	    label	"Attributes to Create" 	    export	none 	} 	parm { 	    name	"vex_strict" 	    baseparm 	    label	"Enforce Prototypes" 	    export	none 	}     }      group { 	name	"folder1_1" 	label	"Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	} 	parm { 	    name	"vex_inplace" 	    baseparm 	    label	"Compute Results In Place" 	    export	none 	} 	parm { 	    name	"vex_selectiongroup" 	    baseparm 	    label	"Output Selection Group" 	    export	none 	}     }      parm { 	name	"rad" 	label	"Rad" 	type	float 	default	{ "0" } 	range	{ 0 1 }     }     parm { 	name	"max_pts" 	label	"Max Pts" 	type	integer 	default	{ "0" } 	range	{ 0 10 }     }     parm { 	name	"dot" 	label	"Dot" 	type	float 	default	{ "0" } 	range	{ 0 1 }     }     parm { 	name	"max_deg" 	label	"Max Deg" 	type	float 	default	{ "0" } 	range	{ 0 1 }     } ' $_obj_sc_crowd_calc_new_v
-opparm $_obj_sc_crowd_calc_new_v  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_sc_crowd_calc_new_v snippet ( 'float dot = ch("dot");\nint handle = pcopen(@OpInput2, "P", @P + @v * @TimeInc, ch("rad"), chi("max_pts"));\n//"N", normalize(v@targetP - @P), \n//,"ndot",dot\n\nint num = pcnumfound(handle);\nvector filterP;\n//vector filterN;\n\nif(num > 0)\n{\n    //filterN = pcimportbyidxf(handle, "N", 0);\n    //filterN = normalize(filterN);\n    filterP = pcfilter(handle, "P");\n    \n    vector avoidDir = normalize(filterP - @P);\n    \n    dot = dot(avoidDir, normalize(@v));\n    vector cross = normalize(cross(avoidDir, normalize(@v)));\n    float maxRad = radians(ch("max_deg"));\n    \n    acos(dot);\n    \n    @v = avoidDir * length(@v);\n    v@aaaa = cross;\n    //v@up = filterN;\n}\n\n\n' ) rad ( 8 ) max_pts ( 100 ) dot ( -0.5 ) max_deg ( 20 )
-opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_calc_new_v
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_calc_new_v
-opexprlanguage -s hscript $_obj_sc_crowd_calc_new_v
-opuserdata -n '___Version___' -v '' $_obj_sc_crowd_calc_new_v
-
-# Node $_obj_sc_crowd_advect (Sop/attribwrangle)
-set _obj_sc_crowd_advect = `run("opadd -e -n -v attribwrangle advect")`
-oplocate -x `$arg2 + 7.0536053578278732` -y `$arg3 + -15.441077559130118` $_obj_sc_crowd_advect
-opparm $_obj_sc_crowd_advect  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_sc_crowd_advect snippet ( 'if(distance(v@targetP, @P) > length(@v * @TimeInc))\n{\n    @P += @v * @TimeInc;\n}\nelse\n{\n    @Cd = set(1,0,0);\n}\n\n' )
-opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_advect
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_advect
-opexprlanguage -s hscript $_obj_sc_crowd_advect
-opuserdata -n '___Version___' -v '' $_obj_sc_crowd_advect
-
-# Node $_obj_sc_crowd_init_v (Sop/attribwrangle)
-set _obj_sc_crowd_init_v = `run("opadd -e -n -v attribwrangle init_v")`
-oplocate -x `$arg2 + 9.2952353578278739` -y `$arg3 + -7.1446075591301188` $_obj_sc_crowd_init_v
-opspareds '    group { 	name	"folder1" 	label	"Code"  	parm { 	    name	"group" 	    baseparm 	    label	"Group" 	    export	none 	    bindselector points "Modify Points" 	        "Select the points to affect and press Enter to complete." 	        0 1 0xffffffff 0 grouptype 0 	} 	parm { 	    name	"grouptype" 	    baseparm 	    label	"Group Type" 	    export	none 	} 	parm { 	    name	"class" 	    baseparm 	    label	"Run Over" 	    export	none 	} 	parm { 	    name	"vex_numcount" 	    baseparm 	    label	"Number Count" 	    export	none 	} 	parm { 	    name	"vex_threadjobsize" 	    baseparm 	    label	"Thread Job Size" 	    export	none 	} 	parm { 	    name	"snippet" 	    baseparm 	    label	"VEXpression" 	    export	all 	} 	parm { 	    name	"exportlist" 	    baseparm 	    label	"Attributes to Create" 	    export	none 	} 	parm { 	    name	"vex_strict" 	    baseparm 	    label	"Enforce Prototypes" 	    export	none 	}     }      group { 	name	"folder1_1" 	label	"Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	} 	parm { 	    name	"vex_inplace" 	    baseparm 	    label	"Compute Results In Place" 	    export	none 	} 	parm { 	    name	"vex_selectiongroup" 	    baseparm 	    label	"Output Selection Group" 	    export	none 	}     }      parm { 	name	"spped" 	label	"Spped" 	type	float 	default	{ "0" } 	range	{ 0 1 }     } ' $_obj_sc_crowd_init_v
-opparm $_obj_sc_crowd_init_v  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_sc_crowd_init_v snippet ( 'if(length(@v) == 0)\n{\n    @v += normalize(v@targetP - @P) * ch("spped");\n}' ) spped ( 0.5 )
-opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_init_v
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_init_v
-opexprlanguage -s hscript $_obj_sc_crowd_init_v
-opuserdata -n '___Version___' -v '' $_obj_sc_crowd_init_v
-
-# Node $_obj_sc_crowd_add_v (Sop/attribwrangle)
-set _obj_sc_crowd_add_v = `run("opadd -e -n -v attribwrangle add_v")`
-oplocate -x `$arg2 + 7.0536053578278732` -y `$arg3 + -13.197827559130118` $_obj_sc_crowd_add_v
-opspareds '    group { 	name	"folder1" 	label	"Code"  	parm { 	    name	"group" 	    baseparm 	    label	"Group" 	    export	none 	    bindselector points "Modify Points" 	        "Select the points to affect and press Enter to complete." 	        0 1 0xffffffff 0 grouptype 0 	} 	parm { 	    name	"grouptype" 	    baseparm 	    label	"Group Type" 	    export	none 	} 	parm { 	    name	"class" 	    baseparm 	    label	"Run Over" 	    export	none 	} 	parm { 	    name	"vex_numcount" 	    baseparm 	    label	"Number Count" 	    export	none 	} 	parm { 	    name	"vex_threadjobsize" 	    baseparm 	    label	"Thread Job Size" 	    export	none 	} 	parm { 	    name	"snippet" 	    baseparm 	    label	"VEXpression" 	    export	all 	} 	parm { 	    name	"exportlist" 	    baseparm 	    label	"Attributes to Create" 	    export	none 	} 	parm { 	    name	"vex_strict" 	    baseparm 	    label	"Enforce Prototypes" 	    export	none 	}     }      group { 	name	"folder1_1" 	label	"Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	} 	parm { 	    name	"vex_inplace" 	    baseparm 	    label	"Compute Results In Place" 	    export	none 	} 	parm { 	    name	"vex_selectiongroup" 	    baseparm 	    label	"Output Selection Group" 	    export	none 	}     }      parm { 	name	"add_speed" 	label	"Add Speed" 	type	float 	default	{ "0" } 	range	{ 0 1 }     } ' $_obj_sc_crowd_add_v
-opparm $_obj_sc_crowd_add_v  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_sc_crowd_add_v snippet ( '@v += normalize(@v) * ch("add_speed");' ) add_speed ( 0.20000000000000001 )
-opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_add_v
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_add_v
-opexprlanguage -s hscript $_obj_sc_crowd_add_v
-opuserdata -n '___Version___' -v '' $_obj_sc_crowd_add_v
-
-# Node $_obj_sc_crowd_limit_v (Sop/attribwrangle)
-set _obj_sc_crowd_limit_v = `run("opadd -e -n -v attribwrangle limit_v")`
-oplocate -x `$arg2 + 7.0566053578278733` -y `$arg3 + -14.27557755913012` $_obj_sc_crowd_limit_v
-opspareds '    group { 	name	"folder1" 	label	"Code"  	parm { 	    name	"group" 	    baseparm 	    label	"Group" 	    export	none 	    bindselector points "Modify Points" 	        "Select the points to affect and press Enter to complete." 	        0 1 0xffffffff 0 grouptype 0 	} 	parm { 	    name	"grouptype" 	    baseparm 	    label	"Group Type" 	    export	none 	} 	parm { 	    name	"class" 	    baseparm 	    label	"Run Over" 	    export	none 	} 	parm { 	    name	"vex_numcount" 	    baseparm 	    label	"Number Count" 	    export	none 	} 	parm { 	    name	"vex_threadjobsize" 	    baseparm 	    label	"Thread Job Size" 	    export	none 	} 	parm { 	    name	"snippet" 	    baseparm 	    label	"VEXpression" 	    export	all 	} 	parm { 	    name	"exportlist" 	    baseparm 	    label	"Attributes to Create" 	    export	none 	} 	parm { 	    name	"vex_strict" 	    baseparm 	    label	"Enforce Prototypes" 	    export	none 	}     }      group { 	name	"folder1_1" 	label	"Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	} 	parm { 	    name	"vex_inplace" 	    baseparm 	    label	"Compute Results In Place" 	    export	none 	} 	parm { 	    name	"vex_selectiongroup" 	    baseparm 	    label	"Output Selection Group" 	    export	none 	}     }      parm { 	name	"max_speed" 	label	"Max Speed" 	type	float 	default	{ "0" } 	range	{ 0 1 }     } ' $_obj_sc_crowd_limit_v
-opparm $_obj_sc_crowd_limit_v  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_sc_crowd_limit_v snippet ( 'if(length(@v) > ch("max_speed"))\n{\n    @v = normalize(@v) * ch("max_speed");\n}' ) max_speed ( 3 )
-opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_limit_v
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_limit_v
-opexprlanguage -s hscript $_obj_sc_crowd_limit_v
-opuserdata -n '___Version___' -v '' $_obj_sc_crowd_limit_v
-
-# Node $_obj_sc_crowd_update_N (Sop/attribwrangle)
-set _obj_sc_crowd_update_N = `run("opadd -e -n -v attribwrangle update_N")`
-oplocate -x `$arg2 + 7.0536053578278732` -y `$arg3 + -18.026877559130121` $_obj_sc_crowd_update_N
-opparm $_obj_sc_crowd_update_N  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_sc_crowd_update_N snippet ( 'if(length(@v)>0)@N = normalize(@v);' )
-opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_update_N
-opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_update_N
-opexprlanguage -s hscript $_obj_sc_crowd_update_N
-opuserdata -n '___Version___' -v '' $_obj_sc_crowd_update_N
-
-# Node $_obj_sc_crowd_update_up (Sop/attribwrangle)
-set _obj_sc_crowd_update_up = `run("opadd -e -n -v attribwrangle update_up")`
-oplocate -x `$arg2 + 7.0536053578278732` -y `$arg3 + -16.593577559130118` $_obj_sc_crowd_update_up
-opparm $_obj_sc_crowd_update_up  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_sc_crowd_update_up snippet ( 'int near = nearpoint(1,@P);\n\n@up = point(1,"N",near);' )
-opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_update_up
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_update_up
-opexprlanguage -s hscript $_obj_sc_crowd_update_up
-opuserdata -n '___Version___' -v '' $_obj_sc_crowd_update_up
-opcf ..
-opcf $_obj_sc_crowd
-
-# Node $_obj_sc_crowd_grid1 (Sop/grid)
-set _obj_sc_crowd_grid1 = `run("opadd -e -n -v grid grid1")`
-oplocate -x `$arg2 + 0.247059` -y `$arg3 + 5.5117200000000004` $_obj_sc_crowd_grid1
-opparm -V 16.0.633 $_obj_sc_crowd_grid1 size ( 50 50 )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_grid1
-opexprlanguage -s hscript $_obj_sc_crowd_grid1
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_grid1
-
-# Node $_obj_sc_crowd_scatter1 (Sop/scatter::2.0)
-set _obj_sc_crowd_scatter1 = `run("opadd -e -n -v scatter::2.0 scatter1")`
-oplocate -x `$arg2 + 0.247059` -y `$arg3 + 0.848607` $_obj_sc_crowd_scatter1
-opparm -V 16.0.633 $_obj_sc_crowd_scatter1 forcetotal ( off )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_scatter1
-opexprlanguage -s hscript $_obj_sc_crowd_scatter1
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_scatter1
-
-# Node $_obj_sc_crowd_scatter2 (Sop/scatter::2.0)
-set _obj_sc_crowd_scatter2 = `run("opadd -e -n -v scatter::2.0 scatter2")`
-oplocate -x `$arg2 + -2.7312400000000001` -y `$arg3 + -1.0686800000000001` $_obj_sc_crowd_scatter2
-opparm -V 16.0.633 $_obj_sc_crowd_scatter2 npts ( 20 ) relaxpoints ( off )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_scatter2
-opexprlanguage -s hscript $_obj_sc_crowd_scatter2
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_scatter2
-
-# Node $_obj_sc_crowd_scatter3 (Sop/scatter::2.0)
-set _obj_sc_crowd_scatter3 = `run("opadd -e -n -v scatter::2.0 scatter3")`
-oplocate -x `$arg2 + -5.4940899999999999` -y `$arg3 + -1.31681` $_obj_sc_crowd_scatter3
-chblockbegin
-chadd -t 0 0 $_obj_sc_crowd_scatter3 npts
-chkey -t 0 -v 10 -m 0 -a 0 -A 0 -T a  -F 'ch("../scatter2/npts")' $_obj_sc_crowd_scatter3/npts
-chblockend
-opparm -V 16.0.633 $_obj_sc_crowd_scatter3 npts ( npts ) seed ( 3.3799999999999999 ) scaleradiiby ( 1.8 )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_scatter3
-opexprlanguage -s hscript $_obj_sc_crowd_scatter3
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_scatter3
-
-# Node $_obj_sc_crowd_object_merge1 (Sop/object_merge)
-set _obj_sc_crowd_object_merge1 = `run("opadd -e -n -v object_merge object_merge1")`
-oplocate -x `$arg2 + 1.6144240366064295` -y `$arg3 + -7.2048945682477008` $_obj_sc_crowd_object_merge1
-opparm $_obj_sc_crowd_object_merge1  numobj ( 1 )
-opparm -V 16.0.633 $_obj_sc_crowd_object_merge1 xformtype ( local ) objpath1 ( ../DOP_space_colonization_crowd/d/s/null1/ )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_object_merge1
-opexprlanguage -s hscript $_obj_sc_crowd_object_merge1
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_object_merge1
-
-# Node $_obj_sc_crowd_null1 (Sop/null)
-set _obj_sc_crowd_null1 = `run("opadd -e -n -v null null1")`
-oplocate -x `$arg2 + -2.7300900000000001` -y `$arg3 + -11.5685` $_obj_sc_crowd_null1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_null1
-opexprlanguage -s hscript $_obj_sc_crowd_null1
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_null1
-
-# Node $_obj_sc_crowd_box1 (Sop/box)
-set _obj_sc_crowd_box1 = `run("opadd -e -n -v box box1")`
-oplocate -x `$arg2 + -6.5566199999999997` -y `$arg3 + -11.3622` $_obj_sc_crowd_box1
-opparm -V 16.0.633 $_obj_sc_crowd_box1 size ( 1 1 0.59999999999999998 ) t ( 0 0.5 0 )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_box1
-opexprlanguage -s hscript $_obj_sc_crowd_box1
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_box1
-
-# Node $_obj_sc_crowd_sphere1 (Sop/sphere)
-set _obj_sc_crowd_sphere1 = `run("opadd -e -n -v sphere sphere1")`
-oplocate -x `$arg2 + -9.9206599999999998` -y `$arg3 + -11.3622` $_obj_sc_crowd_sphere1
-chblockbegin
-chadd -t 0 0 $_obj_sc_crowd_sphere1 rady
-chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("radx")' $_obj_sc_crowd_sphere1/rady
-chadd -t 0 0 $_obj_sc_crowd_sphere1 radz
-chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("radx")' $_obj_sc_crowd_sphere1/radz
-chblockend
-opparm -V 16.0.633 $_obj_sc_crowd_sphere1 type ( poly ) rad ( 0.69999999999999996 rady radz ) t ( 0 1.6000000000000001 0 )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_sphere1
-opexprlanguage -s hscript $_obj_sc_crowd_sphere1
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_sphere1
-
-# Node $_obj_sc_crowd_merge1 (Sop/merge)
-set _obj_sc_crowd_merge1 = `run("opadd -e -n -v merge merge1")`
-oplocate -x `$arg2 + -7.6420899999999996` -y `$arg3 + -13.053900000000001` $_obj_sc_crowd_merge1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_merge1
-opexprlanguage -s hscript $_obj_sc_crowd_merge1
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_merge1
-
-# Node $_obj_sc_crowd_copytopoints1 (Sop/copytopoints)
-set _obj_sc_crowd_copytopoints1 = `run("opadd -e -n -v copytopoints copytopoints1")`
-oplocate -x `$arg2 + -2.7300900000000001` -y `$arg3 + -15.309200000000001` $_obj_sc_crowd_copytopoints1
-opparm -V 16.0.633 $_obj_sc_crowd_copytopoints1 setpt ( Cd ) mulpt ( "" ) addpt ( "" )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_copytopoints1
-opexprlanguage -s hscript $_obj_sc_crowd_copytopoints1
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_copytopoints1
-
-# Node $_obj_sc_crowd_sphere2 (Sop/sphere)
-set _obj_sc_crowd_sphere2 = `run("opadd -e -n -v sphere sphere2")`
-oplocate -x `$arg2 + -8.1143300000000007` -y `$arg3 + -11.2661` $_obj_sc_crowd_sphere2
-opparm -V 16.0.633 $_obj_sc_crowd_sphere2 type ( poly ) rad ( 0.10000000000000001 0.10000000000000001 0.29999999999999999 ) t ( 0 1.6000000000000001 0.69999999999999996 )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_sphere2
-opexprlanguage -s hscript $_obj_sc_crowd_sphere2
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_sphere2
-
-# Node $_obj_sc_crowd_sort1 (Sop/sort)
-set _obj_sc_crowd_sort1 = `run("opadd -e -n -v sort sort1")`
-oplocate -x `$arg2 + -5.4940899999999999` -y `$arg3 + 0.848607` $_obj_sc_crowd_sort1
-opparm -V 16.0.633 $_obj_sc_crowd_sort1 ptsort ( seed )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_sc_crowd_sort1
-opexprlanguage -s hscript $_obj_sc_crowd_sort1
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_sort1
-
-# Node $_obj_sc_crowd_blast2 (Sop/blast)
-set _obj_sc_crowd_blast2 = `run("opadd -e -n -v blast blast2")`
-oplocate -x `$arg2 + -5.4940899999999999` -y `$arg3 + 0.041596000000000001` $_obj_sc_crowd_blast2
-opparm -V 16.0.633 $_obj_sc_crowd_blast2 group ( 0-19 ) grouptype ( points ) negate ( on )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_sc_crowd_blast2
-opexprlanguage -s hscript $_obj_sc_crowd_blast2
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_blast2
-
-# Node $_obj_sc_crowd_sort2 (Sop/sort)
-set _obj_sc_crowd_sort2 = `run("opadd -e -n -v sort sort2")`
-oplocate -x `$arg2 + -2.7312400000000001` -y `$arg3 + 0.848607` $_obj_sc_crowd_sort2
-opparm -V 16.0.633 $_obj_sc_crowd_sort2 ptsort ( seed ) pointseed ( 82 )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_sc_crowd_sort2
-opexprlanguage -s hscript $_obj_sc_crowd_sort2
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_sort2
-
-# Node $_obj_sc_crowd_blast3 (Sop/blast)
-set _obj_sc_crowd_blast3 = `run("opadd -e -n -v blast blast3")`
-oplocate -x `$arg2 + -2.7312400000000001` -y `$arg3 + 0.041596000000000001` $_obj_sc_crowd_blast3
-opparm -V 16.0.633 $_obj_sc_crowd_blast3 group ( 0-19 ) grouptype ( points ) negate ( on )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_sc_crowd_blast3
-opexprlanguage -s hscript $_obj_sc_crowd_blast3
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_blast3
-
-# Node $_obj_sc_crowd_facet1 (Sop/facet)
-set _obj_sc_crowd_facet1 = `run("opadd -e -n -v facet facet1")`
-oplocate -x `$arg2 + 0.247059` -y `$arg3 + 3.2336999999999998` $_obj_sc_crowd_facet1
-opparm -V 16.0.633 $_obj_sc_crowd_facet1 postnml ( on )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_facet1
-opexprlanguage -s hscript $_obj_sc_crowd_facet1
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_facet1
-
-# Node $_obj_sc_crowd_blast1 (Sop/blast)
-set _obj_sc_crowd_blast1 = `run("opadd -e -n -v blast blast1")`
-oplocate -x `$arg2 + 0.247059` -y `$arg3 + 2.3395000000000001` $_obj_sc_crowd_blast1
-opparm -V 16.0.633 $_obj_sc_crowd_blast1 group ( '15-16 20-21 24-25 46 48-52' ) grouptype ( prims ) removegrp ( on )
-opset -d off -r off -h on -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_blast1
-opexprlanguage -s hscript $_obj_sc_crowd_blast1
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_blast1
-opuserdata -n '___toolcount___' -v '16' $_obj_sc_crowd_blast1
-opuserdata -n '___toolid___' -v 'generic_delete' $_obj_sc_crowd_blast1
-
-# Node $_obj_sc_crowd_Prev_Frame (Sop/dopimport)
-set _obj_sc_crowd_Prev_Frame = `run("opadd -e -n -v dopimport Prev_Frame")`
-oplocate -x `$arg2 + 7.0566053578278733` -y `$arg3 + -5.4283275591301194` $_obj_sc_crowd_Prev_Frame
-chblockbegin
-chadd -t 0 0 $_obj_sc_crowd_Prev_Frame doposxform
-chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../transformsopoutput")' $_obj_sc_crowd_Prev_Frame/doposxform
-chadd -t 0 0 $_obj_sc_crowd_Prev_Frame doxform
-chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../transformsopoutput")' $_obj_sc_crowd_Prev_Frame/doxform
-chadd -t 0 0 $_obj_sc_crowd_Prev_Frame integrateovertime
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '1/$FPS' $_obj_sc_crowd_Prev_Frame/integrateovertime
-chblockend
-opparm -V 16.0.633 $_obj_sc_crowd_Prev_Frame doppath ( '`stamps("..", "DOPNET", "../..")`' ) objpattern ( '`stamps("..", "OBJID", arg(dopnodeobjs(".."),0))`' ) singleobject ( on ) importstyle ( fetch ) geodatapath ( '`stamps("..", "DATANAME", chs("../datapath"))`' ) doposxform ( doposxform ) doxform ( doxform ) centeratpivot ( off ) adddopobjectname ( off ) pointvels ( none ) donotsim ( on )
-opcolor -c 0.60000002384185791 0.40000000596046448 1 $_obj_sc_crowd_Prev_Frame
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_Prev_Frame
-opexprlanguage -s hscript $_obj_sc_crowd_Prev_Frame
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_Prev_Frame
-
-# Node $_obj_sc_crowd_Input_1 (Sop/object_merge)
-set _obj_sc_crowd_Input_1 = `run("opadd -e -n -v object_merge Input_1")`
-oplocate -x `$arg2 + 9.2969853578278734` -y `$arg3 + -5.2067675591301192` $_obj_sc_crowd_Input_1
-opparm $_obj_sc_crowd_Input_1  numobj ( 1 )
-opparm -V 16.0.633 $_obj_sc_crowd_Input_1 objpath1 ( '`opinputpath("../..", 0)`' )
-opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_sc_crowd_Input_1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_Input_1
-opexprlanguage -s hscript $_obj_sc_crowd_Input_1
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_Input_1
-
-# Node $_obj_sc_crowd_Input_2 (Sop/object_merge)
-set _obj_sc_crowd_Input_2 = `run("opadd -e -n -v object_merge Input_2")`
-oplocate -x `$arg2 + 10.890345357827874` -y `$arg3 + -5.761297559130119` $_obj_sc_crowd_Input_2
-opparm $_obj_sc_crowd_Input_2  numobj ( 1 )
-opparm -V 16.0.633 $_obj_sc_crowd_Input_2 objpath1 ( '`opinputpath("../..", 1)`' )
-opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_sc_crowd_Input_2
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_Input_2
-opexprlanguage -s hscript $_obj_sc_crowd_Input_2
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_Input_2
-
-# Node $_obj_sc_crowd_Input_3 (Sop/object_merge)
-set _obj_sc_crowd_Input_3 = `run("opadd -e -n -v object_merge Input_3")`
-oplocate -x `$arg2 + 12.199095357827874` -y `$arg3 + -6.3768075591301194` $_obj_sc_crowd_Input_3
-opparm $_obj_sc_crowd_Input_3  numobj ( 1 )
-opparm -V 16.0.633 $_obj_sc_crowd_Input_3 objpath1 ( '`opinputpath("../..", 2)`' )
-opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_sc_crowd_Input_3
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_Input_3
-opexprlanguage -s hscript $_obj_sc_crowd_Input_3
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_Input_3
-
-# Node $_obj_sc_crowd_Input_4 (Sop/object_merge)
-set _obj_sc_crowd_Input_4 = `run("opadd -e -n -v object_merge Input_4")`
-oplocate -x `$arg2 + 13.711145357827874` -y `$arg3 + -6.9313275591301196` $_obj_sc_crowd_Input_4
-opparm $_obj_sc_crowd_Input_4  numobj ( 1 )
-opparm -V 16.0.633 $_obj_sc_crowd_Input_4 objpath1 ( '`opinputpath("../..", 3)`' )
-opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_sc_crowd_Input_4
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_Input_4
-opexprlanguage -s hscript $_obj_sc_crowd_Input_4
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_Input_4
-
-# Node $_obj_sc_crowd_switch1 (Sop/switch)
-set _obj_sc_crowd_switch1 = `run("opadd -e -n -v switch switch1")`
-oplocate -x `$arg2 + 7.0566053578278733` -y `$arg3 + -8.5880375591301181` $_obj_sc_crowd_switch1
-chblockbegin
-chadd -t 0 0 $_obj_sc_crowd_switch1 input
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FF==ch("../../../startframe")' $_obj_sc_crowd_switch1/input
-chblockend
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_switch1
-opexprlanguage -s hscript $_obj_sc_crowd_switch1
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_switch1
-
-# Node $_obj_sc_crowd_null2 (Sop/null)
-set _obj_sc_crowd_null2 = `run("opadd -e -n -v null null2")`
-oplocate -x `$arg2 + 11.738315357827874` -y `$arg3 + -12.843087559130119` $_obj_sc_crowd_null2
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_null2
-opexprlanguage -s hscript $_obj_sc_crowd_null2
-opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_null2
-oporder -e grid1 mountain1 scatter1 scatter2 crt_targetP crt_source crt_terrain DOP_space_colonization_crowd scatter3 object_merge1 null1 attribwrangle1 box1 sphere1 merge1 copytopoints1 sphere2 sort1 blast2 sort2 blast3 facet1 blast1 attribwrangle2 calc_new_v advect init_v add_v limit_v update_N update_up Prev_Frame Input_1 Input_2 Input_3 Input_4 switch1 null2 
-opcf ..
-opset -p on $_obj_sc_crowd
-
-opcf $arg1
-opcf $_obj_sc_crowd
-opwire -n $_obj_sc_crowd_grid1 -0 $_obj_sc_crowd_mountain1
-opwire -n $_obj_sc_crowd_blast1 -0 $_obj_sc_crowd_scatter1
-opwire -n $_obj_sc_crowd_blast3 -0 $_obj_sc_crowd_scatter2
-opwire -n $_obj_sc_crowd_scatter2 -0 $_obj_sc_crowd_crt_targetP
-opwire -n $_obj_sc_crowd_scatter3 -1 $_obj_sc_crowd_crt_targetP
-opwire -n $_obj_sc_crowd_crt_targetP -0 $_obj_sc_crowd_crt_source
-opwire -n $_obj_sc_crowd_scatter1 -0 $_obj_sc_crowd_crt_terrain
-opwire -n $_obj_sc_crowd_crt_source -0 $_obj_sc_crowd_DOP_space_colonization_crowd
-opwire -n $_obj_sc_crowd_crt_terrain -1 $_obj_sc_crowd_DOP_space_colonization_crowd
-opwire -n $_obj_sc_crowd_blast2 -0 $_obj_sc_crowd_scatter3
-opwire -n $_obj_sc_crowd_attribwrangle1 -0 $_obj_sc_crowd_null1
-opwire -n $_obj_sc_crowd_DOP_space_colonization_crowd -0 $_obj_sc_crowd_attribwrangle1
-opwire -n $_obj_sc_crowd_sphere1 -0 $_obj_sc_crowd_merge1
-opwire -n $_obj_sc_crowd_box1 -1 $_obj_sc_crowd_merge1
-opwire -n $_obj_sc_crowd_sphere2 -2 $_obj_sc_crowd_merge1
-opwire -n $_obj_sc_crowd_merge1 -0 $_obj_sc_crowd_copytopoints1
-opwire -n $_obj_sc_crowd_null1 -1 $_obj_sc_crowd_copytopoints1
-opwire -n $_obj_sc_crowd_blast1 -0 $_obj_sc_crowd_sort1
-opwire -n $_obj_sc_crowd_sort1 -0 $_obj_sc_crowd_blast2
-opwire -n $_obj_sc_crowd_blast1 -0 $_obj_sc_crowd_sort2
-opwire -n $_obj_sc_crowd_sort2 -0 $_obj_sc_crowd_blast3
-opwire -n $_obj_sc_crowd_mountain1 -0 $_obj_sc_crowd_facet1
-opwire -n $_obj_sc_crowd_facet1 -0 $_obj_sc_crowd_blast1
-opwire -n $_obj_sc_crowd_Input_2 -0 $_obj_sc_crowd_attribwrangle2
-opwire -n $_obj_sc_crowd_switch1 -1 $_obj_sc_crowd_attribwrangle2
-opwire -n $_obj_sc_crowd_switch1 -0 $_obj_sc_crowd_calc_new_v
-opwire -n $_obj_sc_crowd_attribwrangle2 -1 $_obj_sc_crowd_calc_new_v
-opwire -n $_obj_sc_crowd_limit_v -0 $_obj_sc_crowd_advect
-opwire -n $_obj_sc_crowd_Input_1 -0 $_obj_sc_crowd_init_v
-opwire -n $_obj_sc_crowd_calc_new_v -0 $_obj_sc_crowd_add_v
-opwire -n $_obj_sc_crowd_add_v -0 $_obj_sc_crowd_limit_v
-opwire -n $_obj_sc_crowd_update_up -0 $_obj_sc_crowd_update_N
-opwire -n $_obj_sc_crowd_advect -0 $_obj_sc_crowd_update_up
-opwire -n $_obj_sc_crowd_Input_2 -1 $_obj_sc_crowd_update_up
-opwire -n $_obj_sc_crowd_Prev_Frame -0 $_obj_sc_crowd_switch1
-opwire -n $_obj_sc_crowd_init_v -1 $_obj_sc_crowd_switch1
-opwire -n $_obj_sc_crowd_attribwrangle2 -0 $_obj_sc_crowd_null2
-opcf ..
-
-set oidx = 0
-if ($argc >= 9 && "$arg9" != "") then
-    set oidx = $arg9
-endif
-
-if ($argc >= 5 && "$arg4" != "") then
-    set output = $_obj_sc_crowd
-    opwire -n $output -$arg5 $arg4
-endif
-if ($argc >= 6 && "$arg6" != "") then
-    set input = $_obj_sc_crowd
-    if ($arg8) then
-        opwire -n -i $arg6 -0 $input
-    else
-        opwire -n -o $oidx $arg6 -0 $input
-    endif
-endif
-opcf $saved_path
-'''
-hou.hscript(h_preamble + h_extra_args + h_cmd)
-]]></script>
-  </tool>
-
   <tool name="graph" label="graph" icon="OBJ_geo">
     <helpURL>operator:Object/geo</helpURL>
     <toolMenuContext name="network">
@@ -7853,6 +7295,1391 @@ if ($argc >= 5 && "$arg4" != "") then
 endif
 if ($argc >= 6 && "$arg6" != "") then
     set input = $_obj_geo1
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="GET_all_frames_geo0" label="GET_all_frames_geo" icon="SOP_subnet">
+    <helpURL>operator:Sop/subnet</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/subnet</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('subnet'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1 (Sop/subnet)
+set _obj_crowd01_workarea_GET_all_frames_geo1 = `run("opadd -e -n -v subnet GET_all_frames_geo1")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_crowd01_workarea_GET_all_frames_geo1
+opspareds '    parm {   name    "label1"        baseparm        label   "Input #1 Label"        invisible       export  all     }     parm {    name    "label2"        baseparm        label   "Input #2 Label"        invisible       export  all     }     parm {    name    "label3"        baseparm        label   "Input #3 Label"        invisible       export  all     }     parm {    name    "label4"        baseparm        label   "Input #4 Label"        invisible       export  all     }     parm {    name    "create_frame_atr"      label   "create_frame_atr"      type    toggle  default { "0" }         range   { 0! 10 }       parmtag { "autoscope" "0000000000000000" }     }     parm {     name    "start_frame"   label   "start_frame"   type    integer         default { [ "$SHOT_START - $PREROLL" hscript-expr ] }   range   { 0 10 }        parmtag { "autoscope" "0000000000000000" }     }     parm {     name    "end_frame"     label   "end_frame"     type    integer         default { [ "$SHOT_END + $POSTROLL" hscript-expr ] }    range   { 0 10 }        parmtag { "autoscope" "0000000000000000" }     }     parm {     name    "step"  label   "step"  type    integer         default { "5" }         range   { 0 10 }        parmtag { "autoscope" "0000000000000000" }     } ' $_obj_crowd01_workarea_GET_all_frames_geo1
+chblockbegin
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1 start_frame
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$SHOT_START - $PREROLL' $_obj_crowd01_workarea_GET_all_frames_geo1/start_frame
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1 end_frame
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$SHOT_END + $POSTROLL' $_obj_crowd01_workarea_GET_all_frames_geo1/end_frame
+chblockend
+opparm -V 16.0.674 $_obj_crowd01_workarea_GET_all_frames_geo1
+opcolor -c 0.86699998378753662 0 0 $_obj_crowd01_workarea_GET_all_frames_geo1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1
+opcf $_obj_crowd01_workarea_GET_all_frames_geo1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame (Sop/attribwrangle)
+set _obj_crowd01_workarea_GET_all_frames_geo1_crt_frame = `run("opadd -e -n -v attribwrangle crt_frame")`
+oplocate -x `$arg2 + 4.1219200000000003` -y `$arg3 + -0.59652400000000005` $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opparm $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame snippet ( '@frame = @Frame;' )
+opcolor -c 1 0.80000001192092896 0 $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opuserdata -n '___Version___' -v '' $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opcf ..
+opcf $_obj_crowd01_workarea_GET_all_frames_geo1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 (Sop/block_end)
+set _obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 = `run("opadd -e -n -v block_end repeat_end1")`
+oplocate -x `$arg2 + 2.6271900000000001` -y `$arg3 + -4.2633200000000002` $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opspareds '    parm {   name    "itermethod"    baseparm        label   "Iteration Method"      export  none     }     parm {   name    "method"        baseparm        label   "Gather Method"         export  none     }     parm {   name    "iterations"    baseparm        label   "Iterations"    export  none     }     parm {   name    "startvalue"    baseparm        label   "Start Value"   export  none     }     parm {   name    "increment"     baseparm        label   "Increment"     export  none     }     parm {   name    "class"         baseparm        label   "Piece Elements"        export  none     }     parm {   name    "useattrib"     baseparm        label   "Piece Attribute"       joinnext        export  none     }     parm {   name    "attrib"        baseparm        label   "Piece Attribute"       export  none     }     parm {   name    "usemaxiter"    baseparm        label   "Max Iterations"        joinnext        export  none     }     parm {   name    "maxiter"       baseparm        label   "Max Iterations"        export  none     }     parm {   name    "blockpath"     baseparm        label   "Default Block Path"    export  none     }     parm {   name    "templatepath"  baseparm        label   "Piece Block Path"      export  none     }     parm {   name    "resetcookpass"         baseparm        label   "Reset Cached Pass"     export  none     }     parm {   name    "dosinglepass"  baseparm        label   "Do Single Pass"        joinnext        export  none     }     parm {   name    "singlepass"    baseparm        label   "Single Pass"   export  none     }     parm {   name    "stopcondition"         baseparm        label   "Stop Condition"        export  none     }     parm {   name    "multithread"   baseparm        label   "Multithread when Compiled"     export  none     }     parm {   name    "start_frame"   label   "start_frame"   type    integer         default { "0" }         range   { 0 10 }     }     parm {       name    "end_frame"     label   "end_frame"     type    integer         default { "0" }         range   { 0 10 }     }     parm {       name    "step"  label   "step"  type    integer         default { "1" }         range   { 0 10 }     } ' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+chblockbegin
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 iterations
+chkey -t 41.458333333333002 -v 10 -m 0 -a 0 -A 0 -T a  -F 'ceil((ch("end_frame") - ch("start_frame") + 1)/ch("step"))' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1/iterations
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 start_frame
+chkey -t 41.458333333333002 -v 986 -m 0 -a 0 -A 0 -T a  -F 'ch("../start_frame")' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1/start_frame
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 end_frame
+chkey -t 41.458333333333002 -v 1071 -m 0 -a 0 -A 0 -T a  -F 'ch("../end_frame")' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1/end_frame
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 step
+chkey -t 41.458333333333002 -v 5 -m 0 -a 0 -A 0 -T a  -F 'ch("../step")' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1/step
+chblockend
+opparm -V 16.0.674 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 itermethod ( count ) method ( merge ) iterations ( iterations ) blockpath ( ../repeat_begin1 ) start_frame ( start_frame ) end_frame ( end_frame ) step ( step )
+opcolor -c 0.75 0.40000000596046448 0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1 (Sop/block_begin)
+set _obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1 = `run("opadd -e -n -v block_begin repeat_begin1")`
+oplocate -x `$arg2 + 0.0016000000000000001` -y `$arg3 + 1.5075000000000001` $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opparm -V 16.0.674 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1 blockpath ( ../repeat_end1 ) label1 ( 'iteration, numiteration, value, ivalue' )
+opcolor -c 0.75 0.40000000596046448 0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2 (Sop/block_begin)
+set _obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2 = `run("opadd -e -n -v block_begin repeat_begin2")`
+oplocate -x `$arg2 + 2.6271900000000001` -y `$arg3 + 1.5075000000000001` $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opparm -V 16.0.674 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2 method ( input ) blockpath ( ../repeat_end1 ) label1 ( 'iteration, numiteration, value, ivalue' )
+opcolor -c 0.75 0.40000000596046448 0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1 (Sop/block_begin)
+set _obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1 = `run("opadd -e -n -v block_begin repeat_begin1_metadata1")`
+oplocate -x `$arg2 + 5.4409400000000003` -y `$arg3 + 1.5075000000000001` $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+opparm -V 16.0.674 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1 method ( metadata ) blockpath ( ../repeat_end1 ) label1 ( 'iteration, numiteration, value, ivalue' )
+opcolor -c 0.75 0.40000000596046448 0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_output1 (Sop/output)
+set _obj_crowd01_workarea_GET_all_frames_geo1_output1 = `run("opadd -e -n -v output output1")`
+oplocate -x `$arg2 + 2.6255899999999999` -y `$arg3 + -5.7526599999999997` $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+chblockbegin
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_output1 outputidx
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F 'max(opdigits(".")-1,0)' $_obj_crowd01_workarea_GET_all_frames_geo1_output1/outputidx
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_null1 (Sop/null)
+set _obj_crowd01_workarea_GET_all_frames_geo1_null1 = `run("opadd -e -n -v null null1")`
+oplocate -x `$arg2 + -1.11759e-08` -y `$arg3 + 3.8542100000000001` $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_switch1 (Sop/switch)
+set _obj_crowd01_workarea_GET_all_frames_geo1_switch1 = `run("opadd -e -n -v switch switch1")`
+oplocate -x `$arg2 + 2.6255899999999999` -y `$arg3 + -1.9944` $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+chblockbegin
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_switch1 input
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../create_frame_atr")' $_obj_crowd01_workarea_GET_all_frames_geo1_switch1/input
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 (Sop/timeshift)
+set _obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 = `run("opadd -e -n -v timeshift timeshift2")`
+oplocate -x `$arg2 + 2.6255899999999999` -y `$arg3 + -3.22844` $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+chblockbegin
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 frame
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F 'detail("../repeat_begin1_metadata1/","iteration",0) * ch("../repeat_end1/step") + ch("../repeat_end1/start_frame")' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2/frame
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 time
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2/time
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 frange1
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2/frange1
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 frange2
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2/frange2
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 trange1
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2/trange1
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 trange2
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2/trange2
+chblockend
+opparm -V 16.0.674 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 frame ( frame )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+oporder -e repeat_end1 repeat_begin1 repeat_begin2 repeat_begin1_metadata1 output1 null1 crt_frame switch1 timeshift2 
+opcf ..
+opset -p on $_obj_crowd01_workarea_GET_all_frames_geo1
+
+opcf $arg1
+opwire -n $_obj_crowd01_workarea_frustum1 -0 $_obj_crowd01_workarea_GET_all_frames_geo1
+opcf $_obj_crowd01_workarea_GET_all_frames_geo1
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_null1 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_null1 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+opwire -n -i 0 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame -1 $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_switch1 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_crowd01_workarea_GET_all_frames_geo1
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_crowd01_workarea_GET_all_frames_geo1
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="GET_all_frames_geo" label="GET_all_frames_geo" icon="SOP_subnet">
+    <helpURL>operator:Sop/subnet</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/subnet</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('subnet'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1 (Sop/subnet)
+set _obj_crowd01_workarea_GET_all_frames_geo1 = `run("opadd -e -n -v subnet GET_all_frames_geo1")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_crowd01_workarea_GET_all_frames_geo1
+opspareds '    parm {   name    "label1"        baseparm        label   "Input #1 Label"        invisible       export  all     }     parm {    name    "label2"        baseparm        label   "Input #2 Label"        invisible       export  all     }     parm {    name    "label3"        baseparm        label   "Input #3 Label"        invisible       export  all     }     parm {    name    "label4"        baseparm        label   "Input #4 Label"        invisible       export  all     }     parm {    name    "create_frame_atr"      label   "create_frame_atr"      type    toggle  default { "0" }         range   { 0! 10 }       parmtag { "autoscope" "0000000000000000" }     }     parm {     name    "start_frame"   label   "start_frame"   type    integer         default { [ "$SHOT_START - $PREROLL" hscript-expr ] }   range   { 0 10 }        parmtag { "autoscope" "0000000000000000" }     }     parm {     name    "end_frame"     label   "end_frame"     type    integer         default { [ "$SHOT_END + $POSTROLL" hscript-expr ] }    range   { 0 10 }        parmtag { "autoscope" "0000000000000000" }     }     parm {     name    "step"  label   "step"  type    integer         default { "5" }         range   { 0 10 }        parmtag { "autoscope" "0000000000000000" }     } ' $_obj_crowd01_workarea_GET_all_frames_geo1
+chblockbegin
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1 start_frame
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$SHOT_START - $PREROLL' $_obj_crowd01_workarea_GET_all_frames_geo1/start_frame
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1 end_frame
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$SHOT_END + $POSTROLL' $_obj_crowd01_workarea_GET_all_frames_geo1/end_frame
+chblockend
+opparm -V 16.0.674 $_obj_crowd01_workarea_GET_all_frames_geo1
+opcolor -c 0.86699998378753662 0 0 $_obj_crowd01_workarea_GET_all_frames_geo1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1
+opcf $_obj_crowd01_workarea_GET_all_frames_geo1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame (Sop/attribwrangle)
+set _obj_crowd01_workarea_GET_all_frames_geo1_crt_frame = `run("opadd -e -n -v attribwrangle crt_frame")`
+oplocate -x `$arg2 + 4.1219200000000003` -y `$arg3 + -0.59652400000000005` $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opparm $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame snippet ( '@frame = @Frame;' )
+opcolor -c 1 0.80000001192092896 0 $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opuserdata -n '___Version___' -v '' $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opcf ..
+opcf $_obj_crowd01_workarea_GET_all_frames_geo1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 (Sop/block_end)
+set _obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 = `run("opadd -e -n -v block_end repeat_end1")`
+oplocate -x `$arg2 + 2.6271900000000001` -y `$arg3 + -4.2633200000000002` $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opspareds '    parm {   name    "itermethod"    baseparm        label   "Iteration Method"      export  none     }     parm {   name    "method"        baseparm        label   "Gather Method"         export  none     }     parm {   name    "iterations"    baseparm        label   "Iterations"    export  none     }     parm {   name    "startvalue"    baseparm        label   "Start Value"   export  none     }     parm {   name    "increment"     baseparm        label   "Increment"     export  none     }     parm {   name    "class"         baseparm        label   "Piece Elements"        export  none     }     parm {   name    "useattrib"     baseparm        label   "Piece Attribute"       joinnext        export  none     }     parm {   name    "attrib"        baseparm        label   "Piece Attribute"       export  none     }     parm {   name    "usemaxiter"    baseparm        label   "Max Iterations"        joinnext        export  none     }     parm {   name    "maxiter"       baseparm        label   "Max Iterations"        export  none     }     parm {   name    "blockpath"     baseparm        label   "Default Block Path"    export  none     }     parm {   name    "templatepath"  baseparm        label   "Piece Block Path"      export  none     }     parm {   name    "resetcookpass"         baseparm        label   "Reset Cached Pass"     export  none     }     parm {   name    "dosinglepass"  baseparm        label   "Do Single Pass"        joinnext        export  none     }     parm {   name    "singlepass"    baseparm        label   "Single Pass"   export  none     }     parm {   name    "stopcondition"         baseparm        label   "Stop Condition"        export  none     }     parm {   name    "multithread"   baseparm        label   "Multithread when Compiled"     export  none     }     parm {   name    "start_frame"   label   "start_frame"   type    integer         default { "0" }         range   { 0 10 }     }     parm {       name    "end_frame"     label   "end_frame"     type    integer         default { "0" }         range   { 0 10 }     }     parm {       name    "step"  label   "step"  type    integer         default { "1" }         range   { 0 10 }     } ' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+chblockbegin
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 iterations
+chkey -t 41.458333333333002 -v 10 -m 0 -a 0 -A 0 -T a  -F 'ceil((ch("end_frame") - ch("start_frame") + 1)/ch("step"))' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1/iterations
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 start_frame
+chkey -t 41.458333333333002 -v 986 -m 0 -a 0 -A 0 -T a  -F 'ch("../start_frame")' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1/start_frame
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 end_frame
+chkey -t 41.458333333333002 -v 1071 -m 0 -a 0 -A 0 -T a  -F 'ch("../end_frame")' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1/end_frame
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 step
+chkey -t 41.458333333333002 -v 5 -m 0 -a 0 -A 0 -T a  -F 'ch("../step")' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1/step
+chblockend
+opparm -V 16.0.674 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 itermethod ( count ) method ( merge ) iterations ( iterations ) blockpath ( ../repeat_begin1 ) start_frame ( start_frame ) end_frame ( end_frame ) step ( step )
+opcolor -c 0.75 0.40000000596046448 0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1 (Sop/block_begin)
+set _obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1 = `run("opadd -e -n -v block_begin repeat_begin1")`
+oplocate -x `$arg2 + 0.0016000000000000001` -y `$arg3 + 1.5075000000000001` $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opparm -V 16.0.674 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1 blockpath ( ../repeat_end1 ) label1 ( 'iteration, numiteration, value, ivalue' )
+opcolor -c 0.75 0.40000000596046448 0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2 (Sop/block_begin)
+set _obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2 = `run("opadd -e -n -v block_begin repeat_begin2")`
+oplocate -x `$arg2 + 2.6271900000000001` -y `$arg3 + 1.5075000000000001` $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opparm -V 16.0.674 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2 method ( input ) blockpath ( ../repeat_end1 ) label1 ( 'iteration, numiteration, value, ivalue' )
+opcolor -c 0.75 0.40000000596046448 0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1 (Sop/block_begin)
+set _obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1 = `run("opadd -e -n -v block_begin repeat_begin1_metadata1")`
+oplocate -x `$arg2 + 5.4409400000000003` -y `$arg3 + 1.5075000000000001` $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+opparm -V 16.0.674 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1 method ( metadata ) blockpath ( ../repeat_end1 ) label1 ( 'iteration, numiteration, value, ivalue' )
+opcolor -c 0.75 0.40000000596046448 0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_output1 (Sop/output)
+set _obj_crowd01_workarea_GET_all_frames_geo1_output1 = `run("opadd -e -n -v output output1")`
+oplocate -x `$arg2 + 2.6255899999999999` -y `$arg3 + -5.7526599999999997` $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+chblockbegin
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_output1 outputidx
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F 'max(opdigits(".")-1,0)' $_obj_crowd01_workarea_GET_all_frames_geo1_output1/outputidx
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_null1 (Sop/null)
+set _obj_crowd01_workarea_GET_all_frames_geo1_null1 = `run("opadd -e -n -v null null1")`
+oplocate -x `$arg2 + -1.11759e-08` -y `$arg3 + 3.8542100000000001` $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_switch1 (Sop/switch)
+set _obj_crowd01_workarea_GET_all_frames_geo1_switch1 = `run("opadd -e -n -v switch switch1")`
+oplocate -x `$arg2 + 2.6255899999999999` -y `$arg3 + -1.9944` $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+chblockbegin
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_switch1 input
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../create_frame_atr")' $_obj_crowd01_workarea_GET_all_frames_geo1_switch1/input
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 (Sop/timeshift)
+set _obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 = `run("opadd -e -n -v timeshift timeshift2")`
+oplocate -x `$arg2 + 2.6255899999999999` -y `$arg3 + -3.22844` $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+chblockbegin
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 frame
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F 'detail("../repeat_begin1_metadata1/","iteration",0) * ch("../repeat_end1/step") + ch("../repeat_end1/start_frame")' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2/frame
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 time
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2/time
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 frange1
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2/frange1
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 frange2
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2/frange2
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 trange1
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2/trange1
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 trange2
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2/trange2
+chblockend
+opparm -V 16.0.674 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 frame ( frame )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+oporder -e repeat_end1 repeat_begin1 repeat_begin2 repeat_begin1_metadata1 output1 null1 crt_frame switch1 timeshift2 
+opcf ..
+opset -p on $_obj_crowd01_workarea_GET_all_frames_geo1
+
+opcf $arg1
+opwire -n $_obj_crowd01_workarea_frustum1 -0 $_obj_crowd01_workarea_GET_all_frames_geo1
+opcf $_obj_crowd01_workarea_GET_all_frames_geo1
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_null1 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_null1 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+opwire -n -i 0 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame -1 $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_switch1 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_crowd01_workarea_GET_all_frames_geo1
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_crowd01_workarea_GET_all_frames_geo1
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="sc_crowd" label="sc_crowd" icon="OBJ_geo">
+    <helpURL>operator:Object/geo</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Object/geo</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('geo'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_sc_crowd (Object/geo)
+set _obj_sc_crowd = `run("opadd -e -n -v geo sc_crowd")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_sc_crowd
+opspareds '    group {  name    "stdswitcher4"  label   "Transform"     parm {      name        "xOrd"      baseparm        label       "Transform Order"           joinnext        export      none    }       parm {      name        "rOrd"      baseparm        label       "Rotate Order"      export      none    }       parm {      name        "t"         baseparm        label       "Translate"         export      all     }       parm {      name        "r"         baseparm        label       "Rotate"            export      all     }       parm {      name        "s"         baseparm        label       "Scale"             export      none    }       parm {      name        "p"         baseparm        label       "Pivot"             export      none    }       parm {      name        "scale"             baseparm        label       "Uniform Scale"             export      none    }       parm {      name        "pre_xform"         baseparm        label       "Modify Pre-Transform"      export      none    }       parm {      name        "keeppos"           baseparm        label       "Keep Position When Parenting"      export      none    }       parm {      name        "childcomp"         baseparm        label       "Child Compensation"        export      none    }       parm {      name        "constraints_on"            baseparm        label       "Enable Constraints"        export      none    }       parm {      name        "constraints_path"          baseparm        label       "Constraints"       export      none    }       parm {      name        "lookatpath"        baseparm        label       "Look At"           invisible       export      none    }       parm {      name        "lookupobjpath"             baseparm        label       "Look Up Object"            invisible       export      none    }       parm {      name        "lookup"            baseparm        label       "Look At Up Vector"         invisible       export      none    }       parm {      name        "pathobjpath"       baseparm        label       "Path Object"       invisible       export      none    }       parm {      name        "roll"      baseparm        label       "Roll"      invisible       export      none    }       parm {      name        "pos"       baseparm        label       "Position"          invisible       export      none    }       parm {      name        "uparmtype"         baseparm        label       "Parameterization"          invisible       export      none    }       parm {      name        "pathorient"        baseparm        label       "Orient Along Path"         invisible       export      none    }       parm {      name        "up"        baseparm        label       "Orient Up Vector"          invisible       export      none    }       parm {      name        "bank"      baseparm        label       "Auto-Bank factor"          invisible       export      none    }     }      group {    name    "stdswitcher4_1"        label   "Render"        parm {      name        "shop_materialpath"         baseparm        label       "Material"          export      none    }       parm {      name        "shop_materialopts"         baseparm        label       "Options"           invisible       export      none    }       parm {      name        "tdisplay"          baseparm        label       "Display"           joinnext        export      none    }       parm {      name        "display"           baseparm        label       "Display"           export      none    }       parm {      name        "viewportlod"       label       "Display As"        type        ordinal             default     { "full" }          help        "Choose how the object\'s geometry should be rendered in the viewport"      menu        {               "full"  "Full Geometry"                 "points"        "Point Cloud"           "box"   "Bounding Box"          "centroid"      "Centroid"              "hidden"        "Hidden"                "subd"  "Subdivision Surface / Curves"      }       parmtag     { "spare_category" "Render" }   }       parm {      name        "vm_rendervisibility"       label       "Render Visibility"         type        string      default     { "*" }             menureplace {               "*"     "Visible to all"                "primary"       "Visible only to primary rays"          "primary|shadow"        "Visible only to primary and shadow rays"               "-primary"      "Invisible to primary rays (Phantom)"           "-diffuse"      "Invisible to diffuse rays"             "-diffuse&-reflect&-refract"    "Invisible to secondary rays"           ""      "Invisible (Unrenderable)"          }       parmtag     { "mantra_class" "object" }         parmtag     { "mantra_name" "rendervisibility" }        parmtag     { "spare_category" "Render" }   }       parm {      name        "vm_rendersubd"             label       "Render Polygons As Subdivision (Mantra)"           type        toggle      default     { "0" }             parmtag     { "mantra_class" "object" }         parmtag     { "mantra_name" "rendersubd" }      parmtag     { "spare_category" "Geometry" }         }       parm {      name        "vm_subdstyle"      label       "Subdivision Style"         type        string      default     { "mantra_catclark" }       hidewhen    "{ vm_rendersubd == 0 }"            menu        {               "mantra_catclark"       "Mantra Catmull-Clark"          "osd_catclark"  "OpenSubdiv Catmull-Clark"          }       parmtag     { "mantra_class" "object" }         parmtag     { "mantra_name" "subdstyle" }       parmtag     { "spare_category" "Geometry" }         }       parm {      name        "vm_subdgroup"      label       "Subdivision Group"         type        string      default     { "" }      hidewhen    "{ vm_rendersubd == 0 }"            parmtag     { "mantra_class" "object" }         parmtag     { "mantra_name" "subdgroup" }       parmtag     { "spare_category" "Geometry" }         }       group {             name        "folder0"           label       "Shading"           parm {              name    "categories"            label   "Categories"            type    string          default { "" }          help    "A list of tags which can be used to select the object"                 parmtag { "spare_category" "Shading" }      }       parm {              name    "reflectmask"           label   "Reflection Mask"               type    oplist          default { "*" }                 help    "Objects that will be reflected on this object."                parmtag { "opexpand" "1" }              parmtag { "opfilter" "!!OBJ/GEOMETRY!!" }               parmtag { "oprelative" "/obj" }                 parmtag { "spare_category" "Shading" }      }       parm {              name    "refractmask"           label   "Refraction Mask"               type    oplist          default { "*" }                 help    "Objects that will be refracted on this object."                parmtag { "opexpand" "1" }              parmtag { "opfilter" "!!OBJ/GEOMETRY!!" }               parmtag { "oprelative" "/obj" }                 parmtag { "spare_category" "Shading" }      }       parm {              name    "lightmask"             label   "Light Mask"            type    oplist          default { "*" }                 help    "Lights that illuminate this object."           parmtag { "opexpand" "1" }              parmtag { "opfilter" "!!OBJ/LIGHT!!" }          parmtag { "oprelative" "/obj" }                 parmtag { "spare_category" "Shading" }      }       parm {              name    "lightcategories"               label   "Light Selection"               type    string          default { "*" }                 parmtag { "spare_category" "Shading" }      }       parm {              name    "vm_volumefilter"               label   "Volume Filter"                 type    string          default { "box" }               menu    {                   "box"       "Box Filter"                "gaussian"  "Gaussian"                  "bartlett"  "Bartlett (triangle)"               "catrom"    "Catmull-Rom"               "hanning"   "Hanning"                   "blackman"  "Blackman"                  "sinc"      "Sinc (sharpening)"             }               parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "filter" }              parmtag { "spare_category" "Shading" }      }       parm {              name    "vm_volumefilterwidth"          label   "Volume Filter Width"           type    float           default { "1" }                 range   { 0.001 5 }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "filterwidth" }                 parmtag { "spare_category" "Shading" }      }       parm {              name    "vm_matte"              label   "Matte shading"                 type    toggle          default { "0" }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "matte" }               parmtag { "spare_category" "Shading" }      }       parm {              name    "vm_rayshade"           label   "Raytrace Shading"              type    toggle          default { "0" }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "rayshade" }            parmtag { "spare_category" "Shading" }      }   }       group {             name        "folder0_1"         label       "Sampling"          parm {              name    "geo_velocityblur"              label   "Geometry Velocity Blur"                type    toggle          default { "0" }                 disablewhen     "{ allowmotionblur == 0 }"              parmtag { "spare_category" "Sampling" }             }   }       group {             name        "folder0_2"         label       "Dicing"            parm {              name    "vm_shadingquality"             label   "Shading Quality"               type    float           default { "1" }                 range   { 0 10 }                parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "shadingquality" }              parmtag { "spare_category" "Dicing" }       }       parm {              name    "vm_flatness"           label   "Dicing Flatness"               type    float           default { "0.05" }              range   { 0 1 }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "flatness" }            parmtag { "spare_category" "Dicing" }       }       parm {              name    "vm_raypredice"                 label   "Ray Predicing"                 type    integer                 default { "0" }                 menu    {                   "0" "Disable Predicing"                 "1" "Full Predicing"                    "2" "Precompute Bounds"             }               range   { 0 10 }                parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "raypredice" }          parmtag { "spare_category" "Dicing" }       }       parm {              name    "vm_curvesurface"               label   "Shade Curves As Surfaces"              type    toggle          default { "0" }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "curvesurface" }                parmtag { "spare_category" "Dicing" }       }   }       group {             name        "folder0_3"         label       "Geometry"          parm {              name    "vm_rmbackface"                 label   "Backface Removal"              type    toggle          default { "0" }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "rmbackface" }          parmtag { "spare_category" "Geometry" }             }       parm {              name    "shop_geometrypath"             label   "Procedural Shader"             type    oppath          default { "" }          parmtag { "opfilter" "!!SHOP/GEOMETRY!!" }              parmtag { "oprelative" "." }            parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_forcegeometry"              label   "Force Procedural Geometry Output"              type    toggle          default { "1" }                 parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_rendersubdcurves"           label   "Render Polygon Curves As Subdivision (Mantra)"                 type    toggle          default { "0" }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "rendersubdcurves" }            parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_renderpoints"               label   "Render As Points (Mantra)"             type    integer                 default { "2" }                 menu    {                   "0" "No Point Rendering"                "1" "Render Only Points"                "2" "Render Unconnected Points"             }               range   { 0 10 }                parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "renderpoints" }                parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_renderpointsas"             label   "Render Points As (Mantra)"             type    integer                 default { "0" }                 disablewhen     "{ vm_renderpoints == 0 }"              menu    {                   "0" "Spheres"                   "1" "Circles"               }               range   { 0 10 }                parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "renderpointsas" }              parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_usenforpoints"              label   "Use N For Point Rendering"             type    toggle          default { "0" }                 disablewhen     "{ vm_renderpoints == 0 }"              parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "usenforpoints" }               parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_pointscale"                 label   "Point Scale"           type    float           default { "1" }                 disablewhen     "{ vm_renderpoints == 0 }"              range   { 0! 10 }               parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "pointscale" }          parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_pscalediameter"             label   "Treat Point Scale as Diameter Instead of Radius"               type    toggle          default { "0" }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "pscalediameter" }              parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_metavolume"                 label   "Metaballs as Volume"           type    toggle          default { "0" }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "metavolume" }          parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_coving"             label   "Coving"                type    integer                 default { "1" }                 menu    {                   "0" "Disable Coving"                    "1" "Coving for displacement/sub-d"                     "2" "Coving for all primitives"             }               range   { 0 10 }                parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "coving" }              parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_materialoverride"           label   "Material Override"             type    string          default { "compact" }           menu    {                   "none"      "Disabled"                  "full"      "Evaluate for Each Primitve/Point"                  "compact"   "Evaluate Once"                 }               parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_overridedetail"             label   "Ignore Geometry Attribute Shaders"             type    toggle          default { "0" }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "overridedetail" }              parmtag { "spare_category" "Geometry" }             }       parm {              name    "vm_procuseroottransform"               label   "Proc Use Root Transform"               type    toggle          default { "1" }                 parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "procuseroottransform" }                parmtag { "spare_category" "Geometry" }             }   }      }      group {   name    "stdswitcher4_2"        label   "Misc"          parm {      name        "use_dcolor"        baseparm        label       "Set Wireframe Color"       export      none    }       parm {      name        "dcolor"            baseparm        label       "Wireframe Color"           export      none    }       parm {      name        "picking"           baseparm        label       "Viewport Selecting Enabled"        export      none    }       parm {      name        "pickscript"        baseparm        label       "Select Script"             export      none    }       parm {      name        "caching"           baseparm        label       "Cache Object Transform"            export      none    }       parm {      name        "vport_shadeopen"           baseparm        label       "Shade Open Curves In Viewport"             export      none    }       parm {      name        "vport_displayassubdiv"             baseparm        label       "Display as Subdivision in Viewport"        invisible       export      none    }       parm {      name        "vport_onionskin"           baseparm        label       "Onion Skinning"            export      none    }     }  ' $_obj_sc_crowd
+opset -S on $_obj_sc_crowd
+opparm -V 16.0.633 $_obj_sc_crowd use_dcolor ( off )
+chautoscope $_obj_sc_crowd +tx +ty +tz +rx +ry +rz +sx +sy +sz
+opset -d on -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -x off $_obj_sc_crowd
+opexprlanguage -s hscript $_obj_sc_crowd
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd
+opcf $_obj_sc_crowd
+
+# Node $_obj_sc_crowd_mountain1 (Sop/mountain::2.0)
+set _obj_sc_crowd_mountain1 = `run("opadd -e -n -v mountain::2.0 mountain1")`
+oplocate -x `$arg2 + 0.247059` -y `$arg3 + 4.3940799999999998` $_obj_sc_crowd_mountain1
+opparm $_obj_sc_crowd_mountain1 height ( 21.600000000000001 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_mountain1
+opexprlanguage -s hscript $_obj_sc_crowd_mountain1
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_mountain1
+opuserdata -n '___toolcount___' -v '20' $_obj_sc_crowd_mountain1
+opuserdata -n '___toolid___' -v 'sop_mountain::2.0' $_obj_sc_crowd_mountain1
+
+# Node $_obj_sc_crowd_crt_targetP (Sop/attribwrangle)
+set _obj_sc_crowd_crt_targetP = `run("opadd -e -n -v attribwrangle crt_targetP")`
+oplocate -x `$arg2 + -2.7342399999999998` -y `$arg3 + -3.35127` $_obj_sc_crowd_crt_targetP
+opparm $_obj_sc_crowd_crt_targetP  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_crt_targetP snippet ( 'v@targetP = v@opinput1_P;' )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_crt_targetP
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_crt_targetP
+opexprlanguage -s hscript $_obj_sc_crowd_crt_targetP
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_crt_targetP
+
+# Node $_obj_sc_crowd_crt_source (Sop/attribwrangle)
+set _obj_sc_crowd_crt_source = `run("opadd -e -n -v attribwrangle crt_source")`
+oplocate -x `$arg2 + -2.7342399999999998` -y `$arg3 + -4.5402399999999998` $_obj_sc_crowd_crt_source
+opparm $_obj_sc_crowd_crt_source  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_crt_source snippet ( 'i@source=1;' )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_crt_source
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_crt_source
+opexprlanguage -s hscript $_obj_sc_crowd_crt_source
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_crt_source
+
+# Node $_obj_sc_crowd_crt_terrain (Sop/attribwrangle)
+set _obj_sc_crowd_crt_terrain = `run("opadd -e -n -v attribwrangle crt_terrain")`
+oplocate -x `$arg2 + 0.244059` -y `$arg3 + -3.8374799999999998` $_obj_sc_crowd_crt_terrain
+opparm $_obj_sc_crowd_crt_terrain  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_crt_terrain snippet ( 'i@terrain=1;' )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_crt_terrain
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_crt_terrain
+opexprlanguage -s hscript $_obj_sc_crowd_crt_terrain
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_crt_terrain
+
+# Node $_obj_sc_crowd_DOP_space_colonization_crowd (Sop/solver)
+set _obj_sc_crowd_DOP_space_colonization_crowd = `run("opadd -e -n -v solver DOP_space_colonization_crowd")`
+oplocate -x `$arg2 + -2.7300900000000001` -y `$arg3 + -8.1926199999999998` $_obj_sc_crowd_DOP_space_colonization_crowd
+opcolor -c 0.40000000596046448 1 1 $_obj_sc_crowd_DOP_space_colonization_crowd
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_DOP_space_colonization_crowd
+opexprlanguage -s hscript $_obj_sc_crowd_DOP_space_colonization_crowd
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_DOP_space_colonization_crowd
+
+# Node $_obj_sc_crowd_attribwrangle1 (Sop/attribwrangle)
+set _obj_sc_crowd_attribwrangle1 = `run("opadd -e -n -v attribwrangle attribwrangle1")`
+oplocate -x `$arg2 + -2.7330899999999998` -y `$arg3 + -9.9643599999999992` $_obj_sc_crowd_attribwrangle1
+opparm $_obj_sc_crowd_attribwrangle1  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_attribwrangle1 snippet ( '@N = normalize(@v);' )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_attribwrangle1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b on $_obj_sc_crowd_attribwrangle1
+opexprlanguage -s hscript $_obj_sc_crowd_attribwrangle1
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_attribwrangle1
+
+# Node $_obj_sc_crowd_attribwrangle2 (Sop/attribwrangle)
+set _obj_sc_crowd_attribwrangle2 = `run("opadd -e -n -v attribwrangle attribwrangle2")`
+oplocate -x `$arg2 + 10.888595357827874` -y `$arg3 + -10.286617559130118` $_obj_sc_crowd_attribwrangle2
+opspareds '    group {  name    "folder1"       label   "Code"          parm {      name        "group"             baseparm        label       "Group"             export      none        bindselector points "Modify Points"                 "Select the points to affect and press Enter to complete."              0 1 0xffffffff 0 grouptype 0    }       parm {      name        "grouptype"         baseparm        label       "Group Type"        export      none    }       parm {      name        "class"             baseparm        label       "Run Over"          export      none    }       parm {      name        "vex_numcount"      baseparm        label       "Number Count"      export      none    }       parm {      name        "vex_threadjobsize"         baseparm        label       "Thread Job Size"           export      none    }       parm {      name        "snippet"           baseparm        label       "VEXpression"       export      all     }       parm {      name        "exportlist"        baseparm        label       "Attributes to Create"      export      none    }       parm {      name        "vex_strict"        baseparm        label       "Enforce Prototypes"        export      none    }     }      group {    name    "folder1_1"     label   "Bindings"      parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }       parm {      name        "vex_inplace"       baseparm        label       "Compute Results In Place"          export      none    }       parm {      name        "vex_selectiongroup"        baseparm        label       "Output Selection Group"            export      none    }     }      parm {     name    "rad"   label   "Rad"   type    float   default { "0" }         range   { 0 1 }     }     parm {        name    "max_pts"       label   "Max Pts"       type    integer         default { "0" }         range   { 0 10 }     }     parm {       name    "extra_overwrite_rad"   label   "Extra Overwrite Rad"   type    float   default { "0" }         range   { 0 1 }     } ' $_obj_sc_crowd_attribwrangle2
+opparm $_obj_sc_crowd_attribwrangle2  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_attribwrangle2 snippet ( 'int pts[]= pcfind(1, "P", @P, ch("rad") + ch("extra_overwrite_rad"), chi("max_pts"));\n\nforeach(int pt; pts)\n{\n    vector nearP = point(1, "P",pt);\n    vector nearV = point(1, "v",pt);\n    if(distance(@P + nearV * @TimeInc, nearP)<ch("rad"))\n    {\n        removepoint(geoself(),@ptnum);\n    }\n    else\n    {\n        @N = normalize((@P + nearV * @TimeInc) - nearP);\n    }\n}' ) rad ( 1.8 ) max_pts ( 1 ) extra_overwrite_rad ( 10 )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_attribwrangle2
+opset -d off -r off -h off -f off -y off -t on -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_attribwrangle2
+opexprlanguage -s hscript $_obj_sc_crowd_attribwrangle2
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_attribwrangle2
+
+# Node $_obj_sc_crowd_calc_new_v (Sop/attribwrangle)
+set _obj_sc_crowd_calc_new_v = `run("opadd -e -n -v attribwrangle calc_new_v")`
+oplocate -x `$arg2 + 7.0536053578278732` -y `$arg3 + -11.714287559130121` $_obj_sc_crowd_calc_new_v
+opspareds '    group {  name    "folder1"       label   "Code"          parm {      name        "group"             baseparm        label       "Group"             export      none        bindselector points "Modify Points"                 "Select the points to affect and press Enter to complete."              0 1 0xffffffff 0 grouptype 0    }       parm {      name        "grouptype"         baseparm        label       "Group Type"        export      none    }       parm {      name        "class"             baseparm        label       "Run Over"          export      none    }       parm {      name        "vex_numcount"      baseparm        label       "Number Count"      export      none    }       parm {      name        "vex_threadjobsize"         baseparm        label       "Thread Job Size"           export      none    }       parm {      name        "snippet"           baseparm        label       "VEXpression"       export      all     }       parm {      name        "exportlist"        baseparm        label       "Attributes to Create"      export      none    }       parm {      name        "vex_strict"        baseparm        label       "Enforce Prototypes"        export      none    }     }      group {    name    "folder1_1"     label   "Bindings"      parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }       parm {      name        "vex_inplace"       baseparm        label       "Compute Results In Place"          export      none    }       parm {      name        "vex_selectiongroup"        baseparm        label       "Output Selection Group"            export      none    }     }      parm {     name    "rad"   label   "Rad"   type    float   default { "0" }         range   { 0 1 }     }     parm {        name    "max_pts"       label   "Max Pts"       type    integer         default { "0" }         range   { 0 10 }     }     parm {       name    "dot"   label   "Dot"   type    float   default { "0" }         range   { 0 1 }     }     parm {        name    "max_deg"       label   "Max Deg"       type    float   default { "0" }         range   { 0 1 }     } ' $_obj_sc_crowd_calc_new_v
+opparm $_obj_sc_crowd_calc_new_v  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_calc_new_v snippet ( 'float dot = ch("dot");\nint handle = pcopen(@OpInput2, "P", @P + @v * @TimeInc, ch("rad"), chi("max_pts"));\n//"N", normalize(v@targetP - @P), \n//,"ndot",dot\n\nint num = pcnumfound(handle);\nvector filterP;\n//vector filterN;\n\nif(num > 0)\n{\n    //filterN = pcimportbyidxf(handle, "N", 0);\n    //filterN = normalize(filterN);\n    filterP = pcfilter(handle, "P");\n    \n    vector avoidDir = normalize(filterP - @P);\n    \n    dot = dot(avoidDir, normalize(@v));\n    vector cross = normalize(cross(avoidDir, normalize(@v)));\n    float maxRad = radians(ch("max_deg"));\n    \n    acos(dot);\n    \n    @v = avoidDir * length(@v);\n    v@aaaa = cross;\n    //v@up = filterN;\n}\n\n\n' ) rad ( 8 ) max_pts ( 100 ) dot ( -0.5 ) max_deg ( 20 )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_calc_new_v
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_calc_new_v
+opexprlanguage -s hscript $_obj_sc_crowd_calc_new_v
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_calc_new_v
+
+# Node $_obj_sc_crowd_advect (Sop/attribwrangle)
+set _obj_sc_crowd_advect = `run("opadd -e -n -v attribwrangle advect")`
+oplocate -x `$arg2 + 7.0536053578278732` -y `$arg3 + -15.441077559130118` $_obj_sc_crowd_advect
+opparm $_obj_sc_crowd_advect  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_advect snippet ( 'if(distance(v@targetP, @P) > length(@v * @TimeInc))\n{\n    @P += @v * @TimeInc;\n}\nelse\n{\n    @Cd = set(1,0,0);\n}\n\n' )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_advect
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_advect
+opexprlanguage -s hscript $_obj_sc_crowd_advect
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_advect
+
+# Node $_obj_sc_crowd_init_v (Sop/attribwrangle)
+set _obj_sc_crowd_init_v = `run("opadd -e -n -v attribwrangle init_v")`
+oplocate -x `$arg2 + 9.2952353578278739` -y `$arg3 + -7.1446075591301188` $_obj_sc_crowd_init_v
+opspareds '    group {  name    "folder1"       label   "Code"          parm {      name        "group"             baseparm        label       "Group"             export      none        bindselector points "Modify Points"                 "Select the points to affect and press Enter to complete."              0 1 0xffffffff 0 grouptype 0    }       parm {      name        "grouptype"         baseparm        label       "Group Type"        export      none    }       parm {      name        "class"             baseparm        label       "Run Over"          export      none    }       parm {      name        "vex_numcount"      baseparm        label       "Number Count"      export      none    }       parm {      name        "vex_threadjobsize"         baseparm        label       "Thread Job Size"           export      none    }       parm {      name        "snippet"           baseparm        label       "VEXpression"       export      all     }       parm {      name        "exportlist"        baseparm        label       "Attributes to Create"      export      none    }       parm {      name        "vex_strict"        baseparm        label       "Enforce Prototypes"        export      none    }     }      group {    name    "folder1_1"     label   "Bindings"      parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }       parm {      name        "vex_inplace"       baseparm        label       "Compute Results In Place"          export      none    }       parm {      name        "vex_selectiongroup"        baseparm        label       "Output Selection Group"            export      none    }     }      parm {     name    "spped"         label   "Spped"         type    float   default { "0" }         range   { 0 1 }     } ' $_obj_sc_crowd_init_v
+opparm $_obj_sc_crowd_init_v  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_init_v snippet ( 'if(length(@v) == 0)\n{\n    @v += normalize(v@targetP - @P) * ch("spped");\n}' ) spped ( 0.5 )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_init_v
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_init_v
+opexprlanguage -s hscript $_obj_sc_crowd_init_v
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_init_v
+
+# Node $_obj_sc_crowd_add_v (Sop/attribwrangle)
+set _obj_sc_crowd_add_v = `run("opadd -e -n -v attribwrangle add_v")`
+oplocate -x `$arg2 + 7.0536053578278732` -y `$arg3 + -13.197827559130118` $_obj_sc_crowd_add_v
+opspareds '    group {  name    "folder1"       label   "Code"          parm {      name        "group"             baseparm        label       "Group"             export      none        bindselector points "Modify Points"                 "Select the points to affect and press Enter to complete."              0 1 0xffffffff 0 grouptype 0    }       parm {      name        "grouptype"         baseparm        label       "Group Type"        export      none    }       parm {      name        "class"             baseparm        label       "Run Over"          export      none    }       parm {      name        "vex_numcount"      baseparm        label       "Number Count"      export      none    }       parm {      name        "vex_threadjobsize"         baseparm        label       "Thread Job Size"           export      none    }       parm {      name        "snippet"           baseparm        label       "VEXpression"       export      all     }       parm {      name        "exportlist"        baseparm        label       "Attributes to Create"      export      none    }       parm {      name        "vex_strict"        baseparm        label       "Enforce Prototypes"        export      none    }     }      group {    name    "folder1_1"     label   "Bindings"      parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }       parm {      name        "vex_inplace"       baseparm        label       "Compute Results In Place"          export      none    }       parm {      name        "vex_selectiongroup"        baseparm        label       "Output Selection Group"            export      none    }     }      parm {     name    "add_speed"     label   "Add Speed"     type    float   default { "0" }         range   { 0 1 }     } ' $_obj_sc_crowd_add_v
+opparm $_obj_sc_crowd_add_v  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_add_v snippet ( '@v += normalize(@v) * ch("add_speed");' ) add_speed ( 0.20000000000000001 )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_add_v
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_add_v
+opexprlanguage -s hscript $_obj_sc_crowd_add_v
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_add_v
+
+# Node $_obj_sc_crowd_limit_v (Sop/attribwrangle)
+set _obj_sc_crowd_limit_v = `run("opadd -e -n -v attribwrangle limit_v")`
+oplocate -x `$arg2 + 7.0566053578278733` -y `$arg3 + -14.27557755913012` $_obj_sc_crowd_limit_v
+opspareds '    group {  name    "folder1"       label   "Code"          parm {      name        "group"             baseparm        label       "Group"             export      none        bindselector points "Modify Points"                 "Select the points to affect and press Enter to complete."              0 1 0xffffffff 0 grouptype 0    }       parm {      name        "grouptype"         baseparm        label       "Group Type"        export      none    }       parm {      name        "class"             baseparm        label       "Run Over"          export      none    }       parm {      name        "vex_numcount"      baseparm        label       "Number Count"      export      none    }       parm {      name        "vex_threadjobsize"         baseparm        label       "Thread Job Size"           export      none    }       parm {      name        "snippet"           baseparm        label       "VEXpression"       export      all     }       parm {      name        "exportlist"        baseparm        label       "Attributes to Create"      export      none    }       parm {      name        "vex_strict"        baseparm        label       "Enforce Prototypes"        export      none    }     }      group {    name    "folder1_1"     label   "Bindings"      parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }       parm {      name        "vex_inplace"       baseparm        label       "Compute Results In Place"          export      none    }       parm {      name        "vex_selectiongroup"        baseparm        label       "Output Selection Group"            export      none    }     }      parm {     name    "max_speed"     label   "Max Speed"     type    float   default { "0" }         range   { 0 1 }     } ' $_obj_sc_crowd_limit_v
+opparm $_obj_sc_crowd_limit_v  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_limit_v snippet ( 'if(length(@v) > ch("max_speed"))\n{\n    @v = normalize(@v) * ch("max_speed");\n}' ) max_speed ( 3 )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_limit_v
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_limit_v
+opexprlanguage -s hscript $_obj_sc_crowd_limit_v
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_limit_v
+
+# Node $_obj_sc_crowd_update_N (Sop/attribwrangle)
+set _obj_sc_crowd_update_N = `run("opadd -e -n -v attribwrangle update_N")`
+oplocate -x `$arg2 + 7.0536053578278732` -y `$arg3 + -18.026877559130121` $_obj_sc_crowd_update_N
+opparm $_obj_sc_crowd_update_N  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_update_N snippet ( 'if(length(@v)>0)@N = normalize(@v);' )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_update_N
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_update_N
+opexprlanguage -s hscript $_obj_sc_crowd_update_N
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_update_N
+
+# Node $_obj_sc_crowd_update_up (Sop/attribwrangle)
+set _obj_sc_crowd_update_up = `run("opadd -e -n -v attribwrangle update_up")`
+oplocate -x `$arg2 + 7.0536053578278732` -y `$arg3 + -16.593577559130118` $_obj_sc_crowd_update_up
+opparm $_obj_sc_crowd_update_up  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_sc_crowd_update_up snippet ( 'int near = nearpoint(1,@P);\n\n@up = point(1,"N",near);' )
+opcolor -c 1 0.80000001192092896 0 $_obj_sc_crowd_update_up
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_update_up
+opexprlanguage -s hscript $_obj_sc_crowd_update_up
+opuserdata -n '___Version___' -v '' $_obj_sc_crowd_update_up
+opcf ..
+opcf $_obj_sc_crowd
+
+# Node $_obj_sc_crowd_grid1 (Sop/grid)
+set _obj_sc_crowd_grid1 = `run("opadd -e -n -v grid grid1")`
+oplocate -x `$arg2 + 0.247059` -y `$arg3 + 5.5117200000000004` $_obj_sc_crowd_grid1
+opparm -V 16.0.633 $_obj_sc_crowd_grid1 size ( 50 50 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_grid1
+opexprlanguage -s hscript $_obj_sc_crowd_grid1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_grid1
+
+# Node $_obj_sc_crowd_scatter1 (Sop/scatter::2.0)
+set _obj_sc_crowd_scatter1 = `run("opadd -e -n -v scatter::2.0 scatter1")`
+oplocate -x `$arg2 + 0.247059` -y `$arg3 + 0.848607` $_obj_sc_crowd_scatter1
+opparm -V 16.0.633 $_obj_sc_crowd_scatter1 forcetotal ( off )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_scatter1
+opexprlanguage -s hscript $_obj_sc_crowd_scatter1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_scatter1
+
+# Node $_obj_sc_crowd_scatter2 (Sop/scatter::2.0)
+set _obj_sc_crowd_scatter2 = `run("opadd -e -n -v scatter::2.0 scatter2")`
+oplocate -x `$arg2 + -2.7312400000000001` -y `$arg3 + -1.0686800000000001` $_obj_sc_crowd_scatter2
+opparm -V 16.0.633 $_obj_sc_crowd_scatter2 npts ( 20 ) relaxpoints ( off )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_scatter2
+opexprlanguage -s hscript $_obj_sc_crowd_scatter2
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_scatter2
+
+# Node $_obj_sc_crowd_scatter3 (Sop/scatter::2.0)
+set _obj_sc_crowd_scatter3 = `run("opadd -e -n -v scatter::2.0 scatter3")`
+oplocate -x `$arg2 + -5.4940899999999999` -y `$arg3 + -1.31681` $_obj_sc_crowd_scatter3
+chblockbegin
+chadd -t 0 0 $_obj_sc_crowd_scatter3 npts
+chkey -t 0 -v 10 -m 0 -a 0 -A 0 -T a  -F 'ch("../scatter2/npts")' $_obj_sc_crowd_scatter3/npts
+chblockend
+opparm -V 16.0.633 $_obj_sc_crowd_scatter3 npts ( npts ) seed ( 3.3799999999999999 ) scaleradiiby ( 1.8 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_scatter3
+opexprlanguage -s hscript $_obj_sc_crowd_scatter3
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_scatter3
+
+# Node $_obj_sc_crowd_object_merge1 (Sop/object_merge)
+set _obj_sc_crowd_object_merge1 = `run("opadd -e -n -v object_merge object_merge1")`
+oplocate -x `$arg2 + 1.6144240366064295` -y `$arg3 + -7.2048945682477008` $_obj_sc_crowd_object_merge1
+opparm $_obj_sc_crowd_object_merge1  numobj ( 1 )
+opparm -V 16.0.633 $_obj_sc_crowd_object_merge1 xformtype ( local ) objpath1 ( ../DOP_space_colonization_crowd/d/s/null1/ )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_object_merge1
+opexprlanguage -s hscript $_obj_sc_crowd_object_merge1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_object_merge1
+
+# Node $_obj_sc_crowd_null1 (Sop/null)
+set _obj_sc_crowd_null1 = `run("opadd -e -n -v null null1")`
+oplocate -x `$arg2 + -2.7300900000000001` -y `$arg3 + -11.5685` $_obj_sc_crowd_null1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_null1
+opexprlanguage -s hscript $_obj_sc_crowd_null1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_null1
+
+# Node $_obj_sc_crowd_box1 (Sop/box)
+set _obj_sc_crowd_box1 = `run("opadd -e -n -v box box1")`
+oplocate -x `$arg2 + -6.5566199999999997` -y `$arg3 + -11.3622` $_obj_sc_crowd_box1
+opparm -V 16.0.633 $_obj_sc_crowd_box1 size ( 1 1 0.59999999999999998 ) t ( 0 0.5 0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_box1
+opexprlanguage -s hscript $_obj_sc_crowd_box1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_box1
+
+# Node $_obj_sc_crowd_sphere1 (Sop/sphere)
+set _obj_sc_crowd_sphere1 = `run("opadd -e -n -v sphere sphere1")`
+oplocate -x `$arg2 + -9.9206599999999998` -y `$arg3 + -11.3622` $_obj_sc_crowd_sphere1
+chblockbegin
+chadd -t 0 0 $_obj_sc_crowd_sphere1 rady
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("radx")' $_obj_sc_crowd_sphere1/rady
+chadd -t 0 0 $_obj_sc_crowd_sphere1 radz
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("radx")' $_obj_sc_crowd_sphere1/radz
+chblockend
+opparm -V 16.0.633 $_obj_sc_crowd_sphere1 type ( poly ) rad ( 0.69999999999999996 rady radz ) t ( 0 1.6000000000000001 0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_sphere1
+opexprlanguage -s hscript $_obj_sc_crowd_sphere1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_sphere1
+
+# Node $_obj_sc_crowd_merge1 (Sop/merge)
+set _obj_sc_crowd_merge1 = `run("opadd -e -n -v merge merge1")`
+oplocate -x `$arg2 + -7.6420899999999996` -y `$arg3 + -13.053900000000001` $_obj_sc_crowd_merge1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_merge1
+opexprlanguage -s hscript $_obj_sc_crowd_merge1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_merge1
+
+# Node $_obj_sc_crowd_copytopoints1 (Sop/copytopoints)
+set _obj_sc_crowd_copytopoints1 = `run("opadd -e -n -v copytopoints copytopoints1")`
+oplocate -x `$arg2 + -2.7300900000000001` -y `$arg3 + -15.309200000000001` $_obj_sc_crowd_copytopoints1
+opparm -V 16.0.633 $_obj_sc_crowd_copytopoints1 setpt ( Cd ) mulpt ( "" ) addpt ( "" )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_copytopoints1
+opexprlanguage -s hscript $_obj_sc_crowd_copytopoints1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_copytopoints1
+
+# Node $_obj_sc_crowd_sphere2 (Sop/sphere)
+set _obj_sc_crowd_sphere2 = `run("opadd -e -n -v sphere sphere2")`
+oplocate -x `$arg2 + -8.1143300000000007` -y `$arg3 + -11.2661` $_obj_sc_crowd_sphere2
+opparm -V 16.0.633 $_obj_sc_crowd_sphere2 type ( poly ) rad ( 0.10000000000000001 0.10000000000000001 0.29999999999999999 ) t ( 0 1.6000000000000001 0.69999999999999996 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_sphere2
+opexprlanguage -s hscript $_obj_sc_crowd_sphere2
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_sphere2
+
+# Node $_obj_sc_crowd_sort1 (Sop/sort)
+set _obj_sc_crowd_sort1 = `run("opadd -e -n -v sort sort1")`
+oplocate -x `$arg2 + -5.4940899999999999` -y `$arg3 + 0.848607` $_obj_sc_crowd_sort1
+opparm -V 16.0.633 $_obj_sc_crowd_sort1 ptsort ( seed )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_sc_crowd_sort1
+opexprlanguage -s hscript $_obj_sc_crowd_sort1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_sort1
+
+# Node $_obj_sc_crowd_blast2 (Sop/blast)
+set _obj_sc_crowd_blast2 = `run("opadd -e -n -v blast blast2")`
+oplocate -x `$arg2 + -5.4940899999999999` -y `$arg3 + 0.041596000000000001` $_obj_sc_crowd_blast2
+opparm -V 16.0.633 $_obj_sc_crowd_blast2 group ( 0-19 ) grouptype ( points ) negate ( on )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_sc_crowd_blast2
+opexprlanguage -s hscript $_obj_sc_crowd_blast2
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_blast2
+
+# Node $_obj_sc_crowd_sort2 (Sop/sort)
+set _obj_sc_crowd_sort2 = `run("opadd -e -n -v sort sort2")`
+oplocate -x `$arg2 + -2.7312400000000001` -y `$arg3 + 0.848607` $_obj_sc_crowd_sort2
+opparm -V 16.0.633 $_obj_sc_crowd_sort2 ptsort ( seed ) pointseed ( 82 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_sc_crowd_sort2
+opexprlanguage -s hscript $_obj_sc_crowd_sort2
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_sort2
+
+# Node $_obj_sc_crowd_blast3 (Sop/blast)
+set _obj_sc_crowd_blast3 = `run("opadd -e -n -v blast blast3")`
+oplocate -x `$arg2 + -2.7312400000000001` -y `$arg3 + 0.041596000000000001` $_obj_sc_crowd_blast3
+opparm -V 16.0.633 $_obj_sc_crowd_blast3 group ( 0-19 ) grouptype ( points ) negate ( on )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_sc_crowd_blast3
+opexprlanguage -s hscript $_obj_sc_crowd_blast3
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_blast3
+
+# Node $_obj_sc_crowd_facet1 (Sop/facet)
+set _obj_sc_crowd_facet1 = `run("opadd -e -n -v facet facet1")`
+oplocate -x `$arg2 + 0.247059` -y `$arg3 + 3.2336999999999998` $_obj_sc_crowd_facet1
+opparm -V 16.0.633 $_obj_sc_crowd_facet1 postnml ( on )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_facet1
+opexprlanguage -s hscript $_obj_sc_crowd_facet1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_facet1
+
+# Node $_obj_sc_crowd_blast1 (Sop/blast)
+set _obj_sc_crowd_blast1 = `run("opadd -e -n -v blast blast1")`
+oplocate -x `$arg2 + 0.247059` -y `$arg3 + 2.3395000000000001` $_obj_sc_crowd_blast1
+opparm -V 16.0.633 $_obj_sc_crowd_blast1 group ( '15-16 20-21 24-25 46 48-52' ) grouptype ( prims ) removegrp ( on )
+opset -d off -r off -h on -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_blast1
+opexprlanguage -s hscript $_obj_sc_crowd_blast1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_blast1
+opuserdata -n '___toolcount___' -v '16' $_obj_sc_crowd_blast1
+opuserdata -n '___toolid___' -v 'generic_delete' $_obj_sc_crowd_blast1
+
+# Node $_obj_sc_crowd_Prev_Frame (Sop/dopimport)
+set _obj_sc_crowd_Prev_Frame = `run("opadd -e -n -v dopimport Prev_Frame")`
+oplocate -x `$arg2 + 7.0566053578278733` -y `$arg3 + -5.4283275591301194` $_obj_sc_crowd_Prev_Frame
+chblockbegin
+chadd -t 0 0 $_obj_sc_crowd_Prev_Frame doposxform
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../transformsopoutput")' $_obj_sc_crowd_Prev_Frame/doposxform
+chadd -t 0 0 $_obj_sc_crowd_Prev_Frame doxform
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../transformsopoutput")' $_obj_sc_crowd_Prev_Frame/doxform
+chadd -t 0 0 $_obj_sc_crowd_Prev_Frame integrateovertime
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '1/$FPS' $_obj_sc_crowd_Prev_Frame/integrateovertime
+chblockend
+opparm -V 16.0.633 $_obj_sc_crowd_Prev_Frame doppath ( '`stamps("..", "DOPNET", "../..")`' ) objpattern ( '`stamps("..", "OBJID", arg(dopnodeobjs(".."),0))`' ) singleobject ( on ) importstyle ( fetch ) geodatapath ( '`stamps("..", "DATANAME", chs("../datapath"))`' ) doposxform ( doposxform ) doxform ( doxform ) centeratpivot ( off ) adddopobjectname ( off ) pointvels ( none ) donotsim ( on )
+opcolor -c 0.60000002384185791 0.40000000596046448 1 $_obj_sc_crowd_Prev_Frame
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_Prev_Frame
+opexprlanguage -s hscript $_obj_sc_crowd_Prev_Frame
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_Prev_Frame
+
+# Node $_obj_sc_crowd_Input_1 (Sop/object_merge)
+set _obj_sc_crowd_Input_1 = `run("opadd -e -n -v object_merge Input_1")`
+oplocate -x `$arg2 + 9.2969853578278734` -y `$arg3 + -5.2067675591301192` $_obj_sc_crowd_Input_1
+opparm $_obj_sc_crowd_Input_1  numobj ( 1 )
+opparm -V 16.0.633 $_obj_sc_crowd_Input_1 objpath1 ( '`opinputpath("../..", 0)`' )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_sc_crowd_Input_1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_Input_1
+opexprlanguage -s hscript $_obj_sc_crowd_Input_1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_Input_1
+
+# Node $_obj_sc_crowd_Input_2 (Sop/object_merge)
+set _obj_sc_crowd_Input_2 = `run("opadd -e -n -v object_merge Input_2")`
+oplocate -x `$arg2 + 10.890345357827874` -y `$arg3 + -5.761297559130119` $_obj_sc_crowd_Input_2
+opparm $_obj_sc_crowd_Input_2  numobj ( 1 )
+opparm -V 16.0.633 $_obj_sc_crowd_Input_2 objpath1 ( '`opinputpath("../..", 1)`' )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_sc_crowd_Input_2
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_Input_2
+opexprlanguage -s hscript $_obj_sc_crowd_Input_2
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_Input_2
+
+# Node $_obj_sc_crowd_Input_3 (Sop/object_merge)
+set _obj_sc_crowd_Input_3 = `run("opadd -e -n -v object_merge Input_3")`
+oplocate -x `$arg2 + 12.199095357827874` -y `$arg3 + -6.3768075591301194` $_obj_sc_crowd_Input_3
+opparm $_obj_sc_crowd_Input_3  numobj ( 1 )
+opparm -V 16.0.633 $_obj_sc_crowd_Input_3 objpath1 ( '`opinputpath("../..", 2)`' )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_sc_crowd_Input_3
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_Input_3
+opexprlanguage -s hscript $_obj_sc_crowd_Input_3
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_Input_3
+
+# Node $_obj_sc_crowd_Input_4 (Sop/object_merge)
+set _obj_sc_crowd_Input_4 = `run("opadd -e -n -v object_merge Input_4")`
+oplocate -x `$arg2 + 13.711145357827874` -y `$arg3 + -6.9313275591301196` $_obj_sc_crowd_Input_4
+opparm $_obj_sc_crowd_Input_4  numobj ( 1 )
+opparm -V 16.0.633 $_obj_sc_crowd_Input_4 objpath1 ( '`opinputpath("../..", 3)`' )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_sc_crowd_Input_4
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_sc_crowd_Input_4
+opexprlanguage -s hscript $_obj_sc_crowd_Input_4
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_Input_4
+
+# Node $_obj_sc_crowd_switch1 (Sop/switch)
+set _obj_sc_crowd_switch1 = `run("opadd -e -n -v switch switch1")`
+oplocate -x `$arg2 + 7.0566053578278733` -y `$arg3 + -8.5880375591301181` $_obj_sc_crowd_switch1
+chblockbegin
+chadd -t 0 0 $_obj_sc_crowd_switch1 input
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FF==ch("../../../startframe")' $_obj_sc_crowd_switch1/input
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_switch1
+opexprlanguage -s hscript $_obj_sc_crowd_switch1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_switch1
+
+# Node $_obj_sc_crowd_null2 (Sop/null)
+set _obj_sc_crowd_null2 = `run("opadd -e -n -v null null2")`
+oplocate -x `$arg2 + 11.738315357827874` -y `$arg3 + -12.843087559130119` $_obj_sc_crowd_null2
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sc_crowd_null2
+opexprlanguage -s hscript $_obj_sc_crowd_null2
+opuserdata -n '___Version___' -v '16.0.633' $_obj_sc_crowd_null2
+oporder -e grid1 mountain1 scatter1 scatter2 crt_targetP crt_source crt_terrain DOP_space_colonization_crowd scatter3 object_merge1 null1 attribwrangle1 box1 sphere1 merge1 copytopoints1 sphere2 sort1 blast2 sort2 blast3 facet1 blast1 attribwrangle2 calc_new_v advect init_v add_v limit_v update_N update_up Prev_Frame Input_1 Input_2 Input_3 Input_4 switch1 null2 
+opcf ..
+opset -p on $_obj_sc_crowd
+
+opcf $arg1
+opcf $_obj_sc_crowd
+opwire -n $_obj_sc_crowd_grid1 -0 $_obj_sc_crowd_mountain1
+opwire -n $_obj_sc_crowd_blast1 -0 $_obj_sc_crowd_scatter1
+opwire -n $_obj_sc_crowd_blast3 -0 $_obj_sc_crowd_scatter2
+opwire -n $_obj_sc_crowd_scatter2 -0 $_obj_sc_crowd_crt_targetP
+opwire -n $_obj_sc_crowd_scatter3 -1 $_obj_sc_crowd_crt_targetP
+opwire -n $_obj_sc_crowd_crt_targetP -0 $_obj_sc_crowd_crt_source
+opwire -n $_obj_sc_crowd_scatter1 -0 $_obj_sc_crowd_crt_terrain
+opwire -n $_obj_sc_crowd_crt_source -0 $_obj_sc_crowd_DOP_space_colonization_crowd
+opwire -n $_obj_sc_crowd_crt_terrain -1 $_obj_sc_crowd_DOP_space_colonization_crowd
+opwire -n $_obj_sc_crowd_blast2 -0 $_obj_sc_crowd_scatter3
+opwire -n $_obj_sc_crowd_attribwrangle1 -0 $_obj_sc_crowd_null1
+opwire -n $_obj_sc_crowd_DOP_space_colonization_crowd -0 $_obj_sc_crowd_attribwrangle1
+opwire -n $_obj_sc_crowd_sphere1 -0 $_obj_sc_crowd_merge1
+opwire -n $_obj_sc_crowd_box1 -1 $_obj_sc_crowd_merge1
+opwire -n $_obj_sc_crowd_sphere2 -2 $_obj_sc_crowd_merge1
+opwire -n $_obj_sc_crowd_merge1 -0 $_obj_sc_crowd_copytopoints1
+opwire -n $_obj_sc_crowd_null1 -1 $_obj_sc_crowd_copytopoints1
+opwire -n $_obj_sc_crowd_blast1 -0 $_obj_sc_crowd_sort1
+opwire -n $_obj_sc_crowd_sort1 -0 $_obj_sc_crowd_blast2
+opwire -n $_obj_sc_crowd_blast1 -0 $_obj_sc_crowd_sort2
+opwire -n $_obj_sc_crowd_sort2 -0 $_obj_sc_crowd_blast3
+opwire -n $_obj_sc_crowd_mountain1 -0 $_obj_sc_crowd_facet1
+opwire -n $_obj_sc_crowd_facet1 -0 $_obj_sc_crowd_blast1
+opwire -n $_obj_sc_crowd_Input_2 -0 $_obj_sc_crowd_attribwrangle2
+opwire -n $_obj_sc_crowd_switch1 -1 $_obj_sc_crowd_attribwrangle2
+opwire -n $_obj_sc_crowd_switch1 -0 $_obj_sc_crowd_calc_new_v
+opwire -n $_obj_sc_crowd_attribwrangle2 -1 $_obj_sc_crowd_calc_new_v
+opwire -n $_obj_sc_crowd_limit_v -0 $_obj_sc_crowd_advect
+opwire -n $_obj_sc_crowd_Input_1 -0 $_obj_sc_crowd_init_v
+opwire -n $_obj_sc_crowd_calc_new_v -0 $_obj_sc_crowd_add_v
+opwire -n $_obj_sc_crowd_add_v -0 $_obj_sc_crowd_limit_v
+opwire -n $_obj_sc_crowd_update_up -0 $_obj_sc_crowd_update_N
+opwire -n $_obj_sc_crowd_advect -0 $_obj_sc_crowd_update_up
+opwire -n $_obj_sc_crowd_Input_2 -1 $_obj_sc_crowd_update_up
+opwire -n $_obj_sc_crowd_Prev_Frame -0 $_obj_sc_crowd_switch1
+opwire -n $_obj_sc_crowd_init_v -1 $_obj_sc_crowd_switch1
+opwire -n $_obj_sc_crowd_attribwrangle2 -0 $_obj_sc_crowd_null2
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_sc_crowd
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_sc_crowd
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="rotate_by_quar" label="rotate_by_quar" icon="SOP_attribvop">
+    <helpURL>operator:Sop/attribvop</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/attribvop</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('attribvop'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_fire01_geo1_rotate_by_quar (Sop/attribvop)
+set _obj_fire01_geo1_rotate_by_quar = `run("opadd -e -n -v attribvop rotate_by_quar")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_fire01_geo1_rotate_by_quar
+opspareds '    parm {   name    "bindgroup"     baseparm        label   "Group"         export  none    bindselector uvselect "Modify Points"       "Select the points to affect and press Enter to complete."      0 1 0xffffffff 0 bindgrouptype 0     }     parm {   name    "bindgrouptype"         baseparm        label   "Group Type"    export  none     }     parm {   name    "bindclass"     baseparm        label   "Run Over"      export  none     }     parm {   name    "vex_numcount"  baseparm        label   "Number Count"  export  none     }     parm {   name    "vex_threadjobsize"     baseparm        label   "Thread Job Size"       export  none     }     group {  name    "stdswitcher3"  label   "Vex Setup"     parm {      name        "vexsrc"            baseparm        label       "Vex Source"        export      dialog  }       parm {      name        "shoppath"          baseparm        label       "Shop Path"         export      dialog  }       parm {      name        "script"            baseparm        label       "Script"            export      all     }       parm {      name        "clear"             baseparm        label       "Re-load VEX Functions"             export      all     }       parm {      name        "vop_compiler"      baseparm        label       "Compiler"          export      none    }       parm {      name        "vop_forcecompile"          baseparm        label       "Force Compile"             export      none    }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_multithread"           baseparm        label       "Enable Multithreading"             export      none    }     }      group {    name    "stdswitcher3_1"        label   "Attribute Bindings"    parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }       parm {      name        "vex_inplace"       baseparm        label       "Compute Results In Place"          export      none    }       parm {      name        "vex_selectiongroup"        baseparm        label       "Output Selection Group"            export      none    }     }      parm {     name    "ptnum"         label   "Point Number"  type    integer         invisible       default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "vtxnum"        label   "Vertex Number"         type    integer         invisible       default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "primnum"       label   "Primitive Number"      type    integer         invisible       default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "id"    label   "Id"    type    integer         invisible       default { "-1" }        range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "numpt"         label   "Number of Points"      type    integer         invisible       default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "numvtx"        label   "Number of Vertices"    type    integer         invisible       default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "numprim"       label   "Number of Prims"       type    integer         invisible       default { "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "Time"  label   "Time"  type    float   invisible       default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "TimeInc"       label   "Time Inc"      type    float   invisible       default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "Frame"         label   "Frame"         type    float   invisible       default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "life"  label   "Life"  type    float   invisible       default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "age"   label   "Age"   type    float   invisible       default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput2"      label   "Second Input"  type    string  invisible       default { "" }  parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput3"      label   "Third Input"   type    string  invisible       default { "" }  parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput4"      label   "Fourth Input"  type    string  invisible       default { "" }  parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "OpInput1"      label   "First Input"   type    string  invisible       default { "" }  parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "uv"    label   "UV"    type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "P"     label   "P"     type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "v"     label   "Velocity"      type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "force"         label   "Force"         type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "Cd"    label   "Cd"    type    float   invisible       size    3       default { "1" "1" "1" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "N"     label   "N"     type    float   invisible       size    3       default { "0" "0" "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "angle"         label   "Angle"         type    float   default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     }     parm {        name    "axis"  label   "Normalized Rotation Axis"      type    float   size    3       default { "1" "0" "0" }         range   { 0 10 }        parmtag { "parmvop" "1" }       parmtag { "shaderparmcontexts" "cvex" }     } ' $_obj_fire01_geo1_rotate_by_quar
+opparm $_obj_fire01_geo1_rotate_by_quar  bindings ( 0 ) groupbindings ( 0 )
+opparm -V 16.0.674 $_obj_fire01_geo1_rotate_by_quar angle ( 90 )
+opcolor -c 1 1 0.60000002384185791 $_obj_fire01_geo1_rotate_by_quar
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_fire01_geo1_rotate_by_quar
+opexprlanguage -s hscript $_obj_fire01_geo1_rotate_by_quar
+opcf $_obj_fire01_geo1_rotate_by_quar
+
+# Node $_obj_fire01_geo1_rotate_by_quar_geometryvopglobal1 (Vop/geometryvopglobal::2.0)
+set _obj_fire01_geo1_rotate_by_quar_geometryvopglobal1 = `run("opadd -e -n -v geometryvopglobal::2.0 geometryvopglobal1")`
+oplocate -x `$arg2 + 1.9057900000000001` -y `$arg3 + 1.97631` $_obj_fire01_geo1_rotate_by_quar_geometryvopglobal1
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_fire01_geo1_rotate_by_quar_geometryvopglobal1
+opexprlanguage -s hscript $_obj_fire01_geo1_rotate_by_quar_geometryvopglobal1
+
+# Node $_obj_fire01_geo1_rotate_by_quar_geometryvopoutput1 (Vop/geometryvopoutput)
+set _obj_fire01_geo1_rotate_by_quar_geometryvopoutput1 = `run("opadd -e -n -v geometryvopoutput geometryvopoutput1")`
+oplocate -x `$arg2 + 17.636915966896794` -y `$arg3 + 0.47758885769640402` $_obj_fire01_geo1_rotate_by_quar_geometryvopoutput1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_fire01_geo1_rotate_by_quar_geometryvopoutput1
+opexprlanguage -s hscript $_obj_fire01_geo1_rotate_by_quar_geometryvopoutput1
+
+# Node $_obj_fire01_geo1_rotate_by_quar_quaternion1 (Vop/quaternion)
+set _obj_fire01_geo1_rotate_by_quar_quaternion1 = `run("opadd -e -n -v quaternion quaternion1")`
+oplocate -x `$arg2 + 6.314656699969623` -y `$arg3 + -3.7257533014517858` $_obj_fire01_geo1_rotate_by_quar_quaternion1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_fire01_geo1_rotate_by_quar_quaternion1
+opexprlanguage -s hscript $_obj_fire01_geo1_rotate_by_quar_quaternion1
+
+# Node $_obj_fire01_geo1_rotate_by_quar_bind1 (Vop/bind)
+set _obj_fire01_geo1_rotate_by_quar_bind1 = `run("opadd -e -n -v bind bind1")`
+oplocate -x `$arg2 + 5.7137916493246914` -y `$arg3 + -0.58906796103844927` $_obj_fire01_geo1_rotate_by_quar_bind1
+opparm -V 16.0.674 $_obj_fire01_geo1_rotate_by_quar_bind1 parmname ( orient ) parmtype ( float4 ) exportcontext ( cvex )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_fire01_geo1_rotate_by_quar_bind1
+opexprlanguage -s hscript $_obj_fire01_geo1_rotate_by_quar_bind1
+
+# Node $_obj_fire01_geo1_rotate_by_quar_bind2 (Vop/bind)
+set _obj_fire01_geo1_rotate_by_quar_bind2 = `run("opadd -e -n -v bind bind2")`
+oplocate -x `$arg2 + 13.077437794639941` -y `$arg3 + -0.58906794911752014` $_obj_fire01_geo1_rotate_by_quar_bind2
+opparm -V 16.0.674 $_obj_fire01_geo1_rotate_by_quar_bind2 parmname ( orient ) parmtype ( float4 ) overridetype ( on ) useasparmdefiner ( on ) exportparm ( whenconnected ) exportcontext ( cvex )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_fire01_geo1_rotate_by_quar_bind2
+opexprlanguage -s hscript $_obj_fire01_geo1_rotate_by_quar_bind2
+
+# Node $_obj_fire01_geo1_rotate_by_quar_qmultiply1 (Vop/qmultiply)
+set _obj_fire01_geo1_rotate_by_quar_qmultiply1 = `run("opadd -e -n -v qmultiply qmultiply1")`
+oplocate -x `$arg2 + 9.9901681458396574` -y `$arg3 + -1.2629575975136484` $_obj_fire01_geo1_rotate_by_quar_qmultiply1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_fire01_geo1_rotate_by_quar_qmultiply1
+opexprlanguage -s hscript $_obj_fire01_geo1_rotate_by_quar_qmultiply1
+
+# Node $_obj_fire01_geo1_rotate_by_quar_qrotate1 (Vop/qrotate)
+set _obj_fire01_geo1_rotate_by_quar_qrotate1 = `run("opadd -e -n -v qrotate qrotate1")`
+oplocate -x `$arg2 + 9.990168116037335` -y `$arg3 + 1.5005906932910018` $_obj_fire01_geo1_rotate_by_quar_qrotate1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_fire01_geo1_rotate_by_quar_qrotate1
+opexprlanguage -s hscript $_obj_fire01_geo1_rotate_by_quar_qrotate1
+
+# Node $_obj_fire01_geo1_rotate_by_quar_angle (Vop/parameter)
+set _obj_fire01_geo1_rotate_by_quar_angle = `run("opadd -e -n -v parameter angle")`
+oplocate -x `$arg2 + -0.067831036717705295` -y `$arg3 + -2.8957532715749581` $_obj_fire01_geo1_rotate_by_quar_angle
+opparm -V 16.0.674 $_obj_fire01_geo1_rotate_by_quar_angle parmname ( angle ) parmlabel ( Angle ) exportcontext ( cvex )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_fire01_geo1_rotate_by_quar_angle
+opexprlanguage -s hscript $_obj_fire01_geo1_rotate_by_quar_angle
+
+# Node $_obj_fire01_geo1_rotate_by_quar_axis (Vop/parameter)
+set _obj_fire01_geo1_rotate_by_quar_axis = `run("opadd -e -n -v parameter axis")`
+oplocate -x `$arg2 + 2.4754214887490642` -y `$arg3 + -5.3904170349971725` $_obj_fire01_geo1_rotate_by_quar_axis
+opparm -V 16.0.674 $_obj_fire01_geo1_rotate_by_quar_axis parmname ( axis ) parmlabel ( 'Normalized Rotation Axis' ) parmtype ( float3 ) float3def ( 1 0 0 ) exportcontext ( cvex )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_fire01_geo1_rotate_by_quar_axis
+opexprlanguage -s hscript $_obj_fire01_geo1_rotate_by_quar_axis
+
+# Node $_obj_fire01_geo1_rotate_by_quar_degtorad1 (Vop/degtorad)
+set _obj_fire01_geo1_rotate_by_quar_degtorad1 = `run("opadd -e -n -v degtorad degtorad1")`
+oplocate -x `$arg2 + 3.1674082417432974` -y `$arg3 + -3.434731251239866` $_obj_fire01_geo1_rotate_by_quar_degtorad1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_fire01_geo1_rotate_by_quar_degtorad1
+opexprlanguage -s hscript $_obj_fire01_geo1_rotate_by_quar_degtorad1
+opcf ..
+opcf $_obj_fire01_geo1_rotate_by_quar
+oporder -e geometryvopglobal1 geometryvopoutput1 quaternion1 bind1 bind2 qmultiply1 qrotate1 angle axis degtorad1 
+opcf ..
+opset -p on $_obj_fire01_geo1_rotate_by_quar
+
+opcf $arg1
+opwire -n $_obj_fire01_geo1_lxf_importer1 -0 $_obj_fire01_geo1_rotate_by_quar
+opcf $_obj_fire01_geo1_rotate_by_quar
+opwire -n $_obj_fire01_geo1_rotate_by_quar_qrotate1 -0 $_obj_fire01_geo1_rotate_by_quar_geometryvopoutput1
+opwire -n $_obj_fire01_geo1_rotate_by_quar_degtorad1 -0 $_obj_fire01_geo1_rotate_by_quar_quaternion1
+opwire -n $_obj_fire01_geo1_rotate_by_quar_axis -1 $_obj_fire01_geo1_rotate_by_quar_quaternion1
+opwire -n $_obj_fire01_geo1_rotate_by_quar_qmultiply1 -0 $_obj_fire01_geo1_rotate_by_quar_bind2
+opwire -n $_obj_fire01_geo1_rotate_by_quar_quaternion1 -0 $_obj_fire01_geo1_rotate_by_quar_qmultiply1
+opwire -n $_obj_fire01_geo1_rotate_by_quar_bind1 -1 $_obj_fire01_geo1_rotate_by_quar_qmultiply1
+opwire -n $_obj_fire01_geo1_rotate_by_quar_quaternion1 -0 $_obj_fire01_geo1_rotate_by_quar_qrotate1
+opwire -n $_obj_fire01_geo1_rotate_by_quar_geometryvopglobal1 -1 $_obj_fire01_geo1_rotate_by_quar_qrotate1
+opwire -n $_obj_fire01_geo1_rotate_by_quar_angle -0 $_obj_fire01_geo1_rotate_by_quar_degtorad1
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_fire01_geo1_rotate_by_quar
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_fire01_geo1_rotate_by_quar
     if ($arg8) then
         opwire -n -i $arg6 -0 $input
     else
