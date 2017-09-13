@@ -3502,6 +3502,7 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
     <memberTool name="attribwrangle7"/>
     <memberTool name="attribwrangle8"/>
     <memberTool name="rotate_by_quar"/>
+    <memberTool name="clip"/>
   </toolshelf>
 
   <tool name="attribvop1" label="trans_by_n_up" icon="SOP_attribvop">
@@ -8680,6 +8681,161 @@ if ($argc >= 5 && "$arg4" != "") then
 endif
 if ($argc >= 6 && "$arg6" != "") then
     set input = $_obj_fire01_geo1_rotate_by_quar
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="clip" label="clip" icon="SOP_attribwrangle">
+    <helpURL>operator:Sop/attribwrangle</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/attribwrangle</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('attribwrangle'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_clip (Sop/attribwrangle)
+set _obj_geo1_clip = `run("opadd -e -n -v attribwrangle clip")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_clip
+opspareds '    group {  name    "folder1"       label   "Code"          parm {      name        "group"             baseparm        label       "Group"             export      none        bindselector points "Modify Points"                 "Select the points to affect and press Enter to complete."              0 1 0xffffffff 0 grouptype 0    }       parm {      name        "grouptype"         baseparm        label       "Group Type"        export      none    }       parm {      name        "class"             baseparm        label       "Run Over"          export      none    }       parm {      name        "vex_numcount"      baseparm        label       "Number Count"      export      none    }       parm {      name        "vex_threadjobsize"         baseparm        label       "Thread Job Size"           export      none    }       parm {      name        "snippet"           baseparm        label       "VEXpression"       export      all     }       parm {      name        "exportlist"        baseparm        label       "Attributes to Create"      export      none    }       parm {      name        "vex_strict"        baseparm        label       "Enforce Prototypes"        export      none    }     }      group {    name    "folder1_1"     label   "Bindings"      parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }       parm {      name        "vex_inplace"       baseparm        label       "Compute Results In Place"          export      none    }       parm {      name        "vex_selectiongroup"        baseparm        label       "Output Selection Group"            export      none    }     }      parm {     name    "cutDir"        label   "Cutdir"        type    vector  size    3       default { "0" "0" "0" }         range   { 0 1 }     }     parm {        name    "cutOrigin"     label   "Cutorigin"     type    vector  size    3       default { "0" "0" "0" }         range   { 0 1 }     }     parm {        name    "dist"  label   "Dist"  type    float   default { "0" }         range   { 0 1 }     }     parm {        name    "keep"  label   "keep"  type    string  default { "" }  menu    {           "both"      "both"      "above"     "above"             "below"     "below"         }       export  all     }     parm {    name    "num_of_pt_attribs"     label   "num_of_pt_attribs"     type    integer         default { "0" }         range   { 0 10 }     } ' $_obj_geo1_clip
+opparm $_obj_geo1_clip  bindings ( 0 ) groupbindings ( 0 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_clip num_of_pt_attribs
+chkey -t 0 -v 0 -m 0 -a 0.33333333333333331 -A 0.33333333333333331 -T a  -F 'geo = hou.pwd().geometry()\n\nreturn len(geo.pointAttribs())' -l p $_obj_geo1_clip/num_of_pt_attribs
+chblockend
+opparm $_obj_geo1_clip class ( detail ) vex_numcount ( 1 ) snippet ( 'string in0 = @OpInput1;\nint nprims = nprimitives(in0);\n\nint op;\nstring operation = chs("keep");\nif(operation == "above")op= 1;\nif(operation == "below")op= 2;\nelse op= 0;\n\nvector cutDir = normalize(chv("cutDir"));\nvector cutOrigin = chv("cutOrigin");\nfloat dist = ch("dist");\n\n//////////////////////////////////////////////////////////////////\n\nfor(int primnum = 0; primnum < nprims; primnum++)\n{\n    int vers[] = primvertices(0, primnum);\n    int length = len(vers);\n    \n    int border=0;\n    int prim0pts[];\n    int prim1pts[];\n    int numNewPts = 0;\n    \n    // check if this mesh is split\n    for(int i = 0; i< length; i++)\n    {\n        int srcPoint = vertexpoint(in0, vers[i]);\n        vector srcP = point(in0, "P", srcPoint);\n        vector srcPDir = normalize(srcP - cutOrigin);\n        \n        float dot = dot(cutDir, srcPDir);\n        \n        if(dot<=0)border += 1;\n    }\n    \n    // if it is not cut, maybe remove and done.\n    if(border == 0)\n    {\n        if(op == 2)removeprim(geoself(),primnum,1);\n        //        continue;continue;\n    }\n    else if(border == length)\n    {\n        if(op == 1)removeprim(geoself(),primnum,1);\n        //continue;\n    }\n    \n    else\n    {\n        // cut mesh\n        int srcPoint;\n        float srcDot;\n        \n        for(int i = 0; i< length; i++)\n        {\n            int hedge = vertexhedge(in0, vers[i]);\n            \n            //int primary = hedge_isprimary(in0, hedge);\n            //if(primary == 0)continue;\n            \n            int destVtx = hedge_dstvertex(in0, hedge);\n                    \n            srcPoint = vertexpoint(in0, vers[i]);\n            int destPoint = vertexpoint(in0, destVtx);\n            vector srcP = point(in0, "P", srcPoint);\n            vector destP = point(in0, "P", destPoint);\n            \n            vector srcPDir = normalize(srcP - cutOrigin);\n            vector destPDir = normalize(destP - cutOrigin);\n            srcDot = dot(cutDir, srcPDir);\n            float destDot = dot(cutDir, destPDir);\n            \n            if(srcDot > 0)\n            {\n                push(prim0pts, srcPoint);\n            }\n            else if(srcDot == 0)\n            {\n                push(prim0pts, srcPoint);\n                push(prim1pts, srcPoint);\n            }\n            else if(srcDot < 0)\n            {\n                push(prim1pts, srcPoint);\n            }\n            \n            \n            if((sign(srcDot) != sign(destDot)) && srcDot != 0 && destDot != 0)\n            {\n                //@Cd=set(float(i)/length, float(border)/length, 0);\n                float bias = -destDot/(srcDot - destDot);\n                int newPt = addpoint(geoself(), lerp(destP, srcP, bias));\n                push(prim0pts, newPt);\n                push(prim1pts, newPt);\n        \n                numNewPts += 1;\n            }\n        }\n        \n        \n        \n        // remove original mesh, and add 2 meshes which cover original\n        \n        removeprim(geoself(),primnum,1);\n        if(op != 2)\n        {\n            int newPrim = addprim(geoself(), "poly");\n            foreach(int pt; prim0pts)\n            {\n                addvertex(geoself(), newPrim, pt);\n            }\n        }\n        if(op != 1)\n        {\n            int newPrim = addprim(geoself(), "poly");\n            foreach(int pt; prim1pts)\n            {\n                addvertex(geoself(), newPrim, pt);\n            }\n        }\n    }\n}' ) cutDir ( 0 1 0 ) keep ( both ) num_of_pt_attribs ( num_of_pt_attribs )
+chautoscope $_obj_geo1_clip +num_of_pt_attribs
+opcolor -c 1 0.80000001192092896 0 $_obj_geo1_clip
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_clip
+opexprlanguage -s hscript $_obj_geo1_clip
+opuserdata -n '___Version___' -v '' $_obj_geo1_clip
+opset -p on $_obj_geo1_clip
+
+opcf $arg1
+opwire -n $_obj_geo1_attribwrangle3 -0 $_obj_geo1_clip
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_clip
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_clip
     if ($arg8) then
         opwire -n -i $arg6 -0 $input
     else
