@@ -2595,8 +2595,6 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
     <memberToolshelf name="kaToolsDOP"/>
   </shelfSet>
 
-  <toolshelf name="shelf_1" label="New Shelf"/>
-
   <tool name="python" label="python_verb" icon="SOP_python">
     <helpURL>operator:Sop/python</helpURL>
     <toolMenuContext name="network">
