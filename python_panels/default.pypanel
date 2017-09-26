@@ -66,26 +66,40 @@ class pickerWidget(QtWidgets.QFrame):
         self.draggedItem = None
 
         layout = QtWidgets.QVBoxLayout()
+
+        # set up label
+        title = QtWidgets.QLabel('Expression Picker')
+
+
+        # set up button
+        buttonLayout = QtWidgets.QHBoxLayout()
+        self.refreshButton = QtWidgets.QPushButton("Refresh")
+        self.saveButton = QtWidgets.QPushButton("Save")
+        buttonLayout.addWidget(self.refreshButton)
+        buttonLayout.addWidget(self.saveButton)
+        self.refreshButton.clicked.connect(self.onRefreshClicked)
+        self.saveButton.clicked.connect(self.onSaveClicked)
+
     
         # set up tree widget
         self.treeWidget = expressionTreeWidget()
         self.treeWidget.setColumnCount(2)
         self.treeWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.treeWidget.setColumnWidth(0, 150)
+        self.treeWidget.setHeaderLabels(["Name", "Expression"])
         #self.treeWidget.setFocusPolicy(QtWidgets.Qt.WheelFocus)
         self.treeWidget.itemPressed.connect(self.onItemPressed)
         self.treeWidget.itemDoubleClicked.connect(self.onItemDoubleClicked)
         
-
-        title = QtWidgets.QLabel('Expression Picker')
         
         layout.addWidget(title)
+        layout.addLayout(buttonLayout)
         layout.addWidget(self.treeWidget)
         self.setLayout(layout)
 
         menus = self.importExpressionLabels()
-        menus = self.importExpressions(menus)
-        self.updateTree(menus)
+        menus, categories = self.importExpressions(menus)
+        self.updateTree(menus, categories)
 
 
 
@@ -105,6 +119,31 @@ class pickerWidget(QtWidgets.QFrame):
             selectecNode.parm("snippet").set(parmText + self.draggedItem)
 
 
+    def onRefreshClicked(self):
+        menus = self.importExpressionLabels()
+        menus, categories = self.importExpressions(menus)
+        self.updateTree(menus, categories)
+
+
+    def onSaveClicked(self):
+        #self.preset = addExpression.wranglePreset(2)
+        #self.preset.saveXML(kwargs)
+
+        length = self.treeWidget.topLevelItemCount()
+        if length > 0:
+            for i in range(0, length):
+                #print i
+                self.clearItems(self.treeWidget.topLevelItem(0))
+                self.treeWidget.takeTopLevelItem(0)
+
+        self.treeWidget.clear()
+
+        print self.treeWidget.topLevelItemCount()
+
+
+############################################################
+
+
 
     def importExpressionLabels(self):
         # Reaed Presets
@@ -114,46 +153,74 @@ class pickerWidget(QtWidgets.QFrame):
 
     def importExpressions(self, menus):
         num = len(menus)/2
+        categories = []
         for i in range(0, num):
             menus[i*2+1] = self.preset.exportExpression({"selectedlabel" : menus[i*2]})
-        return menus
+            categories.append(self.preset.exportCategory({"selectedlabel" : menus[i*2]}))
+        return menus, categories
 
 
-    def updateTree(self, menus):
+    def clearItems(self, item):
+        #print item
+        length = item.childCount()
+        if length > 0:
+            for i in range(0, length):
+                item.child(0)
+                item.removeChild(item.child(0))
+
+
+
+
+
+    def updateTree(self, menus, categories):
         # Add expressions to the tree widget
-        self.treeWidget.clear()
         try:
-            if self.treeWidget.itemChanged is not None:
-                self.treeWidget.itemChanged.disconnect()
+            if self.treeWidget.itemPressed is not None:
+                self.treeWidget.itemPressed.disconnect()
+            if self.treeWidget.itemDoubleClicked is not None:
+                self.treeWidget.itemDoubleClicked.disconnect()
         except Exception:
             #print Exception
             pass
-            
-        parent = QtWidgets.QTreeWidgetItem(self.treeWidget)
-        parent.setText(0, "sop")
-        parent.setExpanded(True)
 
-        font = parent.font(0)
-        font.setPointSize(11)
-        parent.setFont(0, font)
 
-        brush0 = QtGui.QBrush(QtGui.QColor(0.3,0.3,1))
+        length = self.treeWidget.topLevelItemCount()
+        if length > 0:
+            for i in range(0, length):
+                #print i
+                self.clearItems(self.treeWidget.topLevelItem(0))
+                self.treeWidget.takeTopLevelItem(0)
+        self.treeWidget.clear()
 
-        num = len(menus)
-        child = None
+        num = len(menus)/2
+
         for i in range(0, num):
-            if num%2==0:
-                child = QtWidgets.QTreeWidgetItem(parent,[menus[i], menus[i + 1]])
-                for column in range(0, child.columnCount()):
-                    child.setFont(column, font)
-                    #child.setTextAlignment(column, QtCore.Qt.AlignTop)
-                    #child.setBackground(column, brush0)
-                    #child.setText(0, keys)
+            font = None
+            category = None
+            items = self.treeWidget.findItems(categories[i], 0)
+            #print items
+            if len(items) == 0:
+                #print "none"
+                parent = QtWidgets.QTreeWidgetItem(self.treeWidget)
+                parent.setText(0, categories[i])
+                parent.setExpanded(True)
+                category = parent
+
+                font = category.font(0)
+                font.setPointSize(11)
+                category.setFont(0, font)
             else:
-                #child.setText(1, keys)
-                pass
-            num += 1
-        print child.background(0)
+                category = items[0]
+                font = category.font(0)
+
+            
+            brush0 = QtGui.QBrush(QtGui.QColor(0.3,0.3,1))
+            
+            font.setPointSize(10)
+            child = QtWidgets.QTreeWidgetItem(category,[menus[2 * i], menus[2 * i + 1]])
+            
+            for column in range(0, child.columnCount()):
+                child.setFont(column, font)
 
 
 
@@ -161,11 +228,12 @@ class pickerWidget(QtWidgets.QFrame):
 def createInterface():
     root = pickerWidget()
     return root]]></script>
-    <includeInToolbarMenu menu_position="101" create_separator="false"/>
+    <includeInToolbarMenu menu_position="100" create_separator="false"/>
     <help><![CDATA[]]></help>
   </interface>
   <interface name="sesi_quick_start" label="Quick Start: Calendar Example" icon="MISC_python" help_url="">
     <script><![CDATA[import hou
+import toolutils
 import addExpression
 from PySide2 import QtWidgets, QtCore, QtGui
 
@@ -181,16 +249,32 @@ class expressionTreeWidget(QtWidgets.QTreeWidget):
         self.setDragDropMode(QtWidgets.QAbstractItemView.DragDrop)
         self.setAlternatingRowColors(True)
 
-    def dropEvent(self, event):
-        print "deskp"
-        #print hou.ui.curDesktop()
 
-        return_val = super( QtWidgets.QTreeWidget, self ).dropEvent( event )
-        print ("Drop finished")
-        d = event.mimeData()
-        print d, event.source()
+    def mouseReleaseEvent(self, event):
+        return_val = super( QtWidgets.QTreeWidget, self ).mouseReleaseEvent( event )
+        #print "mouse release"
+        #print hou.ui.curDesktop().paneTabUnderCursor().type()
+        widget = QtWidgets.QApplication.instance().widgetAt(event.globalX(), event.globalY())
+        if widget:
+            self.searchChildren(widget)
+       
 
-        return return_val
+    def mouseMoveEvent(self, event):
+        #return_val = super( QtWidgets.QTreeWidget, self ).mouseReleaseEvent( event )
+        allowDrop = False
+        widget = QtWidgets.QApplication.instance().widgetAt(event.globalX(), event.globalY())
+        if widget:
+            #self.searchChildren(widget)
+            pass
+
+    def searchChildren(self, parent):
+        for child in parent.children():
+                print child
+                if child:
+                    if isinstance(child, QtGui.QTextFrame):
+                        print child.childFrames()
+                    self.searchChildren(child)
+
 
 
 class pickerWidget(QtWidgets.QFrame):
@@ -199,31 +283,82 @@ class pickerWidget(QtWidgets.QFrame):
         QtWidgets.QFrame.__init__(self, parent)
         
         self.preset = addExpression.wranglePreset(0)
+        self.draggedItem = None
 
         layout = QtWidgets.QVBoxLayout()
+
+        # set up label
+        title = QtWidgets.QLabel('Expression Picker')
+
+
+        # set up button
+        buttonLayout = QtWidgets.QHBoxLayout()
+        self.refreshButton = QtWidgets.QPushButton("Refresh")
+        self.saveButton = QtWidgets.QPushButton("Save")
+        buttonLayout.addWidget(self.refreshButton)
+        buttonLayout.addWidget(self.saveButton)
+        self.refreshButton.clicked.connect(self.onRefreshClicked)
+        self.saveButton.clicked.connect(self.onSaveClicked)
+
     
         # set up tree widget
         self.treeWidget = expressionTreeWidget()
         self.treeWidget.setColumnCount(2)
         self.treeWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.treeWidget.setColumnWidth(0, 150)
-        #self.treeWidget.setColumnWidth(1, 90)
         #self.treeWidget.setFocusPolicy(QtWidgets.Qt.WheelFocus)
+        self.treeWidget.itemPressed.connect(self.onItemPressed)
+        self.treeWidget.itemDoubleClicked.connect(self.onItemDoubleClicked)
         
-
-
-
-
-        title = QtWidgets.QLabel('Expression Picker')
         
         layout.addWidget(title)
+        layout.addLayout(buttonLayout)
         layout.addWidget(self.treeWidget)
-        
         self.setLayout(layout)
 
         menus = self.importExpressionLabels()
-        menus = self.importExpressions(menus)
-        self.updateTree(menus)
+        menus, categories = self.importExpressions(menus)
+        self.updateTree(menus, categories)
+
+
+
+    def onItemPressed(self, item, colmun):
+        #print "item pressed"
+        self.draggedItem =  item.text(1)
+
+    def onItemDoubleClicked(self, item, column):
+        selectecNodes = hou.selectedNodes()
+        selectecNode = None
+        if len(selectecNodes) == 0:
+            return
+        selectecNode = selectecNodes[0]
+        if selectecNode.type() == hou.sopNodeTypeCategory().nodeTypes()["attribwrangle"]:
+            self.draggedItem = item.text(1)
+            parmText = selectecNode.parm("snippet").eval()
+            selectecNode.parm("snippet").set(parmText + self.draggedItem)
+
+
+    def onRefreshClicked(self):
+        menus = self.importExpressionLabels()
+        menus, categories = self.importExpressions(menus)
+        self.updateTree(menus, categories)
+
+
+    def onSaveClicked(self):
+        #self.preset = addExpression.wranglePreset(2)
+        #self.preset.saveXML(kwargs)
+
+        length = self.treeWidget.topLevelItemCount()
+        if length > 0:
+            for i in range(0, length):
+                print i
+                self.clearItems(self.treeWidget.topLevelItem(0))
+                print self.treeWidget.takeTopLevelItem(0)
+
+        self.treeWidget.clear()
+
+
+############################################################
 
 
 
@@ -235,46 +370,69 @@ class pickerWidget(QtWidgets.QFrame):
 
     def importExpressions(self, menus):
         num = len(menus)/2
+        categories = []
         for i in range(0, num):
             menus[i*2+1] = self.preset.exportExpression({"selectedlabel" : menus[i*2]})
-        return menus
+            categories.append(self.preset.exportCategory({"selectedlabel" : menus[i*2]}))
+        return menus, categories
 
 
-    def updateTree(self, menus):
+    def clearItems(self, item):
+        print item
+        length = item.childCount()
+        if length > 0:
+            for i in range(0, length):
+                print item.child(0)
+                item.removeChild(item.child(0))
+
+
+
+
+
+    def updateTree(self, menus, categories):
         # Add expressions to the tree widget
-        self.treeWidget.clear()
         try:
-            if self.treeWidget.itemChanged is not None:
-                self.treeWidget.itemChanged.disconnect()
+            if self.treeWidget.itemPressed is not None:
+                self.treeWidget.itemPressed.disconnect()
+            if self.treeWidget.itemDoubleClicked is not None:
+                self.treeWidget.itemDoubleClicked.disconnect()
         except Exception:
             #print Exception
             pass
-            
-        parent = QtWidgets.QTreeWidgetItem(self.treeWidget)
-        parent.setText(0, "sop")
-        parent.setExpanded(True)
 
-        font = parent.font(0)
-        font.setPointSize(11)
-        parent.setFont(0, font)
 
-        brush0 = QtGui.QBrush(QtGui.QColor(0.3,0.3,1))
+        length = self.treeWidget.topLevelItemCount()
+        if length > 0:
+            for i in range(0, length):
+                print i
+                self.clearItems(self.treeWidget.topLevelItem(0))
+                print self.treeWidget.takeTopLevelItem(0)
+        self.treeWidget.clear()
 
-        num = len(menus)
-        child = None
+        num = len(menus)/2
+
         for i in range(0, num):
-            if num%2==0:
-                child = QtWidgets.QTreeWidgetItem(parent,[menus[i], menus[i + 1]])
-                for column in range(0, child.columnCount()):
-                    child.setFont(column, font)
-                    #child.setTextAlignment(column, QtCore.Qt.AlignTop)
-                    #child.setBackground(column, brush0)
-                    #child.setText(0, keys)
+            category = None
+            items = self.treeWidget.findItems(categories[i], 0)
+            #print items
+            if len(items) == 0:
+                #print "none"
+                parent = QtWidgets.QTreeWidgetItem(self.treeWidget)
+                parent.setText(0, categories[i])
+                parent.setExpanded(True)
+                category = parent
             else:
-                #child.setText(1, keys)
-                pass
-            num += 1
-        print child.background(0)
+                category = items[0]
+
+            font = category.font(0)
+            font.setPointSize(11)
+            category.setFont(0, font)
+            brush0 = QtGui.QBrush(QtGui.QColor(0.3,0.3,1))
+
+            child = QtWidgets.QTreeWidgetItem(category,[menus[2 * i], menus[2 * i + 1]])
+            
+            for column in range(0, child.columnCount()):
+                child.setFont(column, font)
 
 
 
@@ -282,7 +440,6 @@ class pickerWidget(QtWidgets.QFrame):
 def createInterface():
     root = pickerWidget()
     return root]]></script>
-    <includeInToolbarMenu menu_position="100" create_separator="false"/>
     <help><![CDATA[]]></help>
   </interface>
 </pythonPanelDocument>

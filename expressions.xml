@@ -2,10 +2,10 @@
   <categories>
     <category>sop</category>
   </categories>
-  <set name="slerp">
+  <set name="slerp" category="matrix">
     <expression><![CDATA[p@orient = slerp(p@orient, p@opinput1_orient,ch("bias"));]]></expression>
   </set>
-  <set name="delete by attrib val list detail">
+  <set name="delete by attrib val list detail" category="del">
     <expression><![CDATA[string vals = chs("val_list");
 string valList[] = split(vals, " ");
 int len = len(valList);
@@ -17,22 +17,22 @@ for(int i =0; i < len; i++)
 
 }]]></expression>
   </set>
-  <set name="fit and ramp">
+  <set name="fit and ramp" category="edit">
     <expression><![CDATA[float grad = fit(@P.y,ch("min"),ch("max"),0,1);
 grad = chramp("remap_grad",grad);]]></expression>
   </set>
-  <set name="extract N and up">
+  <set name="extract N and up" category="matrix">
     <expression><![CDATA[v@up = {0,1,0};
 @N = {0,0,1};
 v@up = qrotate(p@orient, v@up);
 @N = qrotate(p@orient, @N);]]></expression>
   </set>
-  <set name="delete randomly">
+  <set name="delete randomly" category="del">
     <expression><![CDATA[float rand = rand((i@id + ch("seed")+0.21) + (ch("seed")));
 
 if(rand > ch("keep_rate"))removepoint(geoself(),@ptnum);]]></expression>
   </set>
-  <set name="delete by attrib val list pt">
+  <set name="delete by attrib val list pt" category="del">
     <expression><![CDATA[string vals = chs("val_list");
 string valList[] = split(vals, " ");
 int len = len(valList);
@@ -45,14 +45,14 @@ for(int i =0; i < len; i++)
     }
 }]]></expression>
   </set>
-  <set name="delete by ndc">
+  <set name="delete by ndc" category="del">
     <expression><![CDATA[vector ndcP = toNDC(chs("cam"),@P);
 
 if(ndcP.x<ch("uvxx") || ndcP.x>ch("uvxy"))removepoint(geoself(),@ptnum);
 else if(ndcP.y<ch("uvyx") || ndcP.y>1+ch("uvyy"))removepoint(geoself(),@ptnum);
 else if(ndcP.z<ch("uvzx") || ndcP.z>1+ch("uvzy"))removepoint(geoself(),@ptnum);]]></expression>
   </set>
-  <set name="reverse slerp">
+  <set name="reverse slerp" category="matrix">
     <expression><![CDATA[float qdotproduct(vector4 q1, q2)
 {
     return q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
@@ -93,26 +93,26 @@ q3 = qnormalize(q3);
 p@orient = q1 * cos(theta) + q3 * sin(theta);
 ]]></expression>
   </set>
-  <set name="rotate packed rbd">
+  <set name="rotate packed rbd" category="debug">
     <expression><![CDATA[@P = qrotate(p@orient,(@P - v@pivot)) + v@packP;]]></expression>
   </set>
-  <set name="volume sample">
+  <set name="volume sample" category="volume">
     <expression><![CDATA[int in = 1;
 
 float sample = volumesample(in,"collision",@P);
 vector grad = volumegradient(in,"collision",@P);]]></expression>
   </set>
-  <set name="create id">
+  <set name="create id" category="atr">
     <expression><![CDATA[i@id = @ptnum;]]></expression>
   </set>
-  <set name="add poins">
+  <set name="add point" category="add">
     <expression><![CDATA[addpoint(geoself(),{0,0,0});]]></expression>
   </set>
-  <set name="alphabet">
+  <set name="alphabet" category="edit">
     <expression><![CDATA[string alphabet[] = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
 ]]></expression>
   </set>
-  <set name="fit rand">
+  <set name="fit rand" category="edit">
     <expression><![CDATA[float rand = rand((i@id + ch("seed")+0.21) + (ch("seed")));
 
 rand= chramp("remap_grad",rand);
@@ -120,15 +120,15 @@ rand = fit01(rand,ch("min"),ch("max"));
 
 ]]></expression>
   </set>
-  <set name="rand">
+  <set name="rand" category="edit">
     <expression><![CDATA[float rand = rand((@ptnum + ch("seed")+0.21) + (ch("seed")));
 
 ]]></expression>
   </set>
-  <set name="initialize v">
+  <set name="initialize v" category="atr">
     <expression><![CDATA[@v = set(chv("init"));]]></expression>
   </set>
-  <set name="basic point cloud">
+  <set name="basic point cloud" category="edit">
     <expression><![CDATA[int handle = pcopen(1,"P",@P,ch("rad"),chi("max_pts"));
 
 int num = pcnumfound(handle);
@@ -137,10 +137,10 @@ if(num > 0)
     vector p = pcfilter(handle, "P");
 }]]></expression>
   </set>
-  <set name="remove points">
+  <set name="remove points" category="del">
     <expression><![CDATA[removepoint(geoself(),@ptnum);]]></expression>
   </set>
-  <set name="delelte if atr val is 0">
+  <set name="delelte if atr val is 0" category="python">
     <expression><![CDATA[node = hou.pwd()
 geo = node.geometry()
 
@@ -166,13 +166,13 @@ for pt in geo.points():
 geo.deletePoints(pts)
         ]]></expression>
   </set>
-  <set name="create orient">
+  <set name="create orient" category="atr">
     <expression><![CDATA[@orient = set(0,0,0,1);]]></expression>
   </set>
-  <set name="get near points">
+  <set name="get near points" category="edit">
     <expression><![CDATA[int nearPts[] = nearpoints(1,@P,ch("max_dist",chi("max_pts")));]]></expression>
   </set>
-  <set name="xyzdist">
+  <set name="xyzdist" category="edit">
     <expression><![CDATA[int prim;
 vector uv;
 
@@ -181,14 +181,14 @@ int in = 1;
 float dist = xyzdist(in, @P, prim, uv);
 vector hitP = primuv(in, "P", prim, uv);]]></expression>
   </set>
-  <set name="get bounding box">
+  <set name="get bounding box" category="edit">
     <expression><![CDATA[vector min,max;
 getbbox(0,min,max);]]></expression>
   </set>
-  <set name="create grad">
+  <set name="create grad" category="edit">
     <expression><![CDATA[v@grad = (@P - min)/(max-min);]]></expression>
   </set>
-  <set name="del by fresnel">
+  <set name="del by fresnel" category="del">
     <expression><![CDATA[vector localP= -ptransform(chs("to_space"), @P);
 vector localN= ntransform(chs("to_space"), @N);
 
@@ -196,5 +196,11 @@ float dot = dot(normalize(localP),normalize(localN));
 dot = fit(dot,-1,1,0,1);
 
 if(dot<ch("val"))removepoint(geoself(),@ptnum);]]></expression>
+  </set>
+  <set name="print" category="debug">
+    <expression><![CDATA[printf("aa");]]></expression>
+  </set>
+  <set name="bug" category="bug">
+    <expression><![CDATA[printf("aa");p@orient = slerp(p@orient, p@opinput1_orient,ch("bias"));]]></expression>
   </set>
 </expressionSets>

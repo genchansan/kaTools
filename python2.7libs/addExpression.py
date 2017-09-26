@@ -35,6 +35,9 @@ class wranglePreset:
 		expression = self.getExpression(kwargs)
 		return expression
 
+	def exportCategory(self, kwargs):
+		category = self.getCategory(kwargs)
+		return category
 
 	def paste(self, kwargs):
 		expression = self.getExpression(kwargs)
@@ -46,10 +49,31 @@ class wranglePreset:
 		expression = root.find("./set[@name='" + kwargs["selectedlabel"] +"']").find('expression').text
 		return expression
 
+	def getCategory(self, kwargs):
+		root = self.tree2.getroot()
+		category = ""
+		try:
+			category = root.find("./set[@name='" + kwargs["selectedlabel"] +"']").attrib[("category")]
+			#print category
+		except KeyError:
+			#print "no category"
+			category = "sop"
+		return category
+
+	def getElement(self, name):
+		root = self.tree2.getroot()
+		element = None
+		try:
+			element = root.find("./set[@name='" + name +"']")
+		except KeyError:
+			element = None
+		return element
+
+
 
 	def makeMenus(self):
 		root = self.tree2.getroot()
-		
+		self.menus = []
 		for menuset in root:
 			if menuset.tag == "set":
 				self.menus.append(menuset.attrib[("name")])
@@ -64,11 +88,14 @@ class wranglePreset:
 		else:
 			element = let.Element("categories")
 			return element
-		
+
+
+
 	def findCategory(self, categories, category):
 		categories = root.find("./categories")
 		for category in categories:
-			
+			return
+
 		
 
 	def saveXML(self,kwargs):
@@ -97,3 +124,9 @@ class wranglePreset:
 		#self.tree.write(self.XMLPath, "utf-8", True)
 		self.tree2.write(self.XMLPath, encoding="utf-8", method="xml", pretty_print = True)
 
+
+
+	def deleteExpression(name):
+		element = self.getElement(name)
+		if element != None:
+			element.clear()
