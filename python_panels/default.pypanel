@@ -64,13 +64,15 @@ class expressionTreeWidget(QtWidgets.QTreeWidget):
 
 
 class pickerWidget(QtWidgets.QFrame):
+
+    prevClicked = QtWidgets.QTreeWidgetItem()
+    
     def __init__(self, parent = None):
         #super(MyWidget, self).__init__(parent)
         QtWidgets.QFrame.__init__(self, parent)
         
         self.preset = addExpression.wranglePreset(0)
         self.draggedItem = None
-        self.prevClicked = None
 
         layout = QtWidgets.QVBoxLayout()
 
@@ -121,8 +123,8 @@ class pickerWidget(QtWidgets.QFrame):
         print item.isSelected()
         print self.prevClicked
         if item.isSelected() == True:
-            #if self.prevClicked == item:
-            self.treeWidget.editItem(item, column)
+            if self.prevClicked is item:
+                self.treeWidget.editItem(item, column)
         self.prevClicked = item
 
 
@@ -235,8 +237,9 @@ class pickerWidget(QtWidgets.QFrame):
             if len(items) == 0:
                 #print "none"
                 parent = QtWidgets.QTreeWidgetItem(self.treeWidget)
-                parent.setFlags(QtCore.Qt.ItemIsEditable)
-                parent.setFlags(QtCore.Qt.ItemIsSelectable)
+                parent.setFlags(QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+                #parent.setFlags(QtCore.Qt.ItemIsSelectable)
+                #parent.setFlags(QtCore.Qt.ItemIsEnabled)
                 parent.setText(0, categories[i])
                 parent.setExpanded(True)
                 category = parent
@@ -253,8 +256,10 @@ class pickerWidget(QtWidgets.QFrame):
             
             font.setPointSize(10)
             child = QtWidgets.QTreeWidgetItem(category,[menus[2 * i], menus[2 * i + 1]])
-            child.setFlags(QtCore.Qt.ItemIsEditable)
-            child.setFlags(QtCore.Qt.ItemIsSelectable)
+            child.setFlags(QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+                
+            #child.setFlags(QtCore.Qt.ItemIsSelectable)
+            #child.setFlags(QtCore.Qt.ItemIsEnabled)
             for column in range(0, child.columnCount()):
                 child.setFont(column, font)
 
