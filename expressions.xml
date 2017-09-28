@@ -200,7 +200,4 @@ if(dot<ch("val"))removepoint(geoself(),@ptnum);]]></expression>
   <set name="print" category="debug">
     <expression><![CDATA[printf("aa");]]></expression>
   </set>
-  <set name="bug" category="bug">
-    <expression><![CDATA[printf("aa");p@orient = slerp(p@orient, p@opinput1_orient,ch("bias"));]]></expression>
-  </set>
 </expressionSets>

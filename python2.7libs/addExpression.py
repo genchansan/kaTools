@@ -18,6 +18,8 @@ class wranglePreset:
 	#paste = 1
 	#saveXML = 2
 	#deleteXML = 3
+
+
 	def __init__(self, mode, kwargs=None):
 		self.XMLPath = hou.expandString("$HOUDINI_PATH").split(";")[-2] + '/expressions.xml'
 		self.tree = ET.parse(self.XMLPath)
@@ -119,14 +121,18 @@ class wranglePreset:
 		root.append(setElement)
 		setElement.append(expressionElement)
 
-
-
 		#self.tree.write(self.XMLPath, "utf-8", True)
 		self.tree2.write(self.XMLPath, encoding="utf-8", method="xml", pretty_print = True)
 
 
 
-	def deleteExpression(name):
+	def deleteExpression(self, name):
+		root = self.tree2.getroot()
 		element = self.getElement(name)
 		if element != None:
-			element.clear()
+			#element.clear()
+			root.remove(element)
+			self.updateXMLFile()
+
+	def updateXMLFile(self):
+		self.tree2.write(self.XMLPath, encoding="utf-8", method="xml", pretty_print = True)
