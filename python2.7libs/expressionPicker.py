@@ -1,3 +1,5 @@
+#https://www.off-soft.net/ja/develop/qt/qtb2.html
+
 import hou
 import toolutils
 import addExpression
@@ -36,10 +38,11 @@ class expressionTreeWidget(QtWidgets.QTreeWidget):
 
     def searchChildren(self, parent):
         for child in parent.children():
-                print child
+                #print child
                 if child:
                     if isinstance(child, QtGui.QTextFrame):
-                        print child.childFrames()
+                        #print child.childFrames()
+                        pass
                     self.searchChildren(child)
 
 
@@ -50,13 +53,15 @@ class expressionTreeWidget(QtWidgets.QTreeWidget):
 
 
 class pickerWidget(QtWidgets.QFrame):
+
+    prevClicked = QtWidgets.QTreeWidgetItem()
+    
     def __init__(self, parent = None):
         #super(MyWidget, self).__init__(parent)
         QtWidgets.QFrame.__init__(self, parent)
         
         self.preset = addExpression.wranglePreset(0)
         self.draggedItem = None
-        self.prevClicked = None
 
         layout = QtWidgets.QVBoxLayout()
 
@@ -103,27 +108,28 @@ class pickerWidget(QtWidgets.QFrame):
         #print "item pressed"
         self.draggedItem =  item.text(1)
 
-    def onItemClicked(self, item, column):
-        print item.isSelected()
-        print self.prevClicked
-        if item.isSelected() == True:
-            #if self.prevClicked == item:
-            self.treeWidget.editItem(item, column)
-        self.prevClicked = item
 
-
-
+    
     def onItemDoubleClicked(self, item, column):
-        selectecNodes = hou.selectedNodes()
-        selectecNode = None
+        
+        self.treeWidget.editItem(item, column)
+        
 
-        if len(selectecNodes) == 0:
-            return
-        selectecNode = selectecNodes[0]
-        if selectecNode.type() == hou.sopNodeTypeCategory().nodeTypes()["attribwrangle"]:
-            self.draggedItem = item.text(1)
-            parmText = selectecNode.parm("snippet").eval()
-            selectecNode.parm("snippet").set(parmText + self.draggedItem)
+
+    def onItemClicked(self, item, column):
+        if item.isSelected() == True:
+            if self.prevClicked is item:
+                selectecNodes = hou.selectedNodes()
+                selectecNode = None
+
+                if len(selectecNodes) == 0:
+                    return
+                selectecNode = selectecNodes[0]
+                if selectecNode.type() == hou.sopNodeTypeCategory().nodeTypes()["attribwrangle"]:
+                    self.draggedItem = item.text(1)
+                    parmText = selectecNode.parm("snippet").eval()
+                    selectecNode.parm("snippet").set(parmText + self.draggedItem)
+            self.prevClicked = item
 
 
     def onRefreshClicked(self):
@@ -221,8 +227,7 @@ class pickerWidget(QtWidgets.QFrame):
             if len(items) == 0:
                 #print "none"
                 parent = QtWidgets.QTreeWidgetItem(self.treeWidget)
-                parent.setFlags(QtCore.Qt.ItemIsEditable)
-                parent.setFlags(QtCore.Qt.ItemIsSelectable)
+                parent.setFlags(QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
                 parent.setText(0, categories[i])
                 parent.setExpanded(True)
                 category = parent
@@ -239,8 +244,7 @@ class pickerWidget(QtWidgets.QFrame):
             
             font.setPointSize(10)
             child = QtWidgets.QTreeWidgetItem(category,[menus[2 * i], menus[2 * i + 1]])
-            child.setFlags(QtCore.Qt.ItemIsEditable)
-            child.setFlags(QtCore.Qt.ItemIsSelectable)
+            child.setFlags(QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
             for column in range(0, child.columnCount()):
                 child.setFont(column, font)
 
