@@ -13,3 +13,6 @@ Y:\NoCreation\81_Kinect\KinectToHou\DepthBasics-WPF\obj\Debug\Microsoft.Samples.
 Y:\NoCreation\81_Kinect\KinectToHou\DepthBasics-WPF\obj\Debug\DepthBasics-WPF.csproj.GenerateResource.Cache
 Y:\NoCreation\81_Kinect\KinectToHou\DepthBasics-WPF\obj\Debug\DepthBasics-WPF.exe
 Y:\NoCreation\81_Kinect\KinectToHou\DepthBasics-WPF\obj\Debug\DepthBasics-WPF.pdb
+C:\Users\gen\Documents\houdini16.0\kaTools\KinectToHou\DepthBasics-WPF\bin\AnyCPU\Debug\DepthBasics-WPF.exe.config
+C:\Users\gen\Documents\houdini16.0\kaTools\KinectToHou\DepthBasics-WPF\obj\Debug\DepthBasics-WPF.exe
+C:\Users\gen\Documents\houdini16.0\kaTools\KinectToHou\DepthBasics-WPF\obj\Debug\DepthBasics-WPF.pdb

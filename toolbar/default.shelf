@@ -12817,21 +12817,29 @@ opcf $arg1
 # Node $_obj_geo1_Capture_kinect (Sop/subnet)
 set _obj_geo1_Capture_kinect = `run("opadd -e -n -v subnet Capture_kinect")`
 oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_Capture_kinect
-opspareds '    parm { 	name	"label1" 	baseparm 	label	"Input #1 Label" 	invisible 	export	dialog     }     parm { 	name	"label2" 	baseparm 	label	"Input #2 Label" 	invisible 	export	dialog     }     parm { 	name	"label3" 	baseparm 	label	"Input #3 Label" 	invisible 	export	dialog     }     parm { 	name	"label4" 	baseparm 	label	"Input #4 Label" 	invisible 	export	dialog     }     parm { 	name	"capture" 	label	"capture" 	type	toggle 	default	{ "0" } 	range	{ 0! 10 } 	parmtag	{ "autoscope" "0000000000000000" }     } ' $_obj_geo1_Capture_kinect
+opspareds '    parm { 	name	"label1" 	baseparm 	label	"Input #1 Label" 	invisible 	export	all     }     parm { 	name	"label2" 	baseparm 	label	"Input #2 Label" 	invisible 	export	all     }     parm { 	name	"label3" 	baseparm 	label	"Input #3 Label" 	invisible 	export	all     }     parm { 	name	"label4" 	baseparm 	label	"Input #4 Label" 	invisible 	export	all     }     parm { 	name	"capture" 	label	"capture" 	type	toggle 	default	{ "0" } 	range	{ 0! 10 } 	parmtag	{ "autoscope" "0000000000000000" }     }     parm { 	name	"flip" 	label	"flip" 	type	toggle 	default	{ "0" }     }     parm { 	name	"scale" 	label	"scale" 	type	float 	default	{ "0.001" } 	range	{ 0 1 } 	parmtag	{ "autoscope" "0000000000000000" }     } ' $_obj_geo1_Capture_kinect
 opcolor -c 0.86699998378753662 0 0 $_obj_geo1_Capture_kinect
 opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_Capture_kinect
 opexprlanguage -s hscript $_obj_geo1_Capture_kinect
+opuserdata -n '___toolcount___' -v '1' $_obj_geo1_Capture_kinect
+opuserdata -n '___toolid___' -v 'subnet5' $_obj_geo1_Capture_kinect
 opcf $_obj_geo1_Capture_kinect
 
 # Node $_obj_geo1_Capture_kinect_attribwrangle1 (Sop/attribwrangle)
 set _obj_geo1_Capture_kinect_attribwrangle1 = `run("opadd -e -n -v attribwrangle attribwrangle1")`
-oplocate -x `$arg2 + 1.5555909999999999` -y `$arg3 + 2.2044300000000003` $_obj_geo1_Capture_kinect_attribwrangle1
+oplocate -x `$arg2 + 1.5555910034663827` -y `$arg3 + 0.70801272211799871` $_obj_geo1_Capture_kinect_attribwrangle1
 opspareds '    group { 	name	"folder1" 	label	"Code"  	parm { 	    name	"group" 	    baseparm 	    label	"Group" 	    export	none 	    bindselector points "Modify Points" 	        "Select the points to affect and press Enter to complete." 	        0 1 0xffffffff 0 grouptype 0 	} 	parm { 	    name	"grouptype" 	    baseparm 	    label	"Group Type" 	    export	none 	} 	parm { 	    name	"class" 	    baseparm 	    label	"Run Over" 	    export	none 	} 	parm { 	    name	"vex_numcount" 	    baseparm 	    label	"Number Count" 	    export	none 	} 	parm { 	    name	"vex_threadjobsize" 	    baseparm 	    label	"Thread Job Size" 	    export	none 	} 	parm { 	    name	"snippet" 	    baseparm 	    label	"VEXpression" 	    export	all 	} 	parm { 	    name	"exportlist" 	    baseparm 	    label	"Attributes to Create" 	    export	none 	} 	parm { 	    name	"vex_strict" 	    baseparm 	    label	"Enforce Prototypes" 	    export	none 	}     }      group { 	name	"folder1_1" 	label	"Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	} 	parm { 	    name	"vex_inplace" 	    baseparm 	    label	"Compute Results In Place" 	    export	none 	} 	parm { 	    name	"vex_selectiongroup" 	    baseparm 	    label	"Output Selection Group" 	    export	none 	}     }      parm { 	name	"div" 	label	"Div" 	type	float 	default	{ "0" } 	range	{ 0 1 }     } ' $_obj_geo1_Capture_kinect_attribwrangle1
 opparm $_obj_geo1_Capture_kinect_attribwrangle1  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_geo1_Capture_kinect_attribwrangle1 snippet ( '@P.y = -@P.y/ch("div");' ) div ( 1000 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_Capture_kinect_attribwrangle1 div
+chkey -t 0 -v 1000 -m 0 -a 0 -A 0 -T a  -F 'ch("../scale")' $_obj_geo1_Capture_kinect_attribwrangle1/div
+chblockend
+opparm $_obj_geo1_Capture_kinect_attribwrangle1 snippet ( '@P.y = @P.y*ch("div");' ) div ( div )
 opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_Capture_kinect_attribwrangle1
 opexprlanguage -s hscript $_obj_geo1_Capture_kinect_attribwrangle1
 opuserdata -n '___Version___' -v '' $_obj_geo1_Capture_kinect_attribwrangle1
+opuserdata -n '___toolcount___' -v '1' $_obj_geo1_Capture_kinect_attribwrangle1
+opuserdata -n '___toolid___' -v 'subnet5' $_obj_geo1_Capture_kinect_attribwrangle1
 opcf ..
 opcf $_obj_geo1_Capture_kinect
 
@@ -12846,18 +12854,22 @@ opparm -V 16.0.705 $_obj_geo1_Capture_kinect_grid1 size ( sizex 10 ) rows ( 424 
 opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_Capture_kinect_grid1
 opexprlanguage -s hscript $_obj_geo1_Capture_kinect_grid1
 opuserdata -n '___Version___' -v '16.0.705' $_obj_geo1_Capture_kinect_grid1
+opuserdata -n '___toolcount___' -v '1' $_obj_geo1_Capture_kinect_grid1
+opuserdata -n '___toolid___' -v 'subnet5' $_obj_geo1_Capture_kinect_grid1
 
 # Node $_obj_geo1_Capture_kinect_python1 (Sop/python)
 set _obj_geo1_Capture_kinect_python1 = `run("opadd -e -n -v python python1")`
-oplocate -x `$arg2 + 1.5585910000000001` -y `$arg3 + 3.5573690000000004` $_obj_geo1_Capture_kinect_python1
+oplocate -x `$arg2 + 1.5585910000000001` -y `$arg3 + 3.557369` $_obj_geo1_Capture_kinect_python1
 opparm -V 16.0.705 $_obj_geo1_Capture_kinect_python1 python ( '##########\n# 424 * 512 = 217,088\n##########\n\n\n\nimport socket\nimport time\n\nhost=\'127.0.0.1\'\n#host = \'10.0.2.131\'\nport = 8889\n\nserversock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nserversock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)\nserversock.bind((host,port))\nserversock.listen(1)\nprint (\'Waiting for connections...\')\nclientsock, client_address = serversock.accept()\nprint ("accept")\nmsg = bytearray()\nsendToHou =\'\'\n\nwhile True:\n    \n    data = clientsock.recv(4096)\n    \n    if not data:\n        break\n    #print str(\'Received -> %s\' % (data))\n    if "fin" in str(data):\n        msg += data\n        #print (str(data)),\n        sendToHou = msg\n        msg = bytearray()\n    else:\n        msg += data\n        pass\n\nprint ("end")\nclientsock.close()\nprint (len(str(sendToHou)))\n\n\n\n\n\ndef convertData(data):\n        valsStr = data.split(",")[0:-1]\n        length = len(valsStr)\n        print (length)\n        valsInt = []\n        for i in range(0, length):\n            valsInt.append(float(valsStr[i]))\n\n        return valsInt\n\n\n\nnode = hou.pwd()\ngeo = node.geometry()\n\nvalsInt = convertData(str(sendToHou))\n\n\ncount = 0\nfor pt in geo.points():\n    pos = pt.position()\n    pt.setPosition(hou.Vector3((pos.x(), valsInt[count], pos.z())))\n    count += 1\n\nprint "fin"' )
 opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_Capture_kinect_python1
 opexprlanguage -s hscript $_obj_geo1_Capture_kinect_python1
 opuserdata -n '___Version___' -v '16.0.705' $_obj_geo1_Capture_kinect_python1
+opuserdata -n '___toolcount___' -v '1' $_obj_geo1_Capture_kinect_python1
+opuserdata -n '___toolid___' -v 'subnet5' $_obj_geo1_Capture_kinect_python1
 
 # Node $_obj_geo1_Capture_kinect_switch1 (Sop/switch)
 set _obj_geo1_Capture_kinect_switch1 = `run("opadd -e -n -v switch switch1")`
-oplocate -x `$arg2 + 0` -y `$arg3 + 0.91255000000000042` $_obj_geo1_Capture_kinect_switch1
+oplocate -x `$arg2 + 3.4663828474279512e-09` -y `$arg3 + -0.58386727788200121` $_obj_geo1_Capture_kinect_switch1
 chblockbegin
 chadd -t 0 0 $_obj_geo1_Capture_kinect_switch1 input
 chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../capture")' $_obj_geo1_Capture_kinect_switch1/input
@@ -12865,23 +12877,43 @@ chblockend
 opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_Capture_kinect_switch1
 opexprlanguage -s hscript $_obj_geo1_Capture_kinect_switch1
 opuserdata -n '___Version___' -v '16.0.705' $_obj_geo1_Capture_kinect_switch1
+opuserdata -n '___toolcount___' -v '1' $_obj_geo1_Capture_kinect_switch1
+opuserdata -n '___toolid___' -v 'subnet5' $_obj_geo1_Capture_kinect_switch1
 
 # Node $_obj_geo1_Capture_kinect_output1 (Sop/output)
 set _obj_geo1_Capture_kinect_output1 = `run("opadd -e -n -v output output1")`
-oplocate -x `$arg2 + 9.313225829421512e-09` -y `$arg3 + -0.61335984822129352` $_obj_geo1_Capture_kinect_output1
+oplocate -x `$arg2 + 1.2779608676849452e-08` -y `$arg3 + -2.1097771261032912` $_obj_geo1_Capture_kinect_output1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_Capture_kinect_output1 outputidx
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'max(opdigits(".")-1,0)' $_obj_geo1_Capture_kinect_output1/outputidx
+chblockend
 opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_Capture_kinect_output1
 opexprlanguage -s hscript $_obj_geo1_Capture_kinect_output1
-oporder -e attribwrangle1 grid1 python1 switch1 output1 
+opuserdata -n '___toolcount___' -v '1' $_obj_geo1_Capture_kinect_output1
+opuserdata -n '___toolid___' -v 'subnet5' $_obj_geo1_Capture_kinect_output1
+
+# Node $_obj_geo1_Capture_kinect_transform1 (Sop/xform)
+set _obj_geo1_Capture_kinect_transform1 = `run("opadd -e -n -v xform transform1")`
+oplocate -x `$arg2 + 1.5585910000000001` -y `$arg3 + 2.0507000553094499` $_obj_geo1_Capture_kinect_transform1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_Capture_kinect_transform1 rz
+chkey -t 0 -v 180 -m 0 -a 0 -A 0 -T a  -F 'if(ch("../flip"),0,180)' $_obj_geo1_Capture_kinect_transform1/rz
+chblockend
+opparm -V 16.0.705 $_obj_geo1_Capture_kinect_transform1 r ( 0 0 rz )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_Capture_kinect_transform1
+opexprlanguage -s hscript $_obj_geo1_Capture_kinect_transform1
+oporder -e attribwrangle1 grid1 python1 switch1 output1 transform1 
 opcf ..
 opset -p on $_obj_geo1_Capture_kinect
 
 opcf $arg1
 opcf $_obj_geo1_Capture_kinect
-opwire -n $_obj_geo1_Capture_kinect_python1 -0 $_obj_geo1_Capture_kinect_attribwrangle1
+opwire -n $_obj_geo1_Capture_kinect_transform1 -0 $_obj_geo1_Capture_kinect_attribwrangle1
 opwire -n $_obj_geo1_Capture_kinect_grid1 -0 $_obj_geo1_Capture_kinect_python1
 opwire -n $_obj_geo1_Capture_kinect_grid1 -0 $_obj_geo1_Capture_kinect_switch1
 opwire -n $_obj_geo1_Capture_kinect_attribwrangle1 -1 $_obj_geo1_Capture_kinect_switch1
 opwire -n $_obj_geo1_Capture_kinect_switch1 -0 $_obj_geo1_Capture_kinect_output1
+opwire -n $_obj_geo1_Capture_kinect_python1 -0 $_obj_geo1_Capture_kinect_transform1
 opcf ..
 
 set oidx = 0
