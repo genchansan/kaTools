@@ -5,7 +5,7 @@ import socket
 import time
 
 ##########
-# 512 * 424 = 217,088
+# 424 * 512 = 217,088
 ##########
 
 
@@ -95,13 +95,15 @@ class TcpThread(Thread):
         valsInt = self.convertData(str(sendToHou))
         print "aa"
         self.parent.receivedData = valsInt
-        print "bb"
+        print ("bb %d", len(self.geo.points()))
         count = 0
         for pt in self.geo.points():
-            print type(valsInt[count])
             pos = pt.position()
-            pt.setPosition((pos.x, valsInt[count], pos.z))
+            pt.setPosition(hou.Vector3((pos.x(), valsInt[count], pos.z())))
+            #if valsInt[count] != 0:
+                #print valsInt[count]
             count += 1
+        print ("done %d", count)
 
 
     def convertData(self, data):

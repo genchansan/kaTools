@@ -1,0 +1,15 @@
+Y:\NoCreation\81_Kinect\KinectToHou\DepthBasics-WPF\bin\AnyCPU\Debug\DepthBasics-WPF.exe.config
+Y:\NoCreation\81_Kinect\KinectToHou\DepthBasics-WPF\bin\AnyCPU\Debug\DepthBasics-WPF.exe
+Y:\NoCreation\81_Kinect\KinectToHou\DepthBasics-WPF\bin\AnyCPU\Debug\DepthBasics-WPF.pdb
+Y:\NoCreation\81_Kinect\KinectToHou\DepthBasics-WPF\bin\AnyCPU\Debug\Microsoft.Kinect.dll
+Y:\NoCreation\81_Kinect\KinectToHou\DepthBasics-WPF\bin\AnyCPU\Debug\Microsoft.Kinect.xml
+Y:\NoCreation\81_Kinect\KinectToHou\DepthBasics-WPF\obj\Debug\DepthBasics-WPF.csprojResolveAssemblyReference.cache
+Y:\NoCreation\81_Kinect\KinectToHou\DepthBasics-WPF\obj\Debug\MainWindow.baml
+Y:\NoCreation\81_Kinect\KinectToHou\DepthBasics-WPF\obj\Debug\MainWindow.g.cs
+Y:\NoCreation\81_Kinect\KinectToHou\DepthBasics-WPF\obj\Debug\App.g.cs
+Y:\NoCreation\81_Kinect\KinectToHou\DepthBasics-WPF\obj\Debug\DepthBasics-WPF_MarkupCompile.cache
+Y:\NoCreation\81_Kinect\KinectToHou\DepthBasics-WPF\obj\Debug\DepthBasics-WPF.g.resources
+Y:\NoCreation\81_Kinect\KinectToHou\DepthBasics-WPF\obj\Debug\Microsoft.Samples.Kinect.DepthBasics.Properties.Resources.resources
+Y:\NoCreation\81_Kinect\KinectToHou\DepthBasics-WPF\obj\Debug\DepthBasics-WPF.csproj.GenerateResource.Cache
+Y:\NoCreation\81_Kinect\KinectToHou\DepthBasics-WPF\obj\Debug\DepthBasics-WPF.exe
+Y:\NoCreation\81_Kinect\KinectToHou\DepthBasics-WPF\obj\Debug\DepthBasics-WPF.pdb
