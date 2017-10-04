@@ -12827,7 +12827,7 @@ opcf $_obj_geo1_Capture_kinect
 
 # Node $_obj_geo1_Capture_kinect_attribwrangle1 (Sop/attribwrangle)
 set _obj_geo1_Capture_kinect_attribwrangle1 = `run("opadd -e -n -v attribwrangle attribwrangle1")`
-oplocate -x `$arg2 + 1.5555910034663827` -y `$arg3 + 0.70801272211799871` $_obj_geo1_Capture_kinect_attribwrangle1
+oplocate -x `$arg2 + -0.90038693771361999` -y `$arg3 + 0.72062300908309995` $_obj_geo1_Capture_kinect_attribwrangle1
 opspareds '    group { 	name	"folder1" 	label	"Code"  	parm { 	    name	"group" 	    baseparm 	    label	"Group" 	    export	none 	    bindselector points "Modify Points" 	        "Select the points to affect and press Enter to complete." 	        0 1 0xffffffff 0 grouptype 0 	} 	parm { 	    name	"grouptype" 	    baseparm 	    label	"Group Type" 	    export	none 	} 	parm { 	    name	"class" 	    baseparm 	    label	"Run Over" 	    export	none 	} 	parm { 	    name	"vex_numcount" 	    baseparm 	    label	"Number Count" 	    export	none 	} 	parm { 	    name	"vex_threadjobsize" 	    baseparm 	    label	"Thread Job Size" 	    export	none 	} 	parm { 	    name	"snippet" 	    baseparm 	    label	"VEXpression" 	    export	all 	} 	parm { 	    name	"exportlist" 	    baseparm 	    label	"Attributes to Create" 	    export	none 	} 	parm { 	    name	"vex_strict" 	    baseparm 	    label	"Enforce Prototypes" 	    export	none 	}     }      group { 	name	"folder1_1" 	label	"Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	} 	parm { 	    name	"vex_inplace" 	    baseparm 	    label	"Compute Results In Place" 	    export	none 	} 	parm { 	    name	"vex_selectiongroup" 	    baseparm 	    label	"Output Selection Group" 	    export	none 	}     }      parm { 	name	"div" 	label	"Div" 	type	float 	default	{ "0" } 	range	{ 0 1 }     } ' $_obj_geo1_Capture_kinect_attribwrangle1
 opparm $_obj_geo1_Capture_kinect_attribwrangle1  bindings ( 0 ) groupbindings ( 0 )
 chblockbegin
@@ -12845,7 +12845,7 @@ opcf $_obj_geo1_Capture_kinect
 
 # Node $_obj_geo1_Capture_kinect_grid1 (Sop/grid)
 set _obj_geo1_Capture_kinect_grid1 = `run("opadd -e -n -v grid grid1")`
-oplocate -x `$arg2 + 0` -y `$arg3 + 5.2176` $_obj_geo1_Capture_kinect_grid1
+oplocate -x `$arg2 + -2.45597794118` -y `$arg3 + 5.2302102869651002` $_obj_geo1_Capture_kinect_grid1
 chblockbegin
 chadd -t 0 0 $_obj_geo1_Capture_kinect_grid1 sizex
 chkey -t 0 -v 10 -m 0 -a 0 -A 0 -T a  -F 10/424*512 $_obj_geo1_Capture_kinect_grid1/sizex
@@ -12859,8 +12859,8 @@ opuserdata -n '___toolid___' -v 'subnet5' $_obj_geo1_Capture_kinect_grid1
 
 # Node $_obj_geo1_Capture_kinect_python1 (Sop/python)
 set _obj_geo1_Capture_kinect_python1 = `run("opadd -e -n -v python python1")`
-oplocate -x `$arg2 + 1.5585910000000001` -y `$arg3 + 3.557369` $_obj_geo1_Capture_kinect_python1
-opparm -V 16.0.705 $_obj_geo1_Capture_kinect_python1 python ( '##########\n# 424 * 512 = 217,088\n##########\n\n\n\nimport socket\nimport time\n\nhost=\'127.0.0.1\'\n#host = \'10.0.2.131\'\nport = 8889\n\nserversock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nserversock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)\nserversock.bind((host,port))\nserversock.listen(1)\nprint (\'Waiting for connections...\')\nclientsock, client_address = serversock.accept()\nprint ("accept")\nmsg = bytearray()\nsendToHou =\'\'\n\nwhile True:\n    \n    data = clientsock.recv(4096)\n    \n    if not data:\n        break\n    #print str(\'Received -> %s\' % (data))\n    if "fin" in str(data):\n        msg += data\n        #print (str(data)),\n        sendToHou = msg\n        msg = bytearray()\n    else:\n        msg += data\n        pass\n\nprint ("end")\nclientsock.close()\nprint (len(str(sendToHou)))\n\n\n\n\n\ndef convertData(data):\n        valsStr = data.split(",")[0:-1]\n        length = len(valsStr)\n        print (length)\n        valsInt = []\n        for i in range(0, length):\n            valsInt.append(float(valsStr[i]))\n\n        return valsInt\n\n\n\nnode = hou.pwd()\ngeo = node.geometry()\n\nvalsInt = convertData(str(sendToHou))\n\n\ncount = 0\nfor pt in geo.points():\n    pos = pt.position()\n    pt.setPosition(hou.Vector3((pos.x(), valsInt[count], pos.z())))\n    count += 1\n\nprint "fin"' )
+oplocate -x `$arg2 + -0.89738694117999995` -y `$arg3 + 3.5699792869651001` $_obj_geo1_Capture_kinect_python1
+opparm -V 16.0.705 $_obj_geo1_Capture_kinect_python1 python ( 'import hou\nimport toolutils\n\nimport socket\nimport time\n\n##########\n# 424 * 512 = 217,088\n##########\n\n\nclass tcp():\n    def __init__(self, geo):\n        self.geo = geo\n        pass\n\n    def onConnectClicked(self):\n        host=\'127.0.0.1\'\n        port = 8889\n\n        self.receivedData = []\n\n        self.serversock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n        self.serversock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)\n        self.serversock.bind((host,port))\n        self.serversock.listen(1)\n\n        self.recvThread = TcpThread(self, self.serversock, self.geo)\n\n\n    def onDisconnectClicked(self):\n        print "disconnect"\n        self.serversock.close()\n\n    def onCaptureDataClicked(self):\n        self.receivedData\n\n\n    def convertData(data):\n        valsStr = data.split(",")[0:-1]\n        valsInt = []\n        length = len(valsStr)\n        for i in range(0,length - 1):\n            valsInt[i] = int(valsStr[i])\n\n        return valsInt\n\n\n\n\n\nfrom threading import Thread\n\nclass TcpThread(Thread):\n\n    sendToHou =\'\'\n\n    def __init__(self, parent, sock, geo):\n        Thread.__init__(self)\n        self.sock =sock\n        self.parent = parent\n        self.geo = geo\n\n        self.setDaemon(True)\n        self.start()\n\n    def run(self):\n        print (\'Waiting for connections...\')\n        clientsock, client_address = self.sock.accept()\n        print ("accept")\n        msg = bytearray()\n        count = 0\n\n        while True:\n            \n            data = clientsock.recv(4096)\n            \n            if not data:\n                break\n            #print str(\'Received -> %s\' % (data))\n            if "fin" in str(data):\n                msg += data\n                #print (str(data)),\n                self.sendToHou = msg\n                if count %20 == 0:\n                    self.applyData()\n                msg = bytearray()\n            else:\n                msg += data\n                pass\n\n            count+=1\n\n        try:\n            self.socket.shutdown(socket.SHUT_RDWR)\n        except:\n            pass\n\n        print ("end")\n        self.sock.close()\n        #print (len(str(self.sendToHou)))\n        print ("done %d", count)\n\n\n    def applyData(self):\n        valsInt = self.convertData(str(self.sendToHou))\n        #self.parent.receivedData = valsInt\n\n        count = 0\n        for pt in geo.points():\n            pos = pt.position()\n            pt.setPosition(hou.Vector3((pos.x(), valsInt[count], pos.z())))\n            count += 1\n        \n        hou.node("/obj/geo1/Capture_kinect/transform1").cook(True)\n\n\n    def convertData(self, data):\n        valsStr = data.split(",")[0:-1]\n        length = len(valsStr)\n        print (length)\n        valsInt = []\n        for i in range(0, length):\n            valsInt.append(float(valsStr[i]))\n\n        return valsInt\n\nglobal geo\nglobal node\n\nnode = hou.pwd()\ngeo = node.geometry()\n\ntcp = tcp(geo)\ntcp.onConnectClicked()\n\n\n' )
 opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_Capture_kinect_python1
 opexprlanguage -s hscript $_obj_geo1_Capture_kinect_python1
 opuserdata -n '___Version___' -v '16.0.705' $_obj_geo1_Capture_kinect_python1
@@ -12869,7 +12869,7 @@ opuserdata -n '___toolid___' -v 'subnet5' $_obj_geo1_Capture_kinect_python1
 
 # Node $_obj_geo1_Capture_kinect_switch1 (Sop/switch)
 set _obj_geo1_Capture_kinect_switch1 = `run("opadd -e -n -v switch switch1")`
-oplocate -x `$arg2 + 3.4663828474279512e-09` -y `$arg3 + -0.58386727788200121` $_obj_geo1_Capture_kinect_switch1
+oplocate -x `$arg2 + -2.4559779377136` -y `$arg3 + -0.57125699091689996` $_obj_geo1_Capture_kinect_switch1
 chblockbegin
 chadd -t 0 0 $_obj_geo1_Capture_kinect_switch1 input
 chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../capture")' $_obj_geo1_Capture_kinect_switch1/input
@@ -12882,7 +12882,7 @@ opuserdata -n '___toolid___' -v 'subnet5' $_obj_geo1_Capture_kinect_switch1
 
 # Node $_obj_geo1_Capture_kinect_output1 (Sop/output)
 set _obj_geo1_Capture_kinect_output1 = `run("opadd -e -n -v output output1")`
-oplocate -x `$arg2 + 1.2779608676849452e-08` -y `$arg3 + -2.1097771261032912` $_obj_geo1_Capture_kinect_output1
+oplocate -x `$arg2 + -2.4559779284004` -y `$arg3 + -2.0971668391381999` $_obj_geo1_Capture_kinect_output1
 chblockbegin
 chadd -t 0 0 $_obj_geo1_Capture_kinect_output1 outputidx
 chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'max(opdigits(".")-1,0)' $_obj_geo1_Capture_kinect_output1/outputidx
@@ -12894,7 +12894,7 @@ opuserdata -n '___toolid___' -v 'subnet5' $_obj_geo1_Capture_kinect_output1
 
 # Node $_obj_geo1_Capture_kinect_transform1 (Sop/xform)
 set _obj_geo1_Capture_kinect_transform1 = `run("opadd -e -n -v xform transform1")`
-oplocate -x `$arg2 + 1.5585910000000001` -y `$arg3 + 2.0507000553094499` $_obj_geo1_Capture_kinect_transform1
+oplocate -x `$arg2 + -0.89738694117999995` -y `$arg3 + 2.0633103422746002` $_obj_geo1_Capture_kinect_transform1
 chblockbegin
 chadd -t 0 0 $_obj_geo1_Capture_kinect_transform1 rz
 chkey -t 0 -v 180 -m 0 -a 0 -A 0 -T a  -F 'if(ch("../flip"),0,180)' $_obj_geo1_Capture_kinect_transform1/rz

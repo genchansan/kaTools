@@ -52,6 +52,9 @@ class tcp():
 from threading import Thread
 
 class TcpThread(Thread):
+
+    sendToHou =''
+
     def __init__(self, parent, sock, geo):
         Thread.__init__(self)
         self.sock =sock
@@ -66,7 +69,7 @@ class TcpThread(Thread):
         clientsock, client_address = self.sock.accept()
         print ("accept")
         msg = bytearray()
-        sendToHou =''
+        count = 0
 
         while True:
             
@@ -78,11 +81,15 @@ class TcpThread(Thread):
             if "fin" in str(data):
                 msg += data
                 #print (str(data)),
-                sendToHou = msg
+                self.sendToHou = msg
+                if count %20 == 0:
+                    self.applyData()
                 msg = bytearray()
             else:
                 msg += data
                 pass
+
+            count+=1
 
         try:
             self.socket.shutdown(socket.SHUT_RDWR)
@@ -91,19 +98,21 @@ class TcpThread(Thread):
 
         print ("end")
         self.sock.close()
-        #print (len(str(sendToHou)))
-        valsInt = self.convertData(str(sendToHou))
-        print "aa"
-        self.parent.receivedData = valsInt
-        print ("bb %d", len(self.geo.points()))
+        #print (len(str(self.sendToHou)))
+        print ("done %d", count)
+
+
+    def applyData(self):
+        valsInt = self.convertData(str(self.sendToHou))
+        #self.parent.receivedData = valsInt
+
         count = 0
-        for pt in self.geo.points():
+        for pt in geo.points():
             pos = pt.position()
             pt.setPosition(hou.Vector3((pos.x(), valsInt[count], pos.z())))
-            #if valsInt[count] != 0:
-                #print valsInt[count]
             count += 1
-        print ("done %d", count)
+        
+        hou.node("/obj/geo1/Capture_kinect/transform1").cook(True)
 
 
     def convertData(self, data):
@@ -116,8 +125,8 @@ class TcpThread(Thread):
 
         return valsInt
 
-
-
+global geo
+global node
 
 node = hou.pwd()
 geo = node.geometry()

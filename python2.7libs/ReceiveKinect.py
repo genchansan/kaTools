@@ -2,6 +2,7 @@ import hou
 import toolutils
 import addExpression
 from PySide2 import QtWidgets, QtCore, QtGui
+from PySide2.QtNetwork import *
 
 import socket
 import time
@@ -30,27 +31,62 @@ class pickerWidget(QtWidgets.QFrame):
 
 
     def onConnectClicked(self):
-        self.serversock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.serversock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.serversock.bind((host,port))
-        self.serversock.listen(1)
+        #self.serversock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #self.serversock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        #self.serversock.bind((host,port))
+        #self.serversock.listen(1)
 
         self.recvThread = TcpThread(self, self.serversock)
+        
+        self.server = QtNetwork.QTcpServer(self)
+        
+        if not self.server.listen(QtNetwork.QHostAddress("127.0.0.1"), 8889):
+            print("cannot connect")
+            return
+
+        self.server.newConnection.connect(self.onNewConnection)
+
+
+    def onNewConnection(self):
+        self.clientConnection = self.server.nextPendingConnection()
+        self.clientConnection.disconnected.connect(self.clientConnection.deleteLater)
+        self.clientConnection.readyRead.connect(self.onRead)
+        #clientConnection.write(block)
+        #clientConnection.disconnectFromHost()
+
+
+    def onRead(self):
 
 
     def onDisconnectClicked(self):
         print "disconnect"
 
     def onCaptureDataClicked(self):
-        dataVals = self.convertData(self.receivedData)
+        dataVals = self.convertData(str(self.receivedData)
 
 
     def convertData(data):
         valsStr = data.split(",")[0:-1]
-        valsInt = []
         length = len(valsStr)
-        for i in range(0,length - 1):
-            valsInt[i] = int(valsStr[i])
+        print (length)
+        valsInt = []
+        for i in range(0, length):
+            valsInt.append(float(valsStr[i]))
+
+        return valsInt
+
+
+
+####################################################
+
+
+
+    
+
+
+
+
+####################################################
 
 
 
@@ -76,7 +112,7 @@ class TcpThread(Thread):
         clientsock, client_address = self.serversock.accept()
         print ("accept")
         msg = bytearray()
-        sendToHou =''
+        #sendToHou =''
 
         while True:
             
@@ -88,7 +124,7 @@ class TcpThread(Thread):
             if "fin" in str(data):
                 msg += data
                 #print (str(data)),
-                sendToHou = msg
+                #sendToHou = msg
                 self.widget.receivedData = msg
                 msg = bytearray()
             else:
@@ -102,7 +138,7 @@ class TcpThread(Thread):
 
         print ("end")
         clientsock.close()
-        print (len(str(sendToHou)))
+        print (len(str(self.widget.receivedData)))
 
 
 
