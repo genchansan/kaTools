@@ -68,6 +68,9 @@ namespace Microsoft.Samples.Kinect.DepthBasics
 
         private ushort[] depth = null;
 
+        double passedTime = 0;
+        int sendFps = 2;
+
         #endregion
 
         public MainWindow()
@@ -261,15 +264,25 @@ namespace Microsoft.Samples.Kinect.DepthBasics
                             {
                                 tcp.sMsg.Clear();
                             }
-                            
+
+
+                            double timeInc = depthFrame.RelativeTime.Milliseconds / 1000.0d;
+                            this.passedTime += timeInc;
 
                             this.ProcessDepthFrameData(depthBuffer.UnderlyingBuffer, depthBuffer.Size, depthFrame.DepthMinReliableDistance, maxDepth);
                             depthFrameProcessed = true;
 
-                            //Console.WriteLine(tcp.sMsg);
-                            if (tcp.sMsg.Length != 0)
+                            
+
+                            if(this.passedTime > this.sendFps)
                             {
-                                tcp.TcpSend();
+                                this.passedTime = 0;
+                                //Console.WriteLine(tcp.sMsg);
+                                if (tcp.sMsg.Length != 0)
+                                {
+                                    tcp.TcpSend();
+
+                                }
                             }
 
                         }
@@ -308,9 +321,11 @@ namespace Microsoft.Samples.Kinect.DepthBasics
                 // Values outside the reliable depth range are mapped to 0 (black).
                 this.depthPixels[i] = (byte)(depth >= minDepth && depth <= maxDepth ? (depth / MapDepthToByte) : 0);
 
-
-                tcp.sMsg.Append(depth).Append(",");
-                this.depth[i] = depth;
+                if (this.passedTime > this.sendFps)
+                {
+                    tcp.sMsg.Append(depth).Append(",");
+                    //this.depth[i] = depth;
+                }
             }
         }
 

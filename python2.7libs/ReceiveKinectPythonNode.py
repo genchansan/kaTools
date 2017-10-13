@@ -1,6 +1,5 @@
 import hou
 import toolutils
-
 import socket
 import time
 
@@ -10,13 +9,15 @@ import time
 
 
 class tcp():
-    def __init__(self, geo):
+    def __init__(self, geo, address, port):
         self.geo = geo
-        pass
+        self.address = address
+        self.port = port
+
 
     def onConnectClicked(self):
-        host='127.0.0.1'
-        port = 8889
+        host=self.address
+        port = self.port
 
         self.receivedData = []
 
@@ -36,24 +37,14 @@ class tcp():
         self.receivedData
 
 
-    def convertData(data):
-        valsStr = data.split(",")[0:-1]
-        valsInt = []
-        length = len(valsStr)
-        for i in range(0,length - 1):
-            valsInt[i] = int(valsStr[i])
-
-        return valsInt
-
-
-
+####################################################
 
 
 from threading import Thread
 
 class TcpThread(Thread):
 
-    sendToHou =''
+    sendToHou = ''
 
     def __init__(self, parent, sock, geo):
         Thread.__init__(self)
@@ -69,7 +60,7 @@ class TcpThread(Thread):
         clientsock, client_address = self.sock.accept()
         print ("accept")
         msg = bytearray()
-        count = 0
+        #count = 0
 
         while True:
             
@@ -81,15 +72,18 @@ class TcpThread(Thread):
             if "fin" in str(data):
                 msg += data
                 #print (str(data)),
-                self.sendToHou = msg
-                if count %20 == 0:
-                    self.applyData()
+                self.sendToHou += str(msg)
+
+                self.applyData()
+
+
                 msg = bytearray()
+                
             else:
                 msg += data
                 pass
 
-            count+=1
+            #count+=1
 
         try:
             self.socket.shutdown(socket.SHUT_RDWR)
@@ -98,13 +92,17 @@ class TcpThread(Thread):
 
         print ("end")
         self.sock.close()
-        #print (len(str(self.sendToHou)))
-        print ("done %d", count)
+        #print (len(self.sendToHou))
+        print ("done")
 
 
     def applyData(self):
-        valsInt = self.convertData(str(self.sendToHou))
-        #self.parent.receivedData = valsInt
+        valsInt = self.convertData(self.sendToHou)
+        if valsInt == None:
+            return
+        elif len(valsInt) !=  217088:
+            print ("short length")
+            return
 
         count = 0
         for pt in geo.points():
@@ -112,26 +110,41 @@ class TcpThread(Thread):
             pt.setPosition(hou.Vector3((pos.x(), valsInt[count], pos.z())))
             count += 1
         
-        hou.node("/obj/geo1/Capture_kinect/transform1").cook(True)
+        xformNode.cook(True)
 
 
     def convertData(self, data):
-        valsStr = data.split(",")[0:-1]
+        split = data.split("fin")
+        self.sendToHou = split[1]
+        valsStr = split[0].split(",")
         length = len(valsStr)
-        print (length)
+        #print (length)
         valsInt = []
-        for i in range(0, length):
-            valsInt.append(float(valsStr[i]))
+        for i in range(0, length-1):
+            try:
+                valsInt.append(float(valsStr[i]))
+            except ex:
+                print "error: to make array"
+                return None
 
         return valsInt
 
+
+####################################################
+        
 global geo
-global node
+global xformNode
+
 
 node = hou.pwd()
 geo = node.geometry()
+xformNode = hou.node("../null1")
+address = node.parm("address").eval()
+port = node.parm("port").eval()
 
-tcp = tcp(geo)
-tcp.onConnectClicked()
+
+if node.parm("enable_capture").eval() == 1:
+    tcpsock = tcp(geo, address, port)
+    tcpsock.onConnectClicked()
 
 
