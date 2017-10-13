@@ -200,4 +200,14 @@ if(dot<ch("val"))removepoint(geoself(),@ptnum);]]></expression>
   <set name="print" category="debug">
     <expression><![CDATA[printf("aa");]]></expression>
   </set>
+  <set name="create nextid" category="atr">
+    <expression><![CDATA[i@nextid=@numpt;]]></expression>
+  </set>
+  <set name="copy atr randomly" category="atr">
+    <expression><![CDATA[int nunique = nuniqueval(1, "point", chs("search_atr"));
+float rand = rand((i@ptnum + ch("seed")+0.21) + (ch("seed")));
+rand = fit01(rand, 0, nunique);
+
+i@ = uniqueval(1, "point", chs("search_atr"), floor(rand));]]></expression>
+  </set>
 </expressionSets>
