@@ -210,4 +210,33 @@ rand = fit01(rand, 0, nunique);
 
 i@ = uniqueval(1, "point", chs("search_atr"), floor(rand));]]></expression>
   </set>
+  <set name="remove points by frames" category="del">
+    <expression><![CDATA[int num = chi("del_frames");
+int kill = 0;
+
+for(int i = 0; i < num; i++)
+{
+    float frame = ch("frame" + itoa(i+1));
+    if(@Frame == frame)
+    {
+        kill=1;
+        break;
+    }
+}
+if(kill == 0)removepoint(geoself(),@ptnum);]]></expression>
+  </set>
+  <set name="mix p by frame" category="edit">
+    <expression><![CDATA[float bias;
+
+bias = fit(@Frame, ch("start_frame"), ch("emit_frame"),0,1);
+
+@P = lerp(@P, v@opinput1_P, bias);]]></expression>
+  </set>
+  <set name="near point" category="edit">
+    <expression><![CDATA[int nearPt = nearpoint(1, @P);
+vector nearP = point(1, "P",nearPt);]]></expression>
+  </set>
+  <set name="delete by speed" category="del">
+    <expression><![CDATA[if(length(@v)<ch("min_speed"))removepoint(geoself(),@ptnum);]]></expression>
+  </set>
 </expressionSets>
