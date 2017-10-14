@@ -17,7 +17,6 @@
     <memberTool name="recursiveReferenceCopy"/>
     <memberTool name="remesh_for_deforming_geo"/>
     <memberTool name="subnet0"/>
-    <memberTool name="subnet1"/>
     <memberTool name="python"/>
     <memberTool name="timeblend"/>
     <memberTool name="GET_all_frames_geo0"/>
@@ -25,6 +24,7 @@
     <memberTool name="nonP_trans"/>
     <memberTool name="pick_up_atr_val_is_1"/>
     <memberTool name="uv_fixer"/>
+    <memberTool name="GET_interporation_by_id"/>
   </toolshelf>
 
   <tool name="add_event_when_created" label="add_event_when_created" icon="PLASMA_App">
@@ -849,344 +849,6 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
 ]]></script>
   </tool>
 
-  <tool name="subnet1" label="GET_interporation_by_id" icon="SOP_subnet">
-    <helpURL>operator:Sop/subnet</helpURL>
-    <toolMenuContext name="network">
-      <contextOpType>Sop/subnet</contextOpType>
-    </toolMenuContext>
-    <script scriptType="python"><![CDATA[
-import sys
-import toolutils
-
-outputitem = None
-inputindex = -1
-inputitem = None
-outputindex = -1
-
-num_args = 1
-h_extra_args = ''
-pane = toolutils.activePane(kwargs)
-if not isinstance(pane, hou.NetworkEditor):
-    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
-    if pane is None:
-       hou.ui.displayMessage(
-               'Cannot create node: cannot find any network pane')
-       sys.exit(0)
-else: # We're creating this tool from the TAB menu inside a network editor
-    pane_node = pane.pwd()
-    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
-        outputitem = pane_node.item(kwargs["outputnodename"])
-        inputindex = kwargs["inputindex"]
-        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
-        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
-        num_args = 6
-    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
-        inputitem = pane_node.item(kwargs["inputnodename"])
-        outputindex = kwargs["outputindex"]
-        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
-        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
-        num_args = 9 
-    if kwargs.has_key("autoplace"):
-        autoplace = kwargs["autoplace"]
-    else:
-        autoplace = False
-    # If shift-clicked we want to auto append to the current
-    # node
-    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
-        if inputitem is None:
-            inputitem = pane.currentNode()
-            outputindex = 0
-    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
-        try:
-            pos = [ float( kwargs["nodepositionx"] ),
-                    float( kwargs["nodepositiony"] )]
-        except:
-            pos = None
-    else:
-        pos = None
-
-    if not autoplace and not pane.listMode():
-        if pos is not None:
-            pass
-        elif outputitem is None:
-            pos = pane.selectPosition(inputitem, outputindex, None, -1)
-        else:
-            pos = pane.selectPosition(inputitem, outputindex,
-                                      outputitem, inputindex)
-
-    if pos is not None:
-        if kwargs.has_key("node_bbox"):
-            size = kwargs["node_bbox"]
-            pos[0] -= size[0] / 2
-            pos[1] -= size[1] / 2
-        else:
-            pos[0] -= 0.573625
-            pos[1] -= 0.220625
-        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
-        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
-h_extra_args += 'set argc = "' + str(num_args) + '"\n'
-            
-pane_node = pane.pwd()
-child_type = pane_node.childTypeCategory().nodeTypes()
-
-if not child_type.has_key('subnet'):
-   hou.ui.displayMessage(
-           'Cannot create node: incompatible pane network type')
-   sys.exit(0)
-
-# First clear the node selection
-pane_node.setSelected(False, True)
-
-h_path = pane_node.path()
-h_preamble = 'set arg1 = "' + h_path + '"\n'
-h_cmd = r''' 
-if ($argc < 2 || "$arg2" == "") then
-   set arg2 = 0
-endif
-if ($argc < 3 || "$arg3" == "") then
-   set arg3 = 0
-endif
-# Automatically generated script
-# $arg1 - the path to add this node
-# $arg2 - x position of the tile
-# $arg3 - y position of the tile
-# $arg4 - input node to wire to
-# $arg5 - which input to wire to
-# $arg6 - output node to wire to
-# $arg7 - the type of this node
-# $arg8 - the node is an indirect input
-# $arg9 - index of output from $arg6
-
-\set noalias = 1
-set saved_path = `execute("oppwf")`
-opcf $arg1
-
-# Node $_obj_geo1_GET_interporation_by_id (Sop/subnet)
-set _obj_geo1_GET_interporation_by_id = `run("opadd -e -n -v subnet GET_interporation_by_id")`
-oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_GET_interporation_by_id
-opspareds '    parm { 	name	"label1" 	baseparm 	label	"Input #1 Label" 	invisible 	export	dialog     }     parm { 	name	"label2" 	baseparm 	label	"Input #2 Label" 	invisible 	export	dialog     }     parm { 	name	"label3" 	baseparm 	label	"Input #3 Label" 	invisible 	export	dialog     }     parm { 	name	"label4" 	baseparm 	label	"Input #4 Label" 	invisible 	export	dialog     }     parm { 	name	"match_by_id" 	label	"match_by_id" 	type	toggle 	default	{ "1" } 	range	{ 0! 10 } 	parmtag	{ "autoscope" "0000000000000000" }     }     parm { 	name	"id_atr" 	label	"id_atr" 	type	string 	default	{ "id" } 	range	{ 0 1 } 	parmtag	{ "autoscope" "0000000000000000" }     } ' $_obj_geo1_GET_interporation_by_id
-opcolor -c 0.86699998378753662 0 0 $_obj_geo1_GET_interporation_by_id
-opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_GET_interporation_by_id
-opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id
-opcf $_obj_geo1_GET_interporation_by_id
-
-# Node $_obj_geo1_GET_interporation_by_id_interporation_by_id (Sop/attribwrangle)
-set _obj_geo1_GET_interporation_by_id_interporation_by_id = `run("opadd -e -n -v attribwrangle interporation_by_id")`
-oplocate -x `$arg2 + -0.0030000111758708981` -y `$arg3 + -3.6293055612140224` $_obj_geo1_GET_interporation_by_id_interporation_by_id
-opspareds '    group { 	name	"folder1" 	label	"Code"  	parm { 	    name	"group" 	    baseparm 	    label	"Group" 	    export	none 	    bindselector points "Modify Points" 	        "Select the points to affect and press Enter to complete." 	        0 1 0xffffffff 0 grouptype 0 	} 	parm { 	    name	"grouptype" 	    baseparm 	    label	"Group Type" 	    export	none 	} 	parm { 	    name	"class" 	    baseparm 	    label	"Run Over" 	    export	none 	} 	parm { 	    name	"vex_numcount" 	    baseparm 	    label	"Number Count" 	    export	none 	} 	parm { 	    name	"vex_threadjobsize" 	    baseparm 	    label	"Thread Job Size" 	    export	none 	} 	parm { 	    name	"snippet" 	    baseparm 	    label	"VEXpression" 	    export	all 	} 	parm { 	    name	"exportlist" 	    baseparm 	    label	"Attributes to Create" 	    export	none 	} 	parm { 	    name	"vex_strict" 	    baseparm 	    label	"Enforce Prototypes" 	    export	none 	}     }      group { 	name	"folder1_1" 	label	"Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	} 	parm { 	    name	"vex_inplace" 	    baseparm 	    label	"Compute Results In Place" 	    export	none 	} 	parm { 	    name	"vex_selectiongroup" 	    baseparm 	    label	"Output Selection Group" 	    export	none 	}     }      parm { 	name	"second_previous_frame" 	label	"Second Previous Frame" 	type	oppath 	default	{ "" } 	parmtag	{ "oprelative" "." }     } ' $_obj_geo1_GET_interporation_by_id_interporation_by_id
-opparm $_obj_geo1_GET_interporation_by_id_interporation_by_id  bindings ( 0 ) groupbindings ( 0 )
-chblockbegin
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_interporation_by_id vex_matchattrib
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'chs("../id_atr")' $_obj_geo1_GET_interporation_by_id_interporation_by_id/vex_matchattrib
-chblockend
-opparm $_obj_geo1_GET_interporation_by_id_interporation_by_id snippet ( 'vector p = @P;\nvector prevPrevP = @P;\nvector prevP = @P;\nvector nextP = @P;\nvector nextNextP = @P;\n\nint idPt = findattribval(1,"point",chs("vex_matchattrib"),i@`chs("vex_matchattrib")`,0);\nif(idPt != -1)\n{\n    prevP = v@opinput1_P;\n}\n\nidPt = findattribval(2,"point",chs("vex_matchattrib"),i@`chs("vex_matchattrib")`,0);\nif(idPt != -1)\n{\n    nextP = v@opinput2_P;\n}\n\nidPt = findattribval(3,"point",chs("vex_matchattrib"),i@`chs("vex_matchattrib")`,0);\nif(idPt != -1)\n{\n    nextNextP = v@opinput3_P;\n}\n\nidPt = findattribval("op:" + chs("second_previous_frame"),"point",chs("vex_matchattrib"),i@`chs("vex_matchattrib")`,0);\nif(idPt != -1)\n{\n    prevPrevP = point("op:" + chs("second_previous_frame"),"P", idPt);\n}\n\nvector arrayP[];\nif(rint(@Frame)==floor(@Frame))\n{\n    arrayP = vector[](array(prevP,p,nextP,nextNextP));\n}\nelse\n{\n    arrayP = vector[](array(prevPrevP,prevP,p,nextP));\n}\n\n@P = spline("cubic",frac(@Frame),arrayP);' ) vex_matchattrib ( vex_matchattrib ) folder1 ( 1 1 ) second_previous_frame ( ../OUT_prevPrev_f )
-opcolor -c 1 0.80000001192092896 0 $_obj_geo1_GET_interporation_by_id_interporation_by_id
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_GET_interporation_by_id_interporation_by_id
-opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_interporation_by_id
-opuserdata -n '___Version___' -v '' $_obj_geo1_GET_interporation_by_id_interporation_by_id
-
-# Node $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum (Sop/attribwrangle)
-set _obj_geo1_GET_interporation_by_id_interporation_by_ptnum = `run("opadd -e -n -v attribwrangle interporation_by_ptnum")`
-oplocate -x `$arg2 + 4.1869576662367223` -y `$arg3 + -3.6293055612140224` $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
-opspareds '    group { 	name	"folder1" 	label	"Code"  	parm { 	    name	"group" 	    baseparm 	    label	"Group" 	    export	none 	    bindselector points "Modify Points" 	        "Select the points to affect and press Enter to complete." 	        0 1 0xffffffff 0 grouptype 0 	} 	parm { 	    name	"grouptype" 	    baseparm 	    label	"Group Type" 	    export	none 	} 	parm { 	    name	"class" 	    baseparm 	    label	"Run Over" 	    export	none 	} 	parm { 	    name	"vex_numcount" 	    baseparm 	    label	"Number Count" 	    export	none 	} 	parm { 	    name	"vex_threadjobsize" 	    baseparm 	    label	"Thread Job Size" 	    export	none 	} 	parm { 	    name	"snippet" 	    baseparm 	    label	"VEXpression" 	    export	all 	} 	parm { 	    name	"exportlist" 	    baseparm 	    label	"Attributes to Create" 	    export	none 	} 	parm { 	    name	"vex_strict" 	    baseparm 	    label	"Enforce Prototypes" 	    export	none 	}     }      group { 	name	"folder1_1" 	label	"Bindings"  	parm { 	    name	"autobind" 	    baseparm 	    label	"Autobind by Name" 	    export	none 	} 	multiparm { 	    name	"bindings" 	    label	"Number of Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindname#" 		baseparm 		label	"Attribute Name" 		export	none 	    } 	    parm { 		name	"bindparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"groupautobind" 	    baseparm 	    label	"Autobind Groups by Name" 	    export	none 	} 	multiparm { 	    name	"groupbindings" 	    label	"Group Bindings" 	    baseparm 	    default	0 	    parmtag	{ "autoscope" "0000000000000000" } 	    parmtag	{ "multistartoffset" "1" }  	    parm { 		name	"bindgroupname#" 		baseparm 		label	"Group Name" 		export	none 	    } 	    parm { 		name	"bindgroupparm#" 		baseparm 		label	"VEX Parameter" 		export	none 	    } 	}  	parm { 	    name	"vex_cwdpath" 	    baseparm 	    label	"Evaluation Node Path" 	    export	none 	} 	parm { 	    name	"vex_outputmask" 	    baseparm 	    label	"Export Parameters" 	    export	none 	} 	parm { 	    name	"vex_updatenmls" 	    baseparm 	    label	"Update Normals If Displaced" 	    export	none 	} 	parm { 	    name	"vex_matchattrib" 	    baseparm 	    label	"Attribute to Match" 	    export	none 	} 	parm { 	    name	"vex_inplace" 	    baseparm 	    label	"Compute Results In Place" 	    export	none 	} 	parm { 	    name	"vex_selectiongroup" 	    baseparm 	    label	"Output Selection Group" 	    export	none 	}     }      parm { 	name	"second_previous_frame" 	label	"Second Previous Frame" 	type	oppath 	default	{ "" } 	parmtag	{ "oprelative" "." }     } ' $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
-opparm $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum  bindings ( 0 ) groupbindings ( 0 )
-opparm $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum snippet ( 'vector p = @P;\nvector prevPrevP = @P;\nvector prevP = @P;\nvector nextP = @P;\nvector nextNextP = @P;\n\nprevP = point(1,"P",@ptnum);\n\nnextP = point(2,"P",@ptnum);\n\nnextNextP = point(3,"P",@ptnum);\n\nprevPrevP = point("op:" + chs("second_previous_frame"),"P", @ptnum);\n\n\nvector arrayP[];\nif(rint(@Frame)==floor(@Frame))\n{\n    arrayP = vector[](array(prevP,p,nextP,nextNextP));\n}\nelse\n{\n    arrayP = vector[](array(prevPrevP,prevP,p,nextP));\n}\n\n@P = spline("cubic",frac(@Frame),arrayP);' ) second_previous_frame ( ../OUT_prevPrev_f )
-opcolor -c 1 0.80000001192092896 0 $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
-opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
-opuserdata -n '___Version___' -v '' $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
-opcf ..
-opcf $_obj_geo1_GET_interporation_by_id
-
-# Node $_obj_geo1_GET_interporation_by_id_current_f (Sop/timeshift)
-set _obj_geo1_GET_interporation_by_id_current_f = `run("opadd -e -n -v timeshift current_f")`
-oplocate -x `$arg2 + -1.1175870895385742e-08` -y `$arg3 + 1.0738444387859776` $_obj_geo1_GET_interporation_by_id_current_f
-chblockbegin
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_current_f frame
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'round($FF)' $_obj_geo1_GET_interporation_by_id_current_f/frame
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_current_f time
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_GET_interporation_by_id_current_f/time
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_current_f frange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_GET_interporation_by_id_current_f/frange1
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_current_f frange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_GET_interporation_by_id_current_f/frange2
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_current_f trange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_GET_interporation_by_id_current_f/trange1
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_current_f trange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_GET_interporation_by_id_current_f/trange2
-chblockend
-opparm -V 16.0.504.20 $_obj_geo1_GET_interporation_by_id_current_f frame ( frame ) integerframe ( off )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_current_f
-opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_current_f
-opuserdata -n '___Version___' -v '16.0.504.20' $_obj_geo1_GET_interporation_by_id_current_f
-
-# Node $_obj_geo1_GET_interporation_by_id_prev_f (Sop/timeshift)
-set _obj_geo1_GET_interporation_by_id_prev_f = `run("opadd -e -n -v timeshift prev_f")`
-oplocate -x `$arg2 + 3.057974988824129` -y `$arg3 + 0.83243443878597745` $_obj_geo1_GET_interporation_by_id_prev_f
-chblockbegin
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prev_f frame
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'round($FF)-1' $_obj_geo1_GET_interporation_by_id_prev_f/frame
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prev_f time
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_GET_interporation_by_id_prev_f/time
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prev_f frange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_GET_interporation_by_id_prev_f/frange1
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prev_f frange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_GET_interporation_by_id_prev_f/frange2
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prev_f trange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_GET_interporation_by_id_prev_f/trange1
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prev_f trange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_GET_interporation_by_id_prev_f/trange2
-chblockend
-opparm -V 16.0.504.20 $_obj_geo1_GET_interporation_by_id_prev_f frame ( frame ) integerframe ( off )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_prev_f
-opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_prev_f
-opuserdata -n '___Version___' -v '16.0.504.20' $_obj_geo1_GET_interporation_by_id_prev_f
-
-# Node $_obj_geo1_GET_interporation_by_id_next_f (Sop/timeshift)
-set _obj_geo1_GET_interporation_by_id_next_f = `run("opadd -e -n -v timeshift next_f")`
-oplocate -x `$arg2 + 5.1191549888241292` -y `$arg3 + 0.38067443878597818` $_obj_geo1_GET_interporation_by_id_next_f
-chblockbegin
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_f frame
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'round($FF)+1' $_obj_geo1_GET_interporation_by_id_next_f/frame
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_f time
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_GET_interporation_by_id_next_f/time
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_f frange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_GET_interporation_by_id_next_f/frange1
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_f frange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_GET_interporation_by_id_next_f/frange2
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_f trange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_GET_interporation_by_id_next_f/trange1
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_f trange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_GET_interporation_by_id_next_f/trange2
-chblockend
-opparm -V 16.0.504.20 $_obj_geo1_GET_interporation_by_id_next_f frame ( frame ) integerframe ( off )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_next_f
-opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_next_f
-opuserdata -n '___Version___' -v '16.0.504.20' $_obj_geo1_GET_interporation_by_id_next_f
-
-# Node $_obj_geo1_GET_interporation_by_id_prevPrev_f (Sop/timeshift)
-set _obj_geo1_GET_interporation_by_id_prevPrev_f = `run("opadd -e -n -v timeshift prevPrev_f")`
-oplocate -x `$arg2 + 10.616564988824129` -y `$arg3 + -0.36756556121402184` $_obj_geo1_GET_interporation_by_id_prevPrev_f
-chblockbegin
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prevPrev_f frame
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'round($FF)-2' $_obj_geo1_GET_interporation_by_id_prevPrev_f/frame
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prevPrev_f time
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_GET_interporation_by_id_prevPrev_f/time
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prevPrev_f frange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_GET_interporation_by_id_prevPrev_f/frange1
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prevPrev_f frange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_GET_interporation_by_id_prevPrev_f/frange2
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prevPrev_f trange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_GET_interporation_by_id_prevPrev_f/trange1
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prevPrev_f trange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_GET_interporation_by_id_prevPrev_f/trange2
-chblockend
-opparm -V 16.0.504.20 $_obj_geo1_GET_interporation_by_id_prevPrev_f frame ( frame ) integerframe ( off )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_prevPrev_f
-opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_prevPrev_f
-opuserdata -n '___Version___' -v '16.0.504.20' $_obj_geo1_GET_interporation_by_id_prevPrev_f
-
-# Node $_obj_geo1_GET_interporation_by_id_next_Next_f (Sop/timeshift)
-set _obj_geo1_GET_interporation_by_id_next_Next_f = `run("opadd -e -n -v timeshift next_Next_f")`
-oplocate -x `$arg2 + 7.523674988824129` -y `$arg3 + -0.15749556121402186` $_obj_geo1_GET_interporation_by_id_next_Next_f
-chblockbegin
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_Next_f frame
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'round($FF)+2' $_obj_geo1_GET_interporation_by_id_next_Next_f/frame
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_Next_f time
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_GET_interporation_by_id_next_Next_f/time
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_Next_f frange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_GET_interporation_by_id_next_Next_f/frange1
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_Next_f frange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_GET_interporation_by_id_next_Next_f/frange2
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_Next_f trange1
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_GET_interporation_by_id_next_Next_f/trange1
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_Next_f trange2
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_GET_interporation_by_id_next_Next_f/trange2
-chblockend
-opparm -V 16.0.504.20 $_obj_geo1_GET_interporation_by_id_next_Next_f frame ( frame ) integerframe ( off )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_next_Next_f
-opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_next_Next_f
-opuserdata -n '___Version___' -v '16.0.504.20' $_obj_geo1_GET_interporation_by_id_next_Next_f
-
-# Node $_obj_geo1_GET_interporation_by_id_OUT_prevPrev_f (Sop/null)
-set _obj_geo1_GET_interporation_by_id_OUT_prevPrev_f = `run("opadd -e -n -v null OUT_prevPrev_f")`
-oplocate -x `$arg2 + 10.616564988824129` -y `$arg3 + -1.2417255612140226` $_obj_geo1_GET_interporation_by_id_OUT_prevPrev_f
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_OUT_prevPrev_f
-opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_OUT_prevPrev_f
-opuserdata -n '___Version___' -v '16.0.504.20' $_obj_geo1_GET_interporation_by_id_OUT_prevPrev_f
-
-# Node $_obj_geo1_GET_interporation_by_id_null1 (Sop/null)
-set _obj_geo1_GET_interporation_by_id_null1 = `run("opadd -e -n -v null null1")`
-oplocate -x `$arg2 + -1.1175870895385742e-08` -y `$arg3 + 3.6873253402957116` $_obj_geo1_GET_interporation_by_id_null1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_null1
-opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_null1
-
-# Node $_obj_geo1_GET_interporation_by_id_output1 (Sop/output)
-set _obj_geo1_GET_interporation_by_id_output1 = `run("opadd -e -n -v output output1")`
-oplocate -x `$arg2 + -1.4642253617913603e-08` -y `$arg3 + -7.8299650733225654` $_obj_geo1_GET_interporation_by_id_output1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_output1
-opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_output1
-
-# Node $_obj_geo1_GET_interporation_by_id_switch1 (Sop/switch)
-set _obj_geo1_GET_interporation_by_id_switch1 = `run("opadd -e -n -v switch switch1")`
-oplocate -x `$arg2 + -2.3955479308557237e-08` -y `$arg3 + -6.2432114844687128` $_obj_geo1_GET_interporation_by_id_switch1
-chblockbegin
-chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_switch1 input
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../match_by_id")' $_obj_geo1_GET_interporation_by_id_switch1/input
-chblockend
-opparm -V 16.0.504.20 $_obj_geo1_GET_interporation_by_id_switch1 input ( input )
-opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_switch1
-opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_switch1
-oporder -e interporation_by_id current_f prev_f next_f prevPrev_f next_Next_f OUT_prevPrev_f null1 output1 interporation_by_ptnum switch1 
-opcf ..
-opset -p on $_obj_geo1_GET_interporation_by_id
-
-opcf $arg1
-opwire -n $_obj_geo1_sort1 -0 $_obj_geo1_GET_interporation_by_id
-opcf $_obj_geo1_GET_interporation_by_id
-opwire -n $_obj_geo1_GET_interporation_by_id_current_f -0 $_obj_geo1_GET_interporation_by_id_interporation_by_id
-opwire -n $_obj_geo1_GET_interporation_by_id_prev_f -1 $_obj_geo1_GET_interporation_by_id_interporation_by_id
-opwire -n $_obj_geo1_GET_interporation_by_id_next_f -2 $_obj_geo1_GET_interporation_by_id_interporation_by_id
-opwire -n $_obj_geo1_GET_interporation_by_id_next_Next_f -3 $_obj_geo1_GET_interporation_by_id_interporation_by_id
-opwire -n $_obj_geo1_GET_interporation_by_id_null1 -0 $_obj_geo1_GET_interporation_by_id_current_f
-opwire -n $_obj_geo1_GET_interporation_by_id_null1 -0 $_obj_geo1_GET_interporation_by_id_prev_f
-opwire -n $_obj_geo1_GET_interporation_by_id_null1 -0 $_obj_geo1_GET_interporation_by_id_next_f
-opwire -n $_obj_geo1_GET_interporation_by_id_null1 -0 $_obj_geo1_GET_interporation_by_id_prevPrev_f
-opwire -n $_obj_geo1_GET_interporation_by_id_null1 -0 $_obj_geo1_GET_interporation_by_id_next_Next_f
-opwire -n $_obj_geo1_GET_interporation_by_id_prevPrev_f -0 $_obj_geo1_GET_interporation_by_id_OUT_prevPrev_f
-opwire -n -i 0 -0 $_obj_geo1_GET_interporation_by_id_null1
-opwire -n $_obj_geo1_GET_interporation_by_id_switch1 -0 $_obj_geo1_GET_interporation_by_id_output1
-opwire -n $_obj_geo1_GET_interporation_by_id_current_f -0 $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
-opwire -n $_obj_geo1_GET_interporation_by_id_prev_f -1 $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
-opwire -n $_obj_geo1_GET_interporation_by_id_next_f -2 $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
-opwire -n $_obj_geo1_GET_interporation_by_id_next_Next_f -3 $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
-opwire -n $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum -0 $_obj_geo1_GET_interporation_by_id_switch1
-opwire -n $_obj_geo1_GET_interporation_by_id_interporation_by_id -1 $_obj_geo1_GET_interporation_by_id_switch1
-opcf ..
-
-set oidx = 0
-if ($argc >= 9 && "$arg9" != "") then
-    set oidx = $arg9
-endif
-
-if ($argc >= 5 && "$arg4" != "") then
-    set output = $_obj_geo1_GET_interporation_by_id
-    opwire -n $output -$arg5 $arg4
-endif
-if ($argc >= 6 && "$arg6" != "") then
-    set input = $_obj_geo1_GET_interporation_by_id
-    if ($arg8) then
-        opwire -n -i $arg6 -0 $input
-    else
-        opwire -n -o $oidx $arg6 -0 $input
-    endif
-endif
-opcf $saved_path
-'''
-hou.hscript(h_preamble + h_extra_args + h_cmd)
-]]></script>
-  </tool>
-
   <shelfSet name="shelf_set_3" label="New Shelf Set">
     <memberToolshelf name="kaTools"/>
     <memberToolshelf name="kaToolsVop"/>
@@ -1959,6 +1621,7 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
     <memberTool name="align_orient2"/>
     <memberTool name="crt_partId"/>
     <memberTool name="crt_instance_Id"/>
+    <memberTool name="remove_by_frame"/>
   </toolshelf>
 
   <tool name="attribvop1" label="trans_by_n_up" icon="SOP_attribvop">
@@ -7685,6 +7348,400 @@ if ($argc >= 5 && "$arg4" != "") then
 endif
 if ($argc >= 6 && "$arg6" != "") then
     set input = $_obj_fxcontainer1_pc_crowd_car_crt_instance_Id
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="GET_interporation_by_id" label="GET_interporation_by_id" icon="SOP_subnet">
+    <helpURL>operator:Sop/subnet</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/subnet</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('subnet'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_GET_interporation_by_id (Sop/subnet)
+set _obj_geo1_GET_interporation_by_id = `run("opadd -e -n -v subnet GET_interporation_by_id")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_GET_interporation_by_id
+opspareds '    parm {   name    "label1"        baseparm        label   "Input #1 Label"        invisible       export  all     }     parm {    name    "label2"        baseparm        label   "Input #2 Label"        invisible       export  all     }     parm {    name    "label3"        baseparm        label   "Input #3 Label"        invisible       export  all     }     parm {    name    "label4"        baseparm        label   "Input #4 Label"        invisible       export  all     }     parm {    name    "labelparm"     label   "Label"         type    label   nolabel         default { "   match by id, or match by ptnum" }     }     parm {        name    "match_by_id"   label   "match_by_id"   type    toggle  default { "1" }         range   { 0! 10 }       parmtag { "autoscope" "0000000000000000" }     }     parm {     name    "id_atr"        label   "id_atr"        type    string  default { "id" }        disablewhen     "{ match_by_id == 0 }"  range   { 0 1 }         parmtag { "autoscope" "0000000000000000" }     }     parm {     name    "velocity_type"         label   "velocity_type"         type    string  invisible       default { "0" }         menu    {           "0" "Backward Difference"       "1" "Central Difference"        "2" "Forward Difference"    }     } ' $_obj_geo1_GET_interporation_by_id
+opcolor -c 0.86699998378753662 0 0 $_obj_geo1_GET_interporation_by_id
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_GET_interporation_by_id
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_GET_interporation_by_id
+opcf $_obj_geo1_GET_interporation_by_id
+
+# Node $_obj_geo1_GET_interporation_by_id_interporation_by_id (Sop/attribwrangle)
+set _obj_geo1_GET_interporation_by_id_interporation_by_id = `run("opadd -e -n -v attribwrangle interporation_by_id")`
+oplocate -x `$arg2 + 4.1624299999999996` -y `$arg3 + -6.5176400000000001` $_obj_geo1_GET_interporation_by_id_interporation_by_id
+opspareds '    group {  name    "folder1"       label   "Code"          parm {      name        "group"             baseparm        label       "Group"             export      none        bindselector points "Modify Points"                 "Select the points to affect and press Enter to complete."              0 1 0xffffffff 0 grouptype 0    }       parm {      name        "grouptype"         baseparm        label       "Group Type"        export      none    }       parm {      name        "class"             baseparm        label       "Run Over"          export      none    }       parm {      name        "vex_numcount"      baseparm        label       "Number Count"      export      none    }       parm {      name        "vex_threadjobsize"         baseparm        label       "Thread Job Size"           export      none    }       parm {      name        "snippet"           baseparm        label       "VEXpression"       export      all     }       parm {      name        "exportlist"        baseparm        label       "Attributes to Create"      export      none    }       parm {      name        "vex_strict"        baseparm        label       "Enforce Prototypes"        export      none    }     }      group {    name    "folder1_1"     label   "Bindings"      parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }       parm {      name        "vex_inplace"       baseparm        label       "Compute Results In Place"          export      none    }       parm {      name        "vex_selectiongroup"        baseparm        label       "Output Selection Group"            export      none    }     }      parm {     name    "second_previous_frame"         label   "Second Previous Frame"         type    oppath  default { "" }  parmtag { "oprelative" "." }     } ' $_obj_geo1_GET_interporation_by_id_interporation_by_id
+opparm $_obj_geo1_GET_interporation_by_id_interporation_by_id  bindings ( 0 ) groupbindings ( 0 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_interporation_by_id vex_matchattrib
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'chs("../id_atr")' $_obj_geo1_GET_interporation_by_id_interporation_by_id/vex_matchattrib
+chblockend
+opparm $_obj_geo1_GET_interporation_by_id_interporation_by_id snippet ( 'vector p = @P;\nvector prevPrevP = @P;\nvector prevP = @P;\nvector nextP = @P;\nvector nextNextP = @P;\n\nint idPt = findattribval(1,"point",chs("vex_matchattrib"),i@`chs("vex_matchattrib")`,0);\nif(idPt != -1)\n{\n    prevP = v@opinput1_P;\n}\n\nidPt = findattribval(2,"point",chs("vex_matchattrib"),i@`chs("vex_matchattrib")`,0);\nif(idPt != -1)\n{\n    nextP = v@opinput2_P;\n}\n\nidPt = findattribval(3,"point",chs("vex_matchattrib"),i@`chs("vex_matchattrib")`,0);\nif(idPt != -1)\n{\n    nextNextP = v@opinput3_P;\n}\n\nidPt = findattribval("op:" + chs("second_previous_frame"),"point",chs("vex_matchattrib"),i@`chs("vex_matchattrib")`,0);\nif(idPt != -1)\n{\n    prevPrevP = point("op:" + chs("second_previous_frame"),"P", idPt);\n}\n\nvector arrayP[];\nif(rint(@Frame)==floor(@Frame))\n{\n    arrayP = vector[](array(prevP,p,nextP,nextNextP));\n}\nelse\n{\n    arrayP = vector[](array(prevPrevP,prevP,p,nextP));\n}\n\n@P = spline("cubic",frac(@Frame),arrayP);' ) vex_matchattrib ( vex_matchattrib ) second_previous_frame ( ../OUT_prevPrev_f )
+opcolor -c 1 0.80000001192092896 0 $_obj_geo1_GET_interporation_by_id_interporation_by_id
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_GET_interporation_by_id_interporation_by_id
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_interporation_by_id
+opuserdata -n '___Version___' -v '' $_obj_geo1_GET_interporation_by_id_interporation_by_id
+
+# Node $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum (Sop/attribwrangle)
+set _obj_geo1_GET_interporation_by_id_interporation_by_ptnum = `run("opadd -e -n -v attribwrangle interporation_by_ptnum")`
+oplocate -x `$arg2 + 8.3523899999999998` -y `$arg3 + -6.5176400000000001` $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
+opspareds '    group {  name    "folder1"       label   "Code"          parm {      name        "group"             baseparm        label       "Group"             export      none        bindselector points "Modify Points"                 "Select the points to affect and press Enter to complete."              0 1 0xffffffff 0 grouptype 0    }       parm {      name        "grouptype"         baseparm        label       "Group Type"        export      none    }       parm {      name        "class"             baseparm        label       "Run Over"          export      none    }       parm {      name        "vex_numcount"      baseparm        label       "Number Count"      export      none    }       parm {      name        "vex_threadjobsize"         baseparm        label       "Thread Job Size"           export      none    }       parm {      name        "snippet"           baseparm        label       "VEXpression"       export      all     }       parm {      name        "exportlist"        baseparm        label       "Attributes to Create"      export      none    }       parm {      name        "vex_strict"        baseparm        label       "Enforce Prototypes"        export      none    }     }      group {    name    "folder1_1"     label   "Bindings"      parm {      name        "autobind"          baseparm        label       "Autobind by Name"          export      none    }       multiparm {         name        "bindings"          label       "Number of Bindings"        baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindname#"             baseparm                label   "Attribute Name"                export  none        }       parm {              name    "bindparm#"             baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "groupautobind"             baseparm        label       "Autobind Groups by Name"           export      none    }       multiparm {         name        "groupbindings"             label       "Group Bindings"            baseparm        default     0           parmtag     { "autoscope" "0000000000000000" }          parmtag     { "multistartoffset" "1" }          parm {              name    "bindgroupname#"                baseparm                label   "Group Name"            export  none        }       parm {              name    "bindgroupparm#"                baseparm                label   "VEX Parameter"                 export  none        }   }       parm {      name        "vex_cwdpath"       baseparm        label       "Evaluation Node Path"      export      none    }       parm {      name        "vex_outputmask"            baseparm        label       "Export Parameters"         export      none    }       parm {      name        "vex_updatenmls"            baseparm        label       "Update Normals If Displaced"       export      none    }       parm {      name        "vex_matchattrib"           baseparm        label       "Attribute to Match"        export      none    }       parm {      name        "vex_inplace"       baseparm        label       "Compute Results In Place"          export      none    }       parm {      name        "vex_selectiongroup"        baseparm        label       "Output Selection Group"            export      none    }     }      parm {     name    "second_previous_frame"         label   "Second Previous Frame"         type    oppath  default { "" }  parmtag { "oprelative" "." }     } ' $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
+opparm $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum snippet ( 'vector p = @P;\nvector prevPrevP = @P;\nvector prevP = @P;\nvector nextP = @P;\nvector nextNextP = @P;\n\nprevP = point(1,"P",@ptnum);\n\nnextP = point(2,"P",@ptnum);\n\nnextNextP = point(3,"P",@ptnum);\n\nprevPrevP = point("op:" + chs("second_previous_frame"),"P", @ptnum);\n\n\nvector arrayP[];\nif(rint(@Frame)==floor(@Frame))\n{\n    arrayP = vector[](array(prevP,p,nextP,nextNextP));\n}\nelse\n{\n    arrayP = vector[](array(prevPrevP,prevP,p,nextP));\n}\n\n@P = spline("cubic",frac(@Frame),arrayP);' ) second_previous_frame ( ../OUT_prevPrev_f )
+opcolor -c 1 0.80000001192092896 0 $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
+opuserdata -n '___Version___' -v '' $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
+
+# Node $_obj_geo1_GET_interporation_by_id_advect (Sop/attribwrangle)
+set _obj_geo1_GET_interporation_by_id_advect = `run("opadd -e -n -v attribwrangle advect")`
+oplocate -x `$arg2 + 11.9704` -y `$arg3 + -2.9596900000000002` $_obj_geo1_GET_interporation_by_id_advect
+opparm $_obj_geo1_GET_interporation_by_id_advect  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_GET_interporation_by_id_advect snippet ( '@P += @v * @TimeInc + v@force * @TimeInc* @TimeInc;' )
+opcolor -c 1 0.80000001192092896 0 $_obj_geo1_GET_interporation_by_id_advect
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_GET_interporation_by_id_advect
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_advect
+opuserdata -n '___Version___' -v '' $_obj_geo1_GET_interporation_by_id_advect
+
+# Node $_obj_geo1_GET_interporation_by_id_rev_advect (Sop/attribwrangle)
+set _obj_geo1_GET_interporation_by_id_rev_advect = `run("opadd -e -n -v attribwrangle rev_advect")`
+oplocate -x `$arg2 + 14.537000000000001` -y `$arg3 + -2.9596900000000002` $_obj_geo1_GET_interporation_by_id_rev_advect
+opparm $_obj_geo1_GET_interporation_by_id_rev_advect  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_GET_interporation_by_id_rev_advect snippet ( '@P -= @v * @TimeInc;' )
+opcolor -c 1 0.80000001192092896 0 $_obj_geo1_GET_interporation_by_id_rev_advect
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_GET_interporation_by_id_rev_advect
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_rev_advect
+opuserdata -n '___Version___' -v '' $_obj_geo1_GET_interporation_by_id_rev_advect
+
+# Node $_obj_geo1_GET_interporation_by_id_rev_advect1 (Sop/attribwrangle)
+set _obj_geo1_GET_interporation_by_id_rev_advect1 = `run("opadd -e -n -v attribwrangle rev_advect1")`
+oplocate -x `$arg2 + 17.372299999999999` -y `$arg3 + -2.9596900000000002` $_obj_geo1_GET_interporation_by_id_rev_advect1
+opparm $_obj_geo1_GET_interporation_by_id_rev_advect1  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_geo1_GET_interporation_by_id_rev_advect1 snippet ( '@P -= @v * @TimeInc - v@force * @TimeInc* @TimeInc;' )
+opcolor -c 1 0.80000001192092896 0 $_obj_geo1_GET_interporation_by_id_rev_advect1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_GET_interporation_by_id_rev_advect1
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_rev_advect1
+opuserdata -n '___Version___' -v '' $_obj_geo1_GET_interporation_by_id_rev_advect1
+opcf ..
+opcf $_obj_geo1_GET_interporation_by_id
+
+# Node $_obj_geo1_GET_interporation_by_id_current_f (Sop/timeshift)
+set _obj_geo1_GET_interporation_by_id_current_f = `run("opadd -e -n -v timeshift current_f")`
+oplocate -x `$arg2 + 4.2734300000000003` -y `$arg3 + -0.266486` $_obj_geo1_GET_interporation_by_id_current_f
+chblockbegin
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_current_f frame
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'round($FF)' $_obj_geo1_GET_interporation_by_id_current_f/frame
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_current_f time
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_GET_interporation_by_id_current_f/time
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_current_f frange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_GET_interporation_by_id_current_f/frange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_current_f frange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_GET_interporation_by_id_current_f/frange2
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_current_f trange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_GET_interporation_by_id_current_f/trange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_current_f trange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_GET_interporation_by_id_current_f/trange2
+chblockend
+opparm -V 16.0.674 $_obj_geo1_GET_interporation_by_id_current_f frame ( frame ) integerframe ( off )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_current_f
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_current_f
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_GET_interporation_by_id_current_f
+
+# Node $_obj_geo1_GET_interporation_by_id_prev_f (Sop/timeshift)
+set _obj_geo1_GET_interporation_by_id_prev_f = `run("opadd -e -n -v timeshift prev_f")`
+oplocate -x `$arg2 + 6.8400800000000004` -y `$arg3 + -0.69683899999999999` $_obj_geo1_GET_interporation_by_id_prev_f
+chblockbegin
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prev_f frame
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'round($FF)-1' $_obj_geo1_GET_interporation_by_id_prev_f/frame
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prev_f time
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_GET_interporation_by_id_prev_f/time
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prev_f frange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_GET_interporation_by_id_prev_f/frange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prev_f frange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_GET_interporation_by_id_prev_f/frange2
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prev_f trange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_GET_interporation_by_id_prev_f/trange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prev_f trange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_GET_interporation_by_id_prev_f/trange2
+chblockend
+opparm -V 16.0.674 $_obj_geo1_GET_interporation_by_id_prev_f frame ( frame ) integerframe ( off )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_prev_f
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_prev_f
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_GET_interporation_by_id_prev_f
+
+# Node $_obj_geo1_GET_interporation_by_id_next_f (Sop/timeshift)
+set _obj_geo1_GET_interporation_by_id_next_f = `run("opadd -e -n -v timeshift next_f")`
+oplocate -x `$arg2 + 9.40672` -y `$arg3 + -1.1271899999999999` $_obj_geo1_GET_interporation_by_id_next_f
+chblockbegin
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_f frame
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'round($FF)+1' $_obj_geo1_GET_interporation_by_id_next_f/frame
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_f time
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_GET_interporation_by_id_next_f/time
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_f frange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_GET_interporation_by_id_next_f/frange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_f frange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_GET_interporation_by_id_next_f/frange2
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_f trange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_GET_interporation_by_id_next_f/trange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_f trange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_GET_interporation_by_id_next_f/trange2
+chblockend
+opparm -V 16.0.674 $_obj_geo1_GET_interporation_by_id_next_f frame ( frame ) integerframe ( off )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_next_f
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_next_f
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_GET_interporation_by_id_next_f
+
+# Node $_obj_geo1_GET_interporation_by_id_prevPrev_f (Sop/timeshift)
+set _obj_geo1_GET_interporation_by_id_prevPrev_f = `run("opadd -e -n -v timeshift prevPrev_f")`
+oplocate -x `$arg2 + 14.539999999999999` -y `$arg3 + -1.9879` $_obj_geo1_GET_interporation_by_id_prevPrev_f
+chblockbegin
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prevPrev_f frame
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'round($FF)-2' $_obj_geo1_GET_interporation_by_id_prevPrev_f/frame
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prevPrev_f time
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_GET_interporation_by_id_prevPrev_f/time
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prevPrev_f frange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_GET_interporation_by_id_prevPrev_f/frange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prevPrev_f frange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_GET_interporation_by_id_prevPrev_f/frange2
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prevPrev_f trange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_GET_interporation_by_id_prevPrev_f/trange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_prevPrev_f trange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_GET_interporation_by_id_prevPrev_f/trange2
+chblockend
+opparm -V 16.0.674 $_obj_geo1_GET_interporation_by_id_prevPrev_f frame ( frame ) integerframe ( off )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_prevPrev_f
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_prevPrev_f
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_GET_interporation_by_id_prevPrev_f
+
+# Node $_obj_geo1_GET_interporation_by_id_next_Next_f (Sop/timeshift)
+set _obj_geo1_GET_interporation_by_id_next_Next_f = `run("opadd -e -n -v timeshift next_Next_f")`
+oplocate -x `$arg2 + 11.9734` -y `$arg3 + -1.5575399999999999` $_obj_geo1_GET_interporation_by_id_next_Next_f
+chblockbegin
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_Next_f frame
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'round($FF)+2' $_obj_geo1_GET_interporation_by_id_next_Next_f/frame
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_Next_f time
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_GET_interporation_by_id_next_Next_f/time
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_Next_f frange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_GET_interporation_by_id_next_Next_f/frange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_Next_f frange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_GET_interporation_by_id_next_Next_f/frange2
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_Next_f trange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_GET_interporation_by_id_next_Next_f/trange1
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_next_Next_f trange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_GET_interporation_by_id_next_Next_f/trange2
+chblockend
+opparm -V 16.0.674 $_obj_geo1_GET_interporation_by_id_next_Next_f frame ( frame ) integerframe ( off )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_next_Next_f
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_next_Next_f
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_GET_interporation_by_id_next_Next_f
+
+# Node $_obj_geo1_GET_interporation_by_id_OUT_prevPrev_f (Sop/null)
+set _obj_geo1_GET_interporation_by_id_OUT_prevPrev_f = `run("opadd -e -n -v null OUT_prevPrev_f")`
+oplocate -x `$arg2 + 14.539999999999999` -y `$arg3 + -5.1814200000000001` $_obj_geo1_GET_interporation_by_id_OUT_prevPrev_f
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_OUT_prevPrev_f
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_OUT_prevPrev_f
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_GET_interporation_by_id_OUT_prevPrev_f
+
+# Node $_obj_geo1_GET_interporation_by_id_null1 (Sop/null)
+set _obj_geo1_GET_interporation_by_id_null1 = `run("opadd -e -n -v null null1")`
+oplocate -x `$arg2 + 4.2734300000000003` -y `$arg3 + 2.3469899999999999` $_obj_geo1_GET_interporation_by_id_null1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_null1
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_null1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_GET_interporation_by_id_null1
+
+# Node $_obj_geo1_GET_interporation_by_id_output1 (Sop/output)
+set _obj_geo1_GET_interporation_by_id_output1 = `run("opadd -e -n -v output output1")`
+oplocate -x `$arg2 + 4.1654299999999997` -y `$arg3 + -11.4183` $_obj_geo1_GET_interporation_by_id_output1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_output1 outputidx
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'max(opdigits(".")-1,0)' $_obj_geo1_GET_interporation_by_id_output1/outputidx
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_output1
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_output1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_GET_interporation_by_id_output1
+
+# Node $_obj_geo1_GET_interporation_by_id_switch1 (Sop/switch)
+set _obj_geo1_GET_interporation_by_id_switch1 = `run("opadd -e -n -v switch switch1")`
+oplocate -x `$arg2 + 4.1654299999999997` -y `$arg3 + -9.1315399999999993` $_obj_geo1_GET_interporation_by_id_switch1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_switch1 input
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../match_by_id")' $_obj_geo1_GET_interporation_by_id_switch1/input
+chblockend
+opparm -V 16.0.674 $_obj_geo1_GET_interporation_by_id_switch1 input ( input )
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_GET_interporation_by_id_switch1
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_switch1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_GET_interporation_by_id_switch1
+
+# Node $_obj_geo1_GET_interporation_by_id_switch2 (Sop/switch)
+set _obj_geo1_GET_interporation_by_id_switch2 = `run("opadd -e -n -v switch switch2")`
+oplocate -x `$arg2 + 14.539999999999999` -y `$arg3 + -4.1475600000000004` $_obj_geo1_GET_interporation_by_id_switch2
+chblockbegin
+chadd -t 0 0 $_obj_geo1_GET_interporation_by_id_switch2 input
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../velocity_type")' $_obj_geo1_GET_interporation_by_id_switch2/input
+chblockend
+opparm -V 16.0.674 $_obj_geo1_GET_interporation_by_id_switch2 input ( input )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_geo1_GET_interporation_by_id_switch2
+opexprlanguage -s hscript $_obj_geo1_GET_interporation_by_id_switch2
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_GET_interporation_by_id_switch2
+oporder -e interporation_by_id current_f prev_f next_f prevPrev_f next_Next_f OUT_prevPrev_f null1 output1 interporation_by_ptnum switch1 advect rev_advect switch2 rev_advect1 
+opcf ..
+opset -p on $_obj_geo1_GET_interporation_by_id
+
+opcf $arg1
+opwire -n $_obj_geo1_trail1 -0 $_obj_geo1_GET_interporation_by_id
+opcf $_obj_geo1_GET_interporation_by_id
+opwire -n $_obj_geo1_GET_interporation_by_id_current_f -0 $_obj_geo1_GET_interporation_by_id_interporation_by_id
+opwire -n $_obj_geo1_GET_interporation_by_id_prev_f -1 $_obj_geo1_GET_interporation_by_id_interporation_by_id
+opwire -n $_obj_geo1_GET_interporation_by_id_next_f -2 $_obj_geo1_GET_interporation_by_id_interporation_by_id
+opwire -n $_obj_geo1_GET_interporation_by_id_advect -3 $_obj_geo1_GET_interporation_by_id_interporation_by_id
+opwire -n $_obj_geo1_GET_interporation_by_id_null1 -0 $_obj_geo1_GET_interporation_by_id_current_f
+opwire -n $_obj_geo1_GET_interporation_by_id_null1 -0 $_obj_geo1_GET_interporation_by_id_prev_f
+opwire -n $_obj_geo1_GET_interporation_by_id_null1 -0 $_obj_geo1_GET_interporation_by_id_next_f
+opwire -n $_obj_geo1_GET_interporation_by_id_null1 -0 $_obj_geo1_GET_interporation_by_id_prevPrev_f
+opwire -n $_obj_geo1_GET_interporation_by_id_null1 -0 $_obj_geo1_GET_interporation_by_id_next_Next_f
+opwire -n $_obj_geo1_GET_interporation_by_id_switch2 -0 $_obj_geo1_GET_interporation_by_id_OUT_prevPrev_f
+opwire -n -i 0 -0 $_obj_geo1_GET_interporation_by_id_null1
+opwire -n $_obj_geo1_GET_interporation_by_id_switch1 -0 $_obj_geo1_GET_interporation_by_id_output1
+opwire -n $_obj_geo1_GET_interporation_by_id_current_f -0 $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
+opwire -n $_obj_geo1_GET_interporation_by_id_prev_f -1 $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
+opwire -n $_obj_geo1_GET_interporation_by_id_next_f -2 $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
+opwire -n $_obj_geo1_GET_interporation_by_id_advect -3 $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum
+opwire -n $_obj_geo1_GET_interporation_by_id_interporation_by_ptnum -0 $_obj_geo1_GET_interporation_by_id_switch1
+opwire -n $_obj_geo1_GET_interporation_by_id_interporation_by_id -1 $_obj_geo1_GET_interporation_by_id_switch1
+opwire -n $_obj_geo1_GET_interporation_by_id_next_f -0 $_obj_geo1_GET_interporation_by_id_advect
+opwire -n $_obj_geo1_GET_interporation_by_id_prev_f -0 $_obj_geo1_GET_interporation_by_id_rev_advect
+opwire -n $_obj_geo1_GET_interporation_by_id_rev_advect -0 $_obj_geo1_GET_interporation_by_id_switch2
+opwire -n $_obj_geo1_GET_interporation_by_id_rev_advect1 -1 $_obj_geo1_GET_interporation_by_id_switch2
+opwire -n $_obj_geo1_GET_interporation_by_id_rev_advect1 -2 $_obj_geo1_GET_interporation_by_id_switch2
+opwire -n $_obj_geo1_GET_interporation_by_id_prev_f -0 $_obj_geo1_GET_interporation_by_id_rev_advect1
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_GET_interporation_by_id
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_GET_interporation_by_id
     if ($arg8) then
         opwire -n -i $arg6 -0 $input
     else
