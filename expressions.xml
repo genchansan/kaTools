@@ -239,4 +239,20 @@ vector nearP = point(1, "P",nearPt);]]></expression>
   <set name="delete by speed" category="del">
     <expression><![CDATA[if(length(@v)<ch("min_speed"))removepoint(geoself(),@ptnum);]]></expression>
   </set>
+  <set name="twist" category="vol">
+    <expression><![CDATA[vector min,max;
+getbbox(1,min,max);
+vector grad= (@P-min)/(max-min);
+
+vector origin = chv("origin");
+vector axis = chv("axis");
+float rad = radians(ch("degree"));
+matrix mat = ident();
+
+rotate(mat, rad * grad.y, axis);
+//translate(mat, origin);
+invert(mat);
+vector sampleP = (@P-origin) * mat;
+@density = volumesample(0, "density", sampleP);]]></expression>
+  </set>
 </expressionSets>
