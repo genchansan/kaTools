@@ -255,4 +255,29 @@ invert(mat);
 vector sampleP = (@P-origin) * mat;
 @density = volumesample(0, "density", sampleP);]]></expression>
   </set>
+  <set name="delete by age" category="del">
+    <expression><![CDATA[float age = fit(@age,ch("min"), ch("max"), 0, 1);
+
+float rand = rand((@ptnum + ch("seed")+0.21) + (ch("seed")));
+
+if(age>=rand)removepoint(geoself(),@ptnum);]]></expression>
+  </set>
+  <set name="create name" category="atr">
+    <expression><![CDATA[s@name = chs("name");]]></expression>
+  </set>
+  <set name="get bounding box's box" category="edit">
+    <expression><![CDATA[vector min,max;
+getbbox(1,min,max);
+
+vector pattern[] = {{0,0,0},{1,0,0},{1,0,1},{0,0,1},{0,1,0},{1,1,0},{1,1,1},{0,1,1}};
+
+float boundx[] = array(min.x, max.x);
+float boundy[] = array(min.y, max.y);
+float boundz[] = array(min.z, max.z);
+
+@P = set(boundx[int(pattern[@ptnum].x)], boundy[int(pattern[@ptnum].y)], boundz[int(pattern[@ptnum].z)]);
+
+
+]]></expression>
+  </set>
 </expressionSets>
