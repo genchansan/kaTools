@@ -265,7 +265,7 @@ if(age>=rand)removepoint(geoself(),@ptnum);]]></expression>
   <set name="create name" category="atr">
     <expression><![CDATA[s@name = chs("name");]]></expression>
   </set>
-  <set name="get bounding box's box" category="edit">
+  <set name="get bounding boxs box" category="edit">
     <expression><![CDATA[vector min,max;
 getbbox(1,min,max);
 
