@@ -8,15 +8,12 @@
   <interfacesMenu type="toolbar">
     <interfaceItem name="expressionPicker"/>
     <interfaceItem name="ReceiveKinect"/>
-    <separatorItem/>
-    <separatorItem/>
+    <interfaceItem name="NodePicker"/>
   </interfacesMenu>
   <interfacesMenu type="panetab">
-    <interfaceItem name="sesi_auto_rigs"/>
-    <interfaceItem name="sesi_character_picker"/>
-    <interfaceItem name="sesi_pose_library"/>
     <interfaceItem name="expressionPicker"/>
     <interfaceItem name="ReceiveKinect"/>
+    <interfaceItem name="NodePicker"/>
   </interfacesMenu>
   <interface name="expressionPicker" label="Expression Picker" icon="MISC_python" help_url="">
     <script><![CDATA[#https://www.off-soft.net/ja/develop/qt/qtb2.html
@@ -392,6 +389,75 @@ def createInterface():
     return root]]></script>
     <includeInPaneTabMenu menu_position="0" create_separator="false"/>
     <includeInToolbarMenu menu_position="102" create_separator="false"/>
+    <help><![CDATA[]]></help>
+  </interface>
+  <interface name="NodePicker" label="NodePicker" icon="MISC_python" help_url="">
+    <script><![CDATA[from hutil.Qt import QtCore, QtGui, QtWidgets
+class DDTest(QtWidgets.QFrame):
+    def __init__(self, parent=None):
+        super(DDTest, self).__init__(parent)
+        
+        self.myList = QtWidgets.QListView(self)
+        self.myModel = QtGui.QStandardItemModel(self.myList)
+        self.myList.setModel(self.myModel)
+        
+        self.mySlider = QtWidgets.QSlider(QtCore.Qt.Horizontal, self)
+        self.mySlider.setRange(1, 100)
+        self.mySlider.setSliderPosition(20)
+        self.mySlider.valueChanged.connect(self.sliderChange)
+        
+        list_label = QtWidgets.QLabel("Selected nodes (drag and drop to add):")
+        slider_label = QtWidgets.QLabel("Uniform scale:")
+        
+        horiz_layout = QtWidgets.QHBoxLayout()
+        horiz_layout.addWidget(slider_label)
+        horiz_layout.addWidget(self.mySlider)
+        
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(list_label)
+        layout.addWidget(self.myList)
+        layout.addLayout(horiz_layout)
+                
+        self.setLayout(layout)
+        self.setAcceptDrops(True)
+        
+    def dragEnterEvent(self, event):
+        event.acceptProposedAction()
+
+    def dropEvent(self, event):
+        str = event.mimeData().text()
+        index = str.find(",")
+
+        while index > 0:
+            item = QtGui.QStandardItem()
+            item.setText(str[0:index])
+            item.setCheckable(True)
+            item.setCheckState(QtCore.Qt.Checked)
+            self.myModel.appendRow(item)
+            
+            str = str[index+1:]
+            index = str.find(",")
+
+        item = QtGui.QStandardItem()
+        item.setText(str)
+        item.setCheckable(True)
+        item.setCheckState(QtCore.Qt.Checked)
+        self.myModel.appendRow(item)
+       
+        event.acceptProposedAction()
+    
+    def sliderChange(self, value):
+        scale = float(value) / 20
+        for i in range(0, self.myModel.rowCount()):
+            item = self.myModel.item(i)
+            if item.checkState() is QtCore.Qt.Checked:
+                node = hou.node(item.text())
+                if node is not None:
+                    node.setParms({"scale": scale})
+                
+def createInterface():
+    return DDTest()]]></script>
+    <includeInToolbarMenu menu_position="103" create_separator="false"/>
     <help><![CDATA[]]></help>
   </interface>
 </pythonPanelDocument>
