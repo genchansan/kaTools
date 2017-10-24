@@ -64,12 +64,14 @@ class pickerWidget(QtWidgets.QFrame):
         self.draggedItem = None
 
         layout = QtWidgets.QVBoxLayout()
+        splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        #splitter.setSizes([900,100])
 
-        # set up label
-        title = QtWidgets.QLabel('Expression Picker')
+        ### set up label
+        #title = QtWidgets.QLabel('Expression Picker')
 
 
-        # set up button
+        ### set up buttons
         buttonLayout = QtWidgets.QHBoxLayout()
         self.refreshButton = QtWidgets.QPushButton("Refresh")
         self.saveButton = QtWidgets.QPushButton("Save")
@@ -82,7 +84,7 @@ class pickerWidget(QtWidgets.QFrame):
         self.deleteButton.clicked.connect(self.onDeleteClicked)
 
     
-        # set up tree widget
+        ### set up tree widget
         self.treeWidget = expressionTreeWidget()
         self.treeWidget.setColumnCount(2)
         self.treeWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
@@ -92,10 +94,15 @@ class pickerWidget(QtWidgets.QFrame):
         self.treeWidget.itemPressed.connect(self.onItemPressed)
         self.treeWidget.itemClicked.connect(self.onItemClicked)
         self.treeWidget.itemDoubleClicked.connect(self.onItemDoubleClicked)
+
+        self.textArea = QtWidgets.QTextEdit()
         
-        layout.addWidget(title)
+        
+        #layout.addWidget(title)
         layout.addLayout(buttonLayout)
-        layout.addWidget(self.treeWidget)
+        layout.addWidget(splitter)
+        splitter.addWidget(self.treeWidget)
+        splitter.addWidget(self.textArea)
         self.setLayout(layout)
 
         menus = self.importExpressionLabels()
@@ -111,8 +118,9 @@ class pickerWidget(QtWidgets.QFrame):
 
     
     def onItemDoubleClicked(self, item, column):
-        
         self.treeWidget.editItem(item, column)
+        dialog = QtWidgets.QDialog()
+        dialog.exec_()
         
 
 
@@ -229,7 +237,7 @@ class pickerWidget(QtWidgets.QFrame):
                 parent = QtWidgets.QTreeWidgetItem(self.treeWidget)
                 parent.setFlags(QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
                 parent.setText(0, categories[i])
-                parent.setExpanded(True)
+                parent.setExpanded(False)
                 category = parent
 
                 font = category.font(0)
@@ -251,10 +259,3 @@ class pickerWidget(QtWidgets.QFrame):
         
         self.treeWidget.itemPressed.connect(self.onItemPressed)
         self.treeWidget.itemDoubleClicked.connect(self.onItemDoubleClicked)
-
-
-
-
-def createInterface():
-    root = pickerWidget()
-    return root

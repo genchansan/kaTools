@@ -239,7 +239,7 @@ vector nearP = point(1, "P",nearPt);]]></expression>
   <set name="delete by speed" category="del">
     <expression><![CDATA[if(length(@v)<ch("min_speed"))removepoint(geoself(),@ptnum);]]></expression>
   </set>
-  <set name="twist" category="vol">
+  <set name="twist" category="volume">
     <expression><![CDATA[vector min,max;
 getbbox(1,min,max);
 vector grad= (@P-min)/(max-min);
