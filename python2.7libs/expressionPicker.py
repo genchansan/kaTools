@@ -7,17 +7,40 @@ from PySide2 import QtWidgets, QtCore, QtGui
 
 reload(addExpression)
 
+class snippet(QtWidgets.QTextEdit):
+    def __init__(self, parent=None, label = None):
+        super(snippet, self).__init__(parent)
+        self.label = label
+
+
+    def dragEnterEvent(self, event):
+        event.acceptProposedAction()
+        print "enter"
+
+    def dropEvent(self, event):
+        text = event.mimeData().text()
+        parm = hou.parm(text)
+        if parm != None:
+            self.label.setText(text)
+            self.setText(parm.eval())
+        elif text[0]!="/":
+           self.setText(text)
+        else:
+            self.label.setText("Invalid")
+
+
 class expressionTreeWidget(QtWidgets.QTreeWidget):
+    mimeData = QtCore.QMimeData()
     def __init__(self, parent=None):
         QtWidgets.QTreeWidget.__init__(self, parent)
 
         self.setItemsExpandable(True)
         self.setDragEnabled(True)
         self.setDropIndicatorShown(True)
-        self.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
+        self.setDragDropMode(QtWidgets.QAbstractItemView.DragDrop)
         self.setAlternatingRowColors(True)
         self.ScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
-        #self.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+
 
     def mouseReleaseEvent(self, event):
         return_val = super( QtWidgets.QTreeWidget, self ).mouseReleaseEvent( event )
@@ -29,12 +52,27 @@ class expressionTreeWidget(QtWidgets.QTreeWidget):
        
 
     def mouseMoveEvent(self, event):
+        '''
         #return_val = super( QtWidgets.QTreeWidget, self ).mouseReleaseEvent( event )
         allowDrop = False
         widget = QtWidgets.QApplication.instance().widgetAt(event.globalX(), event.globalY())
         if widget:
             #self.searchChildren(widget)
             pass
+        '''
+        #self.mimeData = QtCore.QMimeData()
+        #self.mimeData.setText("aaaa")
+        drag = QtGui.QDrag(self)
+        drag.setMimeData(self.mimeData)
+        drag.exec_(QtCore.Qt.CopyAction | QtCore.Qt.MoveAction, QtCore.Qt.CopyAction)
+
+    def dragEnterEvent(self, event):
+        event.acceptProposedAction()
+
+    def dropEvent(self, event):
+        #return_val = super( QtWidgets.QTreeWidget, self ).dropEvent( event )
+        str = event.mimeData().text()
+        print(event.mimeData().text())
 
     def searchChildren(self, parent):
         for child in parent.children():
@@ -95,14 +133,21 @@ class pickerWidget(QtWidgets.QFrame):
         self.treeWidget.itemClicked.connect(self.onItemClicked)
         self.treeWidget.itemDoubleClicked.connect(self.onItemDoubleClicked)
 
-        self.textArea = QtWidgets.QTextEdit()
-        
+        labelLayout = QtWidgets.QHBoxLayout()
+        self.path = QtWidgets.QLabel()
+        self.path.setText("aaa")
+        labelLayout.addWidget(self.path)
+
+        self.textArea = snippet(label = self.path)
+        self.textArea.setAcceptDrops(True)
+        self.textArea.textChanged.connect(self.onTextChanged)
         
         #layout.addWidget(title)
         layout.addLayout(buttonLayout)
         layout.addWidget(splitter)
         splitter.addWidget(self.treeWidget)
         splitter.addWidget(self.textArea)
+        layout.addLayout(labelLayout)
         self.setLayout(layout)
 
         menus = self.importExpressionLabels()
@@ -111,16 +156,17 @@ class pickerWidget(QtWidgets.QFrame):
 
 
 
+
     def onItemPressed(self, item, colmun):
         #print "item pressed"
         self.draggedItem =  item.text(1)
+        self.treeWidget.mimeData = QtCore.QMimeData()
+        self.treeWidget.mimeData.setText(item.text(1))
 
 
     
     def onItemDoubleClicked(self, item, column):
         self.treeWidget.editItem(item, column)
-        dialog = QtWidgets.QDialog()
-        dialog.exec_()
         
 
 
@@ -165,9 +211,14 @@ class pickerWidget(QtWidgets.QFrame):
         selected = self.treeWidget.selectedItems()
         self.deleteExpression(selected)
 
+    def onTextChanged(self):
+        parm = hou.parm(self.path.text())
+        if parm != None:
+            parm.set(self.textArea.toPlainText())
+        else:
+            self.path.setText("Invalid")
 
 ############################################################
-
 
 
     def importExpressionLabels(self):

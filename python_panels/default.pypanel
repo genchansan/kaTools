@@ -9,6 +9,7 @@
     <interfaceItem name="expressionPicker"/>
     <interfaceItem name="ReceiveKinect"/>
     <interfaceItem name="NodePicker"/>
+    <interfaceItem name="sesi_quick_start"/>
   </interfacesMenu>
   <interfacesMenu type="panetab">
     <interfaceItem name="expressionPicker"/>
