@@ -1,5 +1,3 @@
-#https://www.off-soft.net/ja/develop/qt/qtb2.html
-
 import hou
 import toolutils
 import addExpression
@@ -25,7 +23,6 @@ class snippet(QtWidgets.QTextEdit):
         text = event.mimeData().text()
         parm = hou.parm(text)
         if parm != None:
-            print "parm!"
             mime = QtCore.QMimeData()
             mime.setText("")
             newEvent = QtGui.QDropEvent(event.pos(), event.dropAction(), mime, event.mouseButtons(), event.keyboardModifiers())
@@ -45,6 +42,13 @@ class snippet(QtWidgets.QTextEdit):
             self.label.setStyleSheet(styles["invalid"])
 
 
+
+
+#############################################################
+### 
+#############################################################
+
+
 class expressionTreeWidget(QtWidgets.QTreeWidget):
     mimeData = QtCore.QMimeData()
     def __init__(self, parent=None):
@@ -53,29 +57,24 @@ class expressionTreeWidget(QtWidgets.QTreeWidget):
         self.setItemsExpandable(True)
         self.setDragEnabled(True)
         self.setDropIndicatorShown(True)
-        self.setDragDropMode(QtWidgets.QAbstractItemView.DragDrop)
+        #self.setDragDropMode(QtWidgets.QAbstractItemView.DragDrop)
+        self.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
         self.setAlternatingRowColors(True)
-        self.ScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
-
+        self.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
 
     def mouseReleaseEvent(self, event):
+        pass
+        '''
         return_val = super( QtWidgets.QTreeWidget, self ).mouseReleaseEvent( event )
         #print "mouse release"
         #print hou.ui.curDesktop().paneTabUnderCursor().type()
         widget = QtWidgets.QApplication.instance().widgetAt(event.globalX(), event.globalY())
         if widget:
             self.searchChildren(widget)
-       
+        '''
+
 
     def mouseMoveEvent(self, event):
-        '''
-        #return_val = super( QtWidgets.QTreeWidget, self ).mouseReleaseEvent( event )
-        allowDrop = False
-        widget = QtWidgets.QApplication.instance().widgetAt(event.globalX(), event.globalY())
-        if widget:
-            #self.searchChildren(widget)
-            pass
-        '''
         drag = QtGui.QDrag(self)
         drag.setMimeData(self.mimeData)
         drag.exec_(QtCore.Qt.CopyAction | QtCore.Qt.MoveAction, QtCore.Qt.CopyAction)
@@ -88,6 +87,12 @@ class expressionTreeWidget(QtWidgets.QTreeWidget):
                         #print child.childFrames()
                         pass
                     self.searchChildren(child)
+
+    def dragEnterEvent(self, event):
+        event.acceptProposedAction()
+
+    def dropEvent(self, event):
+        print event.mimeData().text()
 
 
 
@@ -108,11 +113,7 @@ class pickerWidget(QtWidgets.QFrame):
         self.draggedItem = None
 
         layout = QtWidgets.QVBoxLayout()
-        splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
-        #splitter.setSizes([900,100])
-
-        ### set up label
-        #title = QtWidgets.QLabel('Expression Picker')
+        self.splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
 
 
         ### set up buttons
@@ -139,11 +140,18 @@ class pickerWidget(QtWidgets.QFrame):
         self.treeWidget.itemClicked.connect(self.onItemClicked)
         self.treeWidget.itemDoubleClicked.connect(self.onItemDoubleClicked)
 
+        searchLayout = QtWidgets.QHBoxLayout()
+        self.staticSearchText = QtWidgets.QLabel()
+        self.staticSearchText.setText("Filter : ")
+        self.searchTextArea = QtWidgets.QLineEdit()
+        self.searchTextArea.textEdited.connect(self.onTextEdited)
+        self.searchTextArea.editingFinished.connect(self.onEditFinished)
+        searchLayout.addWidget(self.staticSearchText)
+        searchLayout.addWidget(self.searchTextArea)
+
         labelLayout = QtWidgets.QHBoxLayout()
         self.pathLabel = QtWidgets.QLabel()
-
         self.pathLabel.setStyleSheet(styles["initial"])
-
         self.pathLabel.setText("Drop parameter above:")
         labelLayout.addWidget(self.pathLabel)
 
@@ -151,13 +159,17 @@ class pickerWidget(QtWidgets.QFrame):
         self.textArea.setAcceptDrops(True)
         self.textArea.textChanged.connect(self.onTextChanged)
         
-        #layout.addWidget(title)
+        
         layout.addLayout(buttonLayout)
-        layout.addWidget(splitter)
-        splitter.addWidget(self.treeWidget)
-        splitter.addWidget(self.textArea)
+        layout.addLayout(searchLayout)
+        layout.addWidget(self.splitter)
+        self.splitter.addWidget(self.treeWidget)
+        self.splitter.addWidget(self.textArea)
         layout.addLayout(labelLayout)
         self.setLayout(layout)
+
+        #print self.splitter.size()
+        self.splitter.setSizes([300,100])
 
         menus = self.importExpressionLabels()
         menus, categories = self.importExpressions(menus)
@@ -173,11 +185,9 @@ class pickerWidget(QtWidgets.QFrame):
         self.treeWidget.mimeData.setText(item.text(1))
 
 
-    
     def onItemDoubleClicked(self, item, column):
         self.treeWidget.editItem(item, column)
         
-
 
     def onItemClicked(self, item, column):
         if item.isSelected() == True:
@@ -227,6 +237,36 @@ class pickerWidget(QtWidgets.QFrame):
         else:
             self.pathLabel.setText("Invalid. Drop a parameter:")
             self.pathLabel.setStyleSheet(styles["invalid"])
+
+
+    def onTextEdited(self, text):
+        if text != "":
+            found = self.treeWidget.findItems(text, QtCore.Qt.MatchFlags(QtCore.Qt.MatchStartsWith))
+            #print "found : " + str(len(found))
+            if len(found)>0:
+                self.treeWidget.scrollToItem(found[0])
+                self.treeWidget.setCurrentItem(found[0],0)
+                if found[0].parent() is None :
+                    self.treeWidget.expandItem(found[0])
+            else:
+                for i in range( self.treeWidget.topLevelItemCount()):
+                    parentItem = self.treeWidget.topLevelItem(i)
+                    numChildren = self.treeWidget.topLevelItem(i).childCount()
+                    for m in range(numChildren):
+                        childLabel = parentItem.child(m).data(0,0)
+                        if text in childLabel:
+                            #print childLabel
+                            self.treeWidget.expandItem(parentItem)
+                            self.treeWidget.scrollToItem(parentItem.child(m))
+                            self.treeWidget.setCurrentItem(parentItem.child(m),0)
+                            break
+
+
+    def onEditFinished(self):
+        self.treeWidget.setFocus()
+
+
+    
 
 ############################################################
 
@@ -294,7 +334,6 @@ class pickerWidget(QtWidgets.QFrame):
             items = self.treeWidget.findItems(categories[i], 0)
             #print items
             if len(items) == 0:
-                #print "none"
                 parent = QtWidgets.QTreeWidgetItem(self.treeWidget)
                 parent.setFlags(QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
                 parent.setText(0, categories[i])

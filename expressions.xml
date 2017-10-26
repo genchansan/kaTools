@@ -93,9 +93,6 @@ q3 = qnormalize(q3);
 p@orient = q1 * cos(theta) + q3 * sin(theta);
 ]]></expression>
   </set>
-  <set name="rotate packed rbd" category="debug">
-    <expression><![CDATA[@P = qrotate(p@orient,(@P - v@pivot)) + v@packP;]]></expression>
-  </set>
   <set name="volume sample" category="volume">
     <expression><![CDATA[int in = 1;
 
@@ -294,5 +291,8 @@ else
 for(int i = 0; i< length; i++)
 {
 }]]></expression>
+  </set>
+  <set name="rotate packed rbd" category="matrix">
+    <expression><![CDATA[@P = qrotate(p@orient,(@P - v@pivot)) + v@packP;]]></expression>
   </set>
 </expressionSets>
