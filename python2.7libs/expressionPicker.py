@@ -7,6 +7,10 @@ from PySide2 import QtWidgets, QtCore, QtGui
 
 reload(addExpression)
 
+styles = {"valid" : "font: 16pt; background-color: #3e5062"
+    , "invalid" : "font: 16pt; background-color: #990000"
+    , "initial" : "font: 16pt; background-color: #222222"}
+
 class snippet(QtWidgets.QTextEdit):
     def __init__(self, parent=None, label = None):
         super(snippet, self).__init__(parent)
@@ -15,18 +19,30 @@ class snippet(QtWidgets.QTextEdit):
 
     def dragEnterEvent(self, event):
         event.acceptProposedAction()
-        print "enter"
+
 
     def dropEvent(self, event):
         text = event.mimeData().text()
         parm = hou.parm(text)
         if parm != None:
+            print "parm!"
+            mime = QtCore.QMimeData()
+            mime.setText("")
+            newEvent = QtGui.QDropEvent(event.pos(), event.dropAction(), mime, event.mouseButtons(), event.keyboardModifiers())
+            super(snippet, self).dropEvent(newEvent)
             self.label.setText(text)
             self.setText(parm.eval())
+            self.label.setStyleSheet(styles["valid"])
         elif text[0]!="/":
-           self.setText(text)
+            super(snippet, self).dropEvent(event)
+            self.label.setStyleSheet(styles["valid"])
         else:
-            self.label.setText("Invalid")
+            mime = QtCore.QMimeData()
+            mime.setText("")
+            newEvent = QtGui.QDropEvent(event.pos(), event.dropAction(), mime, event.mouseButtons(), event.keyboardModifiers())
+            super(snippet, self).dropEvent(newEvent)
+            self.label.setText("Invalid. Drop a parameter:")
+            self.label.setStyleSheet(styles["invalid"])
 
 
 class expressionTreeWidget(QtWidgets.QTreeWidget):
@@ -60,19 +76,9 @@ class expressionTreeWidget(QtWidgets.QTreeWidget):
             #self.searchChildren(widget)
             pass
         '''
-        #self.mimeData = QtCore.QMimeData()
-        #self.mimeData.setText("aaaa")
         drag = QtGui.QDrag(self)
         drag.setMimeData(self.mimeData)
         drag.exec_(QtCore.Qt.CopyAction | QtCore.Qt.MoveAction, QtCore.Qt.CopyAction)
-
-    def dragEnterEvent(self, event):
-        event.acceptProposedAction()
-
-    def dropEvent(self, event):
-        #return_val = super( QtWidgets.QTreeWidget, self ).dropEvent( event )
-        str = event.mimeData().text()
-        print(event.mimeData().text())
 
     def searchChildren(self, parent):
         for child in parent.children():
@@ -95,7 +101,7 @@ class pickerWidget(QtWidgets.QFrame):
     prevClicked = QtWidgets.QTreeWidgetItem()
     
     def __init__(self, parent = None):
-        #super(MyWidget, self).__init__(parent)
+        #super(pickerWidget, self).__init__(parent)
         QtWidgets.QFrame.__init__(self, parent)
         
         self.preset = addExpression.wranglePreset(0)
@@ -134,11 +140,14 @@ class pickerWidget(QtWidgets.QFrame):
         self.treeWidget.itemDoubleClicked.connect(self.onItemDoubleClicked)
 
         labelLayout = QtWidgets.QHBoxLayout()
-        self.path = QtWidgets.QLabel()
-        self.path.setText("aaa")
-        labelLayout.addWidget(self.path)
+        self.pathLabel = QtWidgets.QLabel()
 
-        self.textArea = snippet(label = self.path)
+        self.pathLabel.setStyleSheet(styles["initial"])
+
+        self.pathLabel.setText("Drop parameter above:")
+        labelLayout.addWidget(self.pathLabel)
+
+        self.textArea = snippet(label = self.pathLabel)
         self.textArea.setAcceptDrops(True)
         self.textArea.textChanged.connect(self.onTextChanged)
         
@@ -204,7 +213,6 @@ class pickerWidget(QtWidgets.QFrame):
         selectecNode = selectecNodes[0]
         if selectecNode.type() == hou.sopNodeTypeCategory().nodeTypes()["attribwrangle"]:
             kwargs = {"parms":[selectecNode.parm("snippet")]}
-
             self.preset.saveXML(kwargs)
 
     def onDeleteClicked(self):
@@ -212,11 +220,13 @@ class pickerWidget(QtWidgets.QFrame):
         self.deleteExpression(selected)
 
     def onTextChanged(self):
-        parm = hou.parm(self.path.text())
+        parm = hou.parm(self.pathLabel.text())
         if parm != None:
             parm.set(self.textArea.toPlainText())
+            self.pathLabel.setStyleSheet(styles["valid"])
         else:
-            self.path.setText("Invalid")
+            self.pathLabel.setText("Invalid. Drop a parameter:")
+            self.pathLabel.setStyleSheet(styles["invalid"])
 
 ############################################################
 
