@@ -280,4 +280,19 @@ float boundz[] = array(min.z, max.z);
 
 ]]></expression>
   </set>
+  <set name="if" category="grammer">
+    <expression><![CDATA[if()
+{
+}
+else
+{
+}]]></expression>
+  </set>
+  <set name="for loop" category="grammer">
+    <expression><![CDATA[int length=0;
+
+for(int i = 0; i< length; i++)
+{
+}]]></expression>
+  </set>
 </expressionSets>
