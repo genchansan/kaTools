@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import hou
-import xml.etree.ElementTree as ET
+#import xml.etree.ElementTree as ET
 import sys
-import xml.parsers.expat as ep
+#import xml.parsers.expat as ep
 import lxml.etree as let
+import re
 
 
 class wranglePreset:
@@ -14,16 +15,15 @@ class wranglePreset:
 	inExp=False
 	expression=''
 
-	#makeMenus = 0
-	#paste = 1
-	#saveXML = 2
-	#deleteXML = 3
-
-
-	def __init__(self, mode, kwargs=None):
-		self.XMLPath = hou.expandString("$HOUDINI_PATH").split(";")[-2] + '/expressions.xml'
-		self.tree = ET.parse(self.XMLPath)
-
+	def __init__(self, kwargs=None):
+		scriptPath = __file__.rsplit("/", 2)[0]
+		'''
+		for path in re.split("[;:]", hou.expandString("$HOUDINI_PATH")):
+			if path in scriptPath:
+				pass
+		'''
+		#self.XMLPath = re.split("[;:]", hou.expandString("$HOUDINI_PATH"))[-2] + '/expressions.xml'
+		self.XMLPath = scriptPath + '/expressions.xml'
 		parser = let.XMLParser(resolve_entities=False, remove_blank_text=True, strip_cdata=False)
 		self.tree2 = let.parse(self.XMLPath, parser)
 		self.kwargs = kwargs
@@ -59,7 +59,7 @@ class wranglePreset:
 			#print category
 		except KeyError:
 			#print "no category"
-			category = "sop"
+			category = "no category"
 		return category
 
 	def getElement(self, name):
@@ -121,16 +121,17 @@ class wranglePreset:
 		root.append(setElement)
 		setElement.append(expressionElement)
 
-		#self.tree.write(self.XMLPath, "utf-8", True)
 		self.tree2.write(self.XMLPath, encoding="utf-8", method="xml", pretty_print = True)
 
 
 
 	def deleteExpression(self, name):
 		root = self.tree2.getroot()
+		length = len(name)
+		if length==0:
+			return
 		element = self.getElement(name)
 		if element != None:
-			#element.clear()
 			root.remove(element)
 			self.updateXMLFile()
 
