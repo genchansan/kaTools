@@ -45,7 +45,7 @@ class snippet(QtWidgets.QTextEdit):
 
 
 #############################################################
-### 
+### TreeWidget
 #############################################################
 
 
@@ -109,7 +109,7 @@ class pickerWidget(QtWidgets.QFrame):
         #super(pickerWidget, self).__init__(parent)
         QtWidgets.QFrame.__init__(self, parent)
         
-        self.preset = addExpression.wranglePreset(0)
+        self.preset = addExpression.wranglePreset()
         self.draggedItem = None
 
         layout = QtWidgets.QVBoxLayout()
@@ -153,7 +153,14 @@ class pickerWidget(QtWidgets.QFrame):
         self.pathLabel = QtWidgets.QLabel()
         self.pathLabel.setStyleSheet(styles["initial"])
         self.pathLabel.setText("Drop parameter above:")
+        #self.pathLabel.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum))
+
+        self.clearButton = QtWidgets.QPushButton("Clear")
+        self.clearButton.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed))
         labelLayout.addWidget(self.pathLabel)
+        #labelLayout.addStretch(0)
+        labelLayout.addWidget(self.clearButton)
+        self.clearButton.clicked.connect(self.onClearClicked)
 
         self.textArea = snippet(label = self.pathLabel)
         self.textArea.setAcceptDrops(True)
@@ -171,7 +178,7 @@ class pickerWidget(QtWidgets.QFrame):
         #print self.splitter.size()
         self.splitter.setSizes([300,100])
 
-        menus = self.importExpressionLabels()
+        menus = self.importXmlMenus()
         menus, categories = self.importExpressions(menus)
         self.updateTree(menus, categories)
 
@@ -206,14 +213,14 @@ class pickerWidget(QtWidgets.QFrame):
 
 
     def onRefreshClicked(self):
-        self.preset = addExpression.wranglePreset(0)
-        menus = self.importExpressionLabels()
+        self.preset = addExpression.wranglePreset()
+        menus = self.importXmlMenus()
         menus, categories = self.importExpressions(menus)
         self.updateTree(menus, categories)
 
 
     def onSaveClicked(self):
-        self.preset = addExpression.wranglePreset(2)
+        self.preset = addExpression.wranglePreset()
 
         selectecNodes = hou.selectedNodes()
         selectecNode = None
@@ -225,9 +232,11 @@ class pickerWidget(QtWidgets.QFrame):
             kwargs = {"parms":[selectecNode.parm("snippet")]}
             self.preset.saveXML(kwargs)
 
+
     def onDeleteClicked(self):
         selected = self.treeWidget.selectedItems()
         self.deleteExpression(selected)
+
 
     def onTextChanged(self):
         parm = hou.parm(self.pathLabel.text())
@@ -266,15 +275,18 @@ class pickerWidget(QtWidgets.QFrame):
         self.treeWidget.setFocus()
 
 
+    def onClearClicked(self):
+        self.textArea.setText("")
+
+
     
 
 ############################################################
 
 
-    def importExpressionLabels(self):
-        # Reaed Presets
+    def importXmlMenus(self):
+        # Read Presets
         menus = self.preset.makeMenus()
-        #print menus
         return menus
 
     def importExpressions(self, menus):
