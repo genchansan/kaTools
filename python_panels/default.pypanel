@@ -10,6 +10,7 @@
     <interfaceItem name="ReceiveKinect"/>
     <interfaceItem name="NodePicker"/>
     <interfaceItem name="sesi_quick_start"/>
+    <interfaceItem name="interface1"/>
   </interfacesMenu>
   <interfacesMenu type="panetab">
     <interfaceItem name="expressionPicker"/>
@@ -22,13 +23,13 @@
 import hou
 import toolutils
 from PySide2 import QtWidgets, QtCore, QtGui
-import expressionPicker
+from kaToolsExpressionPicker.widgets import pickerWidget
 
-reload(expressionPicker)
+reload(pickerWidget)
 
 
 def createInterface():
-    root = expressionPicker.pickerWidget()
+    root = pickerWidget.pickerWidget()
     return root]]></script>
     <includeInPaneTabMenu menu_position="0" create_separator="false"/>
     <includeInToolbarMenu menu_position="101" create_separator="false"/>
@@ -459,6 +460,18 @@ class DDTest(QtWidgets.QFrame):
 def createInterface():
     return DDTest()]]></script>
     <includeInToolbarMenu menu_position="103" create_separator="false"/>
+    <help><![CDATA[]]></help>
+  </interface>
+  <interface name="interface1" label="New Python Interface" icon="MISC_python" help_url="">
+    <script><![CDATA[def createInterface():
+    from pw_VEX_Editor import editor_panel
+    reload(editor_panel)
+    w = editor_panel.VEXEditorPanelClass()
+    w.setStyleSheet('')
+    import hqt
+    w.setStyleSheet( hqt.get_h14_style() )
+    return w]]></script>
+    <includeInToolbarMenu menu_position="104" create_separator="false"/>
     <help><![CDATA[]]></help>
   </interface>
 </pythonPanelDocument>
