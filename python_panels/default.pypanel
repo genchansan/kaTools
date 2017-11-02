@@ -32,7 +32,7 @@ def createInterface():
     root = pickerWidget.pickerWidget()
     return root]]></script>
     <includeInPaneTabMenu menu_position="0" create_separator="false"/>
-    <includeInToolbarMenu menu_position="101" create_separator="false"/>
+    <includeInToolbarMenu menu_position="0" create_separator="false"/>
     <help><![CDATA[]]></help>
   </interface>
   <interface name="sesi_quick_start" label="Quick Start: Calendar Example" icon="MISC_python" help_url="">
