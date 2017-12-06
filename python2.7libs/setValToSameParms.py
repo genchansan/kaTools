@@ -39,9 +39,8 @@ def tupleAllIndices(nodes):
 ####################################
 
 
-def execute():
-    selected = hou.selectedNodes()
-    
+
+def execute(selected):
     sourceNode = hou.selectedNodes()[0]
     
     sourceParms = sourceNode.parms()
@@ -69,8 +68,33 @@ def execute():
     for index in indices:
         targetNode = matchNodes[index]
         targetNode.parm(sourceParm.name()).set(sourceParm.eval())
-    
-    
-    
 
-    
+
+
+
+def executeBySelected():
+    selected = hou.selectedNodes()
+    execute(selected)
+
+
+def executeForCacheRead():
+
+
+    root = hou.node("/obj")
+    #all = root.allNodes()
+
+    matches = []
+    for node in root.allNodes():
+        print node.type().name()
+        if node.type().name() == "cacheread::2.0":
+
+            matches.append(node)
+
+    indices = selectedNodes(matches)
+    if(len(indices)==0):
+        print("No selected")
+        return
+
+    for index in indices:
+        targetNode = matches[index]
+        targetNode.parm("refresh").pressButton()
