@@ -3821,6 +3821,7 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
     <memberTool name="DOP_simple_upres"/>
     <memberTool name="DOP_sopsolver"/>
     <memberTool name="attribwrangle5"/>
+    <memberTool name="dopnet"/>
   </toolshelf>
 
   <tool name="GET_all_frames_geo0" label="GET_all_frames_geo" icon="CHOP_layer">
@@ -7912,5 +7913,349 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
 reload(setValToSameParms)
 
 setValToSameParms.execute()]]></script>
+  </tool>
+
+  <tool name="dopnet" label="DOP_sopsolver1" icon="NETWORKS_dop">
+    <helpURL>operator:Sop/dopnet</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/dopnet</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('dopnet'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_DOP_sopsolver1 (Sop/dopnet)
+set _obj_geo1_DOP_sopsolver1 = `run("opadd -e -n -v dopnet DOP_sopsolver1")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_DOP_sopsolver1
+opparm $_obj_geo1_DOP_sopsolver1  numobj ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_sopsolver1 timestep
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("timescale")/(ch("substep")*$FPS)' $_obj_geo1_DOP_sopsolver1/timestep
+chadd -t 0 0 $_obj_geo1_DOP_sopsolver1 timeoffset
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '(ch("startframe")-1)/$FPS' $_obj_geo1_DOP_sopsolver1/timeoffset
+chadd -t 41.458333333333002 41.458333333333002 $_obj_geo1_DOP_sopsolver1 startframe
+chkey -t 41.458333333333002 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../start_frame") - ch("../preroll_for_crowd")' $_obj_geo1_DOP_sopsolver1/startframe
+chblockend
+opparm -V 16.0.705 $_obj_geo1_DOP_sopsolver1 stdswitcher ( 1 1 1 ) startframe ( startframe ) objname1 ( * )
+opcolor -c 0.76499998569488525 1 0.57599997520446777 $_obj_geo1_DOP_sopsolver1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_DOP_sopsolver1
+opexprlanguage -s hscript $_obj_geo1_DOP_sopsolver1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_DOP_sopsolver1
+opuserdata -n '___toolcount___' -v '594' $_obj_geo1_DOP_sopsolver1
+opuserdata -n '___toolid___' -v 'DOP_sopsolver' $_obj_geo1_DOP_sopsolver1
+opuserdata -n 'nodeshape' -v 'burst' $_obj_geo1_DOP_sopsolver1
+opcf $_obj_geo1_DOP_sopsolver1
+
+# Node $_obj_geo1_DOP_sopsolver1_output (Dop/output)
+set _obj_geo1_DOP_sopsolver1_output = `run("opadd -e -n -v output output")`
+oplocate -x `$arg2 + -0.37176500000000001` -y `$arg3 + -0.78360799999999997` $_obj_geo1_DOP_sopsolver1_output
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_sopsolver1_output f1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_DOP_sopsolver1_output/f1
+chadd -t 0 0 $_obj_geo1_DOP_sopsolver1_output f2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_DOP_sopsolver1_output/f2
+chblockend
+opparm $_obj_geo1_DOP_sopsolver1_output
+opset -d on -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_sopsolver1_output
+opexprlanguage -s hscript $_obj_geo1_DOP_sopsolver1_output
+opuserdata -n '___Version___' -v '' $_obj_geo1_DOP_sopsolver1_output
+opuserdata -n '___toolcount___' -v '594' $_obj_geo1_DOP_sopsolver1_output
+opuserdata -n '___toolid___' -v 'DOP_sopsolver' $_obj_geo1_DOP_sopsolver1_output
+
+# Node $_obj_geo1_DOP_sopsolver1_emptyobject1 (Dop/emptyobject)
+set _obj_geo1_DOP_sopsolver1_emptyobject1 = `run("opadd -e -n -v emptyobject emptyobject1")`
+oplocate -x `$arg2 + -2.6352899999999999` -y `$arg3 + 3.1990500000000002` $_obj_geo1_DOP_sopsolver1_emptyobject1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_sopsolver1_emptyobject1 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F '$ST == 0' $_obj_geo1_DOP_sopsolver1_emptyobject1/activation
+chblockend
+opparm -V 16.0.705 $_obj_geo1_DOP_sopsolver1_emptyobject1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_sopsolver1_emptyobject1
+opexprlanguage -s hscript $_obj_geo1_DOP_sopsolver1_emptyobject1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_DOP_sopsolver1_emptyobject1
+opuserdata -n '___toolcount___' -v '594' $_obj_geo1_DOP_sopsolver1_emptyobject1
+opuserdata -n '___toolid___' -v 'DOP_sopsolver' $_obj_geo1_DOP_sopsolver1_emptyobject1
+
+# Node $_obj_geo1_DOP_sopsolver1_sopgeo1 (Dop/sopgeo)
+set _obj_geo1_DOP_sopsolver1_sopgeo1 = `run("opadd -e -n -v sopgeo sopgeo1")`
+oplocate -x `$arg2 + -2.6340400000000002` -y `$arg3 + 2.10493` $_obj_geo1_DOP_sopsolver1_sopgeo1
+opparm $_obj_geo1_DOP_sopsolver1_sopgeo1  numstamps ( 0 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_sopsolver1_sopgeo1 time
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_DOP_sopsolver1_sopgeo1/time
+chadd -t 0 0 $_obj_geo1_DOP_sopsolver1_sopgeo1 transformtime
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_DOP_sopsolver1_sopgeo1/transformtime
+chadd -t 0 0 $_obj_geo1_DOP_sopsolver1_sopgeo1 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_DOP_sopsolver1_sopgeo1/activation
+chblockend
+opparm -V 16.0.705 $_obj_geo1_DOP_sopsolver1_sopgeo1 soppath ( '`opinputpath("..",0)`' )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_sopsolver1_sopgeo1
+opexprlanguage -s hscript $_obj_geo1_DOP_sopsolver1_sopgeo1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_DOP_sopsolver1_sopgeo1
+opuserdata -n '___toolcount___' -v '594' $_obj_geo1_DOP_sopsolver1_sopgeo1
+opuserdata -n '___toolid___' -v 'DOP_sopsolver' $_obj_geo1_DOP_sopsolver1_sopgeo1
+
+# Node $_obj_geo1_DOP_sopsolver1_sopsolver1 (Dop/sopsolver::2.0)
+set _obj_geo1_DOP_sopsolver1_sopsolver1 = `run("opadd -e -n -v sopsolver::2.0 sopsolver1")`
+oplocate -x `$arg2 + 2.8329154962861836` -y `$arg3 + 3.197499999955483` $_obj_geo1_DOP_sopsolver1_sopsolver1
+opparm -V 16.0.705 $_obj_geo1_DOP_sopsolver1_sopsolver1 solveinitframe ( on ) uniquedataname ( on )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_sopsolver1_sopsolver1
+opexprlanguage -s hscript $_obj_geo1_DOP_sopsolver1_sopsolver1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_DOP_sopsolver1_sopsolver1
+opuserdata -n '___toolcount___' -v '594' $_obj_geo1_DOP_sopsolver1_sopsolver1
+opuserdata -n '___toolid___' -v 'DOP_sopsolver' $_obj_geo1_DOP_sopsolver1_sopsolver1
+opcf $_obj_geo1_DOP_sopsolver1_sopsolver1
+
+# Node $_obj_geo1_DOP_sopsolver1_sopsolver1_dop_geometry (Sop/dopimport)
+set _obj_geo1_DOP_sopsolver1_sopsolver1_dop_geometry = `run("opadd -e -n -v dopimport dop_geometry")`
+oplocate -x `$arg2 + 3.6318600000000001` -y `$arg3 + -1.8995500000000001` $_obj_geo1_DOP_sopsolver1_sopsolver1_dop_geometry
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_sopsolver1_sopsolver1_dop_geometry doposxform
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../transformsopoutput")' $_obj_geo1_DOP_sopsolver1_sopsolver1_dop_geometry/doposxform
+chadd -t 0 0 $_obj_geo1_DOP_sopsolver1_sopsolver1_dop_geometry doxform
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../transformsopoutput")' $_obj_geo1_DOP_sopsolver1_sopsolver1_dop_geometry/doxform
+chadd -t 0 0 $_obj_geo1_DOP_sopsolver1_sopsolver1_dop_geometry integrateovertime
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '1/$FPS' $_obj_geo1_DOP_sopsolver1_sopsolver1_dop_geometry/integrateovertime
+chblockend
+opparm -V 16.0.705 $_obj_geo1_DOP_sopsolver1_sopsolver1_dop_geometry doppath ( '`stamps("..", "DOPNET", "../..")`' ) objpattern ( '`stamps("..", "OBJID", arg(dopnodeobjs(".."),0))`' ) importstyle ( fetch ) geodatapath ( '`stamps("..", "DATANAME", chs("../datapath"))`' ) doposxform ( doposxform ) doxform ( doxform ) adddopobjectname ( off ) pointvels ( none ) donotsim ( on )
+opcolor -c 0.60000002384185791 0.40000000596046448 1 $_obj_geo1_DOP_sopsolver1_sopsolver1_dop_geometry
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_DOP_sopsolver1_sopsolver1_dop_geometry
+opexprlanguage -s hscript $_obj_geo1_DOP_sopsolver1_sopsolver1_dop_geometry
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_DOP_sopsolver1_sopsolver1_dop_geometry
+opuserdata -n '___toolcount___' -v '594' $_obj_geo1_DOP_sopsolver1_sopsolver1_dop_geometry
+opuserdata -n '___toolid___' -v 'DOP_sopsolver' $_obj_geo1_DOP_sopsolver1_sopsolver1_dop_geometry
+
+# Node $_obj_geo1_DOP_sopsolver1_sopsolver1_impacts (Sop/dopimportrecords)
+set _obj_geo1_DOP_sopsolver1_sopsolver1_impacts = `run("opadd -e -n -v dopimportrecords impacts")`
+oplocate -x `$arg2 + 6.3931899999999997` -y `$arg3 + -1.8601000000000001` $_obj_geo1_DOP_sopsolver1_sopsolver1_impacts
+opparm -V 16.0.705 $_obj_geo1_DOP_sopsolver1_sopsolver1_impacts doppath ( '`stamps("..", "DOPNET", "../..")`' ) objpattern ( '`stamps("..", "OBJID", arg(dopnodeobjs(".."),0))`' ) datapath ( Impacts ) record ( Impacts )
+opcolor -c 0.60000002384185791 0.40000000596046448 1 $_obj_geo1_DOP_sopsolver1_sopsolver1_impacts
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_DOP_sopsolver1_sopsolver1_impacts
+opexprlanguage -s hscript $_obj_geo1_DOP_sopsolver1_sopsolver1_impacts
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_DOP_sopsolver1_sopsolver1_impacts
+opuserdata -n '___toolcount___' -v '594' $_obj_geo1_DOP_sopsolver1_sopsolver1_impacts
+opuserdata -n '___toolid___' -v 'DOP_sopsolver' $_obj_geo1_DOP_sopsolver1_sopsolver1_impacts
+
+# Node $_obj_geo1_DOP_sopsolver1_sopsolver1_feedbacks (Sop/dopimportrecords)
+set _obj_geo1_DOP_sopsolver1_sopsolver1_feedbacks = `run("opadd -e -n -v dopimportrecords feedbacks")`
+oplocate -x `$arg2 + 8.6226900000000004` -y `$arg3 + -1.9601299999999999` $_obj_geo1_DOP_sopsolver1_sopsolver1_feedbacks
+opparm -V 16.0.705 $_obj_geo1_DOP_sopsolver1_sopsolver1_feedbacks doppath ( '`stamps("..", "DOPNET", "../..")`' ) objpattern ( '`stamps("..", "OBJID", arg(dopnodeobjs(".."),0))`' ) datapath ( Feedback ) record ( Impacts )
+opcolor -c 0.60000002384185791 0.40000000596046448 1 $_obj_geo1_DOP_sopsolver1_sopsolver1_feedbacks
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_DOP_sopsolver1_sopsolver1_feedbacks
+opexprlanguage -s hscript $_obj_geo1_DOP_sopsolver1_sopsolver1_feedbacks
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_DOP_sopsolver1_sopsolver1_feedbacks
+opuserdata -n '___toolcount___' -v '594' $_obj_geo1_DOP_sopsolver1_sopsolver1_feedbacks
+opuserdata -n '___toolid___' -v 'DOP_sopsolver' $_obj_geo1_DOP_sopsolver1_sopsolver1_feedbacks
+
+# Node $_obj_geo1_DOP_sopsolver1_sopsolver1_relationship_geometry (Sop/object_merge)
+set _obj_geo1_DOP_sopsolver1_sopsolver1_relationship_geometry = `run("opadd -e -n -v object_merge relationship_geometry")`
+oplocate -x `$arg2 + 11.0848` -y `$arg3 + -1.89367` $_obj_geo1_DOP_sopsolver1_sopsolver1_relationship_geometry
+opspareds '    group { 	name	"folder0" 	label	"Object Merge"  	parm { 	    name	"xformtype" 	    baseparm 	    label	"Transform" 	    export	none 	} 	parm { 	    name	"xformpath" 	    baseparm 	    label	"Transform Object" 	    export	none 	} 	parm { 	    name	"invertxform" 	    baseparm 	    label	"Invert Transform" 	    export	none 	} 	parm { 	    name	"createptgroups" 	    baseparm 	    label	"Create Point Groups" 	    export	none 	} 	parm { 	    name	"ptgroupprefix" 	    baseparm 	    label	"Point Group Prefix" 	    export	none 	} 	parm { 	    name	"createprimgroups" 	    baseparm 	    label	"Create Primitive Groups" 	    export	none 	} 	parm { 	    name	"primgroupprefix" 	    baseparm 	    label	"Primitive Group Prefix" 	    export	none 	} 	parm { 	    name	"verbosegroups" 	    baseparm 	    label	"Verbose Group Names" 	    export	none 	} 	parm { 	    name	"createptstring" 	    baseparm 	    label	"Create Per-Point Path" 	    export	none 	} 	parm { 	    name	"createprimstring" 	    baseparm 	    label	"Create Per-Primitive Path" 	    export	none 	} 	parm { 	    name	"pathattrib" 	    baseparm 	    label	"Path Attribute" 	    export	none 	} 	parm { 	    name	"pack" 	    baseparm 	    label	"Pack Geometry Before Merging" 	    export	none 	} 	parm { 	    name	"pivot" 	    baseparm 	    label	"Pivot Location" 	    export	none 	} 	parm { 	    name	"viewportlod" 	    baseparm 	    label	"Display As" 	    export	none 	} 	parm { 	    name	"addpath" 	    baseparm 	    label	"Add Path Attribute" 	    export	none 	} 	parm { 	    name	"_separator" 	    baseparm 	    label	"" 	    export	none 	} 	multiparm { 	    name	"numobj" 	    label	"Number of Objects" 	    baseparm 	    default	1  	    parm { 		name	"enable#" 		baseparm 		label	"Enable Merge #" 		export	none 	    } 	    parm { 		name	"objpath#" 		baseparm 		label	"Object #" 		export	none 	    } 	    parm { 		name	"group#" 		baseparm 		label	"Group #" 		export	none 	    } 	    parm { 		name	"expand#" 		baseparm 		label	"Expand Group #" 		export	none 	    } 	}      }      group { 	name	"folder0_1" 	label	"Custom Parameters"  	parm { 	    name	"relnode" 	    label	"Relationship" 	    type	oppath 	    default	{ "../.." } 	    range	{ 0 1 } 	    parmtag	{ "opfilter" "!!DOP!!" } 	    parmtag	{ "oprelative" "." } 	}     }      parm { 	name	"suffixfirstgroup" 	baseparm 	label	"Add Suffix to First Group" 	export	none     } ' $_obj_geo1_DOP_sopsolver1_sopsolver1_relationship_geometry
+opparm $_obj_geo1_DOP_sopsolver1_sopsolver1_relationship_geometry  numobj ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_sopsolver1_sopsolver1_relationship_geometry relnode
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'import toolutils\n\nnode = hou.node(".")\nsopsolver = hou.node("..")\n\n# Attempt to discover a constraint network that we\'re wired to.\nnodetypes = ["constraintnetwork", "gluenetworkconstraint", "springnetworkconstraint"]\nfor nodetype in nodetypes:\n    network = toolutils.findOutputNodeOfBaseType(sopsolver, nodetype)\n    if network:\n        return node.relativePathTo(network)\n\nreturn "../.."' -l p $_obj_geo1_DOP_sopsolver1_sopsolver1_relationship_geometry/relnode
+chblockend
+opparm -V 16.0.705 $_obj_geo1_DOP_sopsolver1_sopsolver1_relationship_geometry objpath1 ( '`stamps("..", "DATAPATH", chsop("relnode") + ":Relationships/" + chs(chsop("relnode") + "/relname") + "/" + chs(chsop("relnode") + "/relationship/dataname") + "/Geometry")`' ) folder0 ( 1 1 ) relnode ( relnode )
+opcolor -c 0.60000002384185791 0.40000000596046448 1 $_obj_geo1_DOP_sopsolver1_sopsolver1_relationship_geometry
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_DOP_sopsolver1_sopsolver1_relationship_geometry
+opexprlanguage -s hscript $_obj_geo1_DOP_sopsolver1_sopsolver1_relationship_geometry
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_DOP_sopsolver1_sopsolver1_relationship_geometry
+opuserdata -n '___toolcount___' -v '594' $_obj_geo1_DOP_sopsolver1_sopsolver1_relationship_geometry
+opuserdata -n '___toolid___' -v 'DOP_sopsolver' $_obj_geo1_DOP_sopsolver1_sopsolver1_relationship_geometry
+
+# Node $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_0 (Sop/object_merge)
+set _obj_geo1_DOP_sopsolver1_sopsolver1_IN_0 = `run("opadd -e -n -v object_merge IN_0")`
+oplocate -x `$arg2 + 6.6320499999999996` -y `$arg3 + -3.9689399999999999` $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_0
+opparm $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_0  numobj ( 1 )
+opparm -V 16.0.705 $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_0 xformtype ( local ) objpath1 ( '`opinputpath("../..",opdigits($OS))`' )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_0
+opexprlanguage -s hscript $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_0
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_0
+opuserdata -n '___toolcount___' -v '594' $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_0
+opuserdata -n '___toolid___' -v 'DOP_sopsolver' $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_0
+
+# Node $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_1 (Sop/object_merge)
+set _obj_geo1_DOP_sopsolver1_sopsolver1_IN_1 = `run("opadd -e -n -v object_merge IN_1")`
+oplocate -x `$arg2 + 8.4219600000000003` -y `$arg3 + -4.8520899999999996` $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_1
+opparm $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_1  numobj ( 1 )
+opparm -V 16.0.705 $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_1 xformtype ( local ) objpath1 ( '`opinputpath("../..",opdigits($OS))`' )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_1
+opexprlanguage -s hscript $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_1
+opuserdata -n '___toolcount___' -v '594' $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_1
+opuserdata -n '___toolid___' -v 'DOP_sopsolver' $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_1
+
+# Node $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_2 (Sop/object_merge)
+set _obj_geo1_DOP_sopsolver1_sopsolver1_IN_2 = `run("opadd -e -n -v object_merge IN_2")`
+oplocate -x `$arg2 + 9.9533299999999993` -y `$arg3 + -5.6324899999999998` $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_2
+opparm $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_2  numobj ( 1 )
+opparm -V 16.0.705 $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_2 xformtype ( local ) objpath1 ( '`opinputpath("../..",opdigits($OS))`' )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_2
+opexprlanguage -s hscript $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_2
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_2
+opuserdata -n '___toolcount___' -v '594' $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_2
+opuserdata -n '___toolid___' -v 'DOP_sopsolver' $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_2
+
+# Node $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_3 (Sop/object_merge)
+set _obj_geo1_DOP_sopsolver1_sopsolver1_IN_3 = `run("opadd -e -n -v object_merge IN_3")`
+oplocate -x `$arg2 + 11.4337` -y `$arg3 + -6.4168000000000003` $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_3
+opparm $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_3  numobj ( 1 )
+opparm -V 16.0.705 $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_3 xformtype ( local ) objpath1 ( '`opinputpath("../..",opdigits($OS))`' )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_3
+opexprlanguage -s hscript $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_3
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_3
+opuserdata -n '___toolcount___' -v '594' $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_3
+opuserdata -n '___toolid___' -v 'DOP_sopsolver' $_obj_geo1_DOP_sopsolver1_sopsolver1_IN_3
+oporder -e dop_geometry impacts feedbacks relationship_geometry IN_0 IN_1 IN_2 IN_3 
+opcf ..
+
+# Node $_obj_geo1_DOP_sopsolver1_multisolver1 (Dop/multisolver)
+set _obj_geo1_DOP_sopsolver1_multisolver1 = `run("opadd -e -n -v multisolver multisolver1")`
+oplocate -x `$arg2 + -0.37176500000000001` -y `$arg3 + 0.34681499999999998` $_obj_geo1_DOP_sopsolver1_multisolver1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_sopsolver1_multisolver1
+opexprlanguage -s hscript $_obj_geo1_DOP_sopsolver1_multisolver1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_geo1_DOP_sopsolver1_multisolver1
+opuserdata -n '___toolcount___' -v '594' $_obj_geo1_DOP_sopsolver1_multisolver1
+opuserdata -n '___toolid___' -v 'DOP_sopsolver' $_obj_geo1_DOP_sopsolver1_multisolver1
+oporder -e output emptyobject1 sopgeo1 sopsolver1 multisolver1 
+opcf ..
+opset -p on $_obj_geo1_DOP_sopsolver1
+
+opcf $arg1
+opwire -n $_obj_geo1_clean1 -0 $_obj_geo1_DOP_sopsolver1
+opcf $_obj_geo1_DOP_sopsolver1
+opwire -n $_obj_geo1_DOP_sopsolver1_multisolver1 -0 $_obj_geo1_DOP_sopsolver1_output
+opwire -n $_obj_geo1_DOP_sopsolver1_emptyobject1 -0 $_obj_geo1_DOP_sopsolver1_sopgeo1
+opcf $_obj_geo1_DOP_sopsolver1_sopsolver1
+opcf ..
+opwire -n $_obj_geo1_DOP_sopsolver1_sopgeo1 -0 $_obj_geo1_DOP_sopsolver1_multisolver1
+opwire -n $_obj_geo1_DOP_sopsolver1_sopsolver1 -1 $_obj_geo1_DOP_sopsolver1_multisolver1
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_DOP_sopsolver1
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_DOP_sopsolver1
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
   </tool>
 </shelfDocument>
