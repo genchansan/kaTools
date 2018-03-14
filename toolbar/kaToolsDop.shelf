@@ -3237,4 +3237,217 @@ opcf $saved_path
 hou.hscript(h_preamble + h_extra_args + h_cmd)
 ]]></script>
   </tool>
+
+  <tool name="solve_collision" label="Solve Collision" icon="DOP_staticobject">
+    <helpURL>operator:Dop/subnet</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Dop/subnet</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('subnet'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_dopnet1_solve_collision (Dop/subnet)
+set _obj_geo1_dopnet1_solve_collision = `run("opadd -e -n -v subnet solve_collision")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_dopnet1_solve_collision
+opspareds '    parm {         name    "usepointvelocity"         label   "Use Point Velocity for Collisions"         type    toggle         default { "on" }         parmtag { "autoscope" "0000000000000000" }     }     parm {         name    "usevolumevelocity"         label   "Use Volume Velocity for Collisions"         type    toggle         default { "off" }         parmtag { "autoscope" "0000000000000000" }     }     parm {         name    "allownonsdf"         label   "Collide with Non-SDF"         type    toggle         default { "off" }         parmtag { "autoscope" "0000000000000000" }     }     parm {         name    "kill_temp_inside"         label   "Kill Temperature Inside"         type    toggle         default { "0" }         range   { 0 1 }         parmtag { "autoscope" "0000000000000000" }     } ' $_obj_geo1_dopnet1_solve_collision
+opparm -V 16.5.268 $_obj_geo1_dopnet1_solve_collision kill_temp_inside ( on )
+opcolor -c 0.86699998378753662 0 0 $_obj_geo1_dopnet1_solve_collision
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_dopnet1_solve_collision
+opexprlanguage -s hscript $_obj_geo1_dopnet1_solve_collision
+opcf $_obj_geo1_dopnet1_solve_collision
+
+# Node $_obj_geo1_dopnet1_solve_collision_gasbuildcollisionmask1 (Dop/gasbuildcollisionmask)
+set _obj_geo1_dopnet1_solve_collision_gasbuildcollisionmask1 = `run("opadd -e -n -v gasbuildcollisionmask gasbuildcollisionmask1")`
+oplocate -x `$arg2 + 1.8811883618136764` -y `$arg3 + 5.0900972340692894` $_obj_geo1_dopnet1_solve_collision_gasbuildcollisionmask1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_dopnet1_solve_collision_gasbuildcollisionmask1 usepointvelocity
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../usepointvelocity")' $_obj_geo1_dopnet1_solve_collision_gasbuildcollisionmask1/usepointvelocity
+chadd -t 0 0 $_obj_geo1_dopnet1_solve_collision_gasbuildcollisionmask1 usevolumevelocity
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../usevolumevelocity")' $_obj_geo1_dopnet1_solve_collision_gasbuildcollisionmask1/usevolumevelocity
+chadd -t 0 0 $_obj_geo1_dopnet1_solve_collision_gasbuildcollisionmask1 allownonsdf
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../allownonsdf")' $_obj_geo1_dopnet1_solve_collision_gasbuildcollisionmask1/allownonsdf
+chblockend
+opparm -V 16.5.268 $_obj_geo1_dopnet1_solve_collision_gasbuildcollisionmask1 collisionvelocity ( collisionvel ) index ( collisionindex ) usebandwidth ( on ) usepointvelocity ( usepointvelocity ) usevolumevelocity ( usevolumevelocity ) allownonsdf ( allownonsdf )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_dopnet1_solve_collision_gasbuildcollisionmask1
+opexprlanguage -s hscript $_obj_geo1_dopnet1_solve_collision_gasbuildcollisionmask1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_dopnet1_solve_collision_gasbuildcollisionmask1
+
+# Node $_obj_geo1_dopnet1_solve_collision_collide_temp_inside (Dop/gascalculate)
+set _obj_geo1_dopnet1_solve_collision_collide_temp_inside = `run("opadd -e -n -v gascalculate collide_temp_inside")`
+oplocate -x `$arg2 + 4.3802049627167321` -y `$arg3 + 4.1874473527017884` $_obj_geo1_dopnet1_solve_collision_collide_temp_inside
+opparm -V 16.5.268 $_obj_geo1_dopnet1_solve_collision_collide_temp_inside fielddst ( temperature ) indexsrc ( collisionindex ) property ( temperature ) srcblend ( collision ) blendmethod ( netnewsdf ) srcblendpremul ( -1 ) defaultparmop ( always )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_dopnet1_solve_collision_collide_temp_inside
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_dopnet1_solve_collision_collide_temp_inside
+opexprlanguage -s hscript $_obj_geo1_dopnet1_solve_collision_collide_temp_inside
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_dopnet1_solve_collision_collide_temp_inside
+
+# Node $_obj_geo1_dopnet1_solve_collision_merge4 (Dop/merge)
+set _obj_geo1_dopnet1_solve_collision_merge4 = `run("opadd -e -n -v merge merge4")`
+oplocate -x `$arg2 + 1.8800383497973803` -y `$arg3 + 2.1215473607126532` $_obj_geo1_dopnet1_solve_collision_merge4
+chblockbegin
+chadd -t 0 0 $_obj_geo1_dopnet1_solve_collision_merge4 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_dopnet1_solve_collision_merge4/activation
+chblockend
+opset -d off -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_dopnet1_solve_collision_merge4
+opexprlanguage -s hscript $_obj_geo1_dopnet1_solve_collision_merge4
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_dopnet1_solve_collision_merge4
+
+# Node $_obj_geo1_dopnet1_solve_collision_merge1 (Dop/merge)
+set _obj_geo1_dopnet1_solve_collision_merge1 = `run("opadd -e -n -v merge merge1")`
+oplocate -x `$arg2 + -1.1175870949200169e-08` -y `$arg3 + 0.96625797847014638` $_obj_geo1_dopnet1_solve_collision_merge1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_dopnet1_solve_collision_merge1 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_dopnet1_solve_collision_merge1/activation
+chblockend
+opset -d on -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_dopnet1_solve_collision_merge1
+opexprlanguage -s hscript $_obj_geo1_dopnet1_solve_collision_merge1
+
+# Node $_obj_geo1_dopnet1_solve_collision_enablesolver1 (Dop/enablesolver)
+set _obj_geo1_dopnet1_solve_collision_enablesolver1 = `run("opadd -e -n -v enablesolver enablesolver1")`
+oplocate -x `$arg2 + 4.3802049627167321` -y `$arg3 + 3.0487879431751002` $_obj_geo1_dopnet1_solve_collision_enablesolver1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_dopnet1_solve_collision_enablesolver1 enable
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../kill_temp_inside")' $_obj_geo1_dopnet1_solve_collision_enablesolver1/enable
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_dopnet1_solve_collision_enablesolver1
+opexprlanguage -s hscript $_obj_geo1_dopnet1_solve_collision_enablesolver1
+oporder -e gasbuildcollisionmask1 collide_temp_inside merge4 merge1 enablesolver1 
+opcf ..
+opset -p on $_obj_geo1_dopnet1_solve_collision
+
+opcf $arg1
+opcf $_obj_geo1_dopnet1_solve_collision
+opwire -n $_obj_geo1_dopnet1_solve_collision_gasbuildcollisionmask1 -0 $_obj_geo1_dopnet1_solve_collision_merge4
+opwire -n $_obj_geo1_dopnet1_solve_collision_enablesolver1 -1 $_obj_geo1_dopnet1_solve_collision_merge4
+opwire -n -i 0 -0 $_obj_geo1_dopnet1_solve_collision_merge1
+opwire -n $_obj_geo1_dopnet1_solve_collision_merge4 -1 $_obj_geo1_dopnet1_solve_collision_merge1
+opwire -n $_obj_geo1_dopnet1_solve_collision_collide_temp_inside -0 $_obj_geo1_dopnet1_solve_collision_enablesolver1
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_dopnet1_solve_collision
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_dopnet1_solve_collision
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
 </shelfDocument>

@@ -3536,6 +3536,7 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
     <memberTool name="attribwrangle5"/>
     <memberTool name="dopnet"/>
     <memberTool name="override_div_size"/>
+    <memberTool name="solve_collision"/>
   </toolshelf>
 
   <tool name="GET_all_frames_geo0" label="GET_all_frames_geo" icon="CHOP_layer">
