@@ -3450,4 +3450,591 @@ opcf $saved_path
 hou.hscript(h_preamble + h_extra_args + h_cmd)
 ]]></script>
   </tool>
+
+  <tool name="dop_flexible_div_smoke" label="DOP Flexible Div Smoke" icon="NETWORKS_dop">
+    <helpURL>operator:Sop/dopnet</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/dopnet</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('dopnet'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke (Sop/dopnet)
+set _obj_geo1_DOP_flexible_div_smoke = `run("opadd -e -n -v dopnet DOP_flexible_div_smoke")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_DOP_flexible_div_smoke
+opparm $_obj_geo1_DOP_flexible_div_smoke  numobj ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke timestep
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("timescale")/(ch("substep")*$FPS)' $_obj_geo1_DOP_flexible_div_smoke/timestep
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke timeoffset
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '(ch("startframe")-1)/$FPS' $_obj_geo1_DOP_flexible_div_smoke/timeoffset
+chblockend
+opparm -V 16.5.268 $_obj_geo1_DOP_flexible_div_smoke stdswitcher ( 1 1 1 ) objname1 ( * )
+opcolor -c 0.80000001192092896 0.40000000596046448 0.40000000596046448 $_obj_geo1_DOP_flexible_div_smoke
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_geo1_DOP_flexible_div_smoke
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke
+opuserdata -n '___toolcount___' -v '1' $_obj_geo1_DOP_flexible_div_smoke
+opuserdata -n '___toolid___' -v 'simple_upres' $_obj_geo1_DOP_flexible_div_smoke
+opcf $_obj_geo1_DOP_flexible_div_smoke
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_pyrosolver1 (Dop/pyrosolver::2.0)
+set _obj_geo1_DOP_flexible_div_smoke_pyrosolver1 = `run("opadd -e -n -v pyrosolver::2.0 pyrosolver1")`
+oplocate -x `$arg2 + -0.33028897796305778` -y `$arg3 + -11.188984518574815` $_obj_geo1_DOP_flexible_div_smoke_pyrosolver1
+opparm $_obj_geo1_DOP_flexible_div_smoke_pyrosolver1  remap_cooldown_time ( 2 ) remap_dissipation_field ( 4 ) dist_control_field_ramp ( 2 ) control_field_ramp ( 2 ) turb_control_ramp ( 2 ) conf_control_field_ramp2 ( 2 )
+opparm $_obj_geo1_DOP_flexible_div_smoke_pyrosolver1 combustion_1 ( 3 3 3 3 3 ) lift ( 0 ) enable_combustion ( off ) turbulence_scale ( 0.40000000000000002 ) turb_swirl_size ( 0.5 ) turb_rough ( 0.20000000000000001 ) turb_pulse_length ( 0.69999999999999996 ) std_switcher_0_6 ( 2 2 2 2 ) enable_collision_relationship ( off ) remap_cooldown_time1value ( 1 ) remap_cooldown_time2pos ( 1 ) remap_cooldown_time2value ( 0.10000000149011612 ) remap_dissipation_field1value ( 1 ) remap_dissipation_field1interp ( catmull-rom ) remap_dissipation_field2pos ( 0.17888999999999999 ) remap_dissipation_field2value ( 0.875 ) remap_dissipation_field2interp ( catmull-rom ) remap_dissipation_field3pos ( 0.36799999999999999 ) remap_dissipation_field3value ( 0.27000000000000002 ) remap_dissipation_field3interp ( catmull-rom ) remap_dissipation_field4pos ( 1 ) remap_dissipation_field4interp ( catmull-rom ) dist_control_field_ramp2pos ( 1 ) dist_control_field_ramp2value ( 1 ) control_field_ramp2pos ( 1 ) control_field_ramp2value ( 1 ) turb_control_ramp2pos ( 1 ) turb_control_ramp2value ( 1 ) conf_control_field_ramp2_2pos ( 1 ) conf_control_field_ramp2_2value ( 1 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c off -e on -b off $_obj_geo1_DOP_flexible_div_smoke_pyrosolver1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_pyrosolver1
+opuserdata -n '___Version___' -v '' $_obj_geo1_DOP_flexible_div_smoke_pyrosolver1
+opuserdata -n '___toolcount___' -v '2' $_obj_geo1_DOP_flexible_div_smoke_pyrosolver1
+opuserdata -n '___toolid___' -v 'dynamics_pyrobox' $_obj_geo1_DOP_flexible_div_smoke_pyrosolver1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_gasresizefluiddynamic1 (Dop/gasresizefluiddynamic)
+set _obj_geo1_DOP_flexible_div_smoke_gasresizefluiddynamic1 = `run("opadd -e -n -v gasresizefluiddynamic gasresizefluiddynamic1")`
+oplocate -x `$arg2 + -0.32924898798370361` -y `$arg3 + -5.6958218688475162` $_obj_geo1_DOP_flexible_div_smoke_gasresizefluiddynamic1
+opparm $_obj_geo1_DOP_flexible_div_smoke_gasresizefluiddynamic1 bound_subtract ( 0.10000000000000001 ) field ( 1 1 ) reference_field ( 'density hiDensity' ) use_tracking_objects ( on ) tracking_path ( '`chsop("../sourcevolume1/source_path")`' ) use_max_bounds ( off )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c off -e on -b off $_obj_geo1_DOP_flexible_div_smoke_gasresizefluiddynamic1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_gasresizefluiddynamic1
+opuserdata -n '___Version___' -v '' $_obj_geo1_DOP_flexible_div_smoke_gasresizefluiddynamic1
+opuserdata -n '___toolcount___' -v '1' $_obj_geo1_DOP_flexible_div_smoke_gasresizefluiddynamic1
+opuserdata -n '___toolid___' -v 'dynamics_smokebox' $_obj_geo1_DOP_flexible_div_smoke_gasresizefluiddynamic1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_sourcevolume1 (Dop/sourcevolume)
+set _obj_geo1_DOP_flexible_div_smoke_sourcevolume1 = `run("opadd -e -n -v sourcevolume sourcevolume1")`
+oplocate -x `$arg2 + 8.0903967804405461` -y `$arg3 + -6.2288838691196675` $_obj_geo1_DOP_flexible_div_smoke_sourcevolume1
+opparm $_obj_geo1_DOP_flexible_div_smoke_sourcevolume1 source_path ( '`opinputpath("..",0)`' ) normalizesource ( off ) normalizetemp ( off ) velocity_merge ( add ) normalizevel ( off )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c off -e on -b off $_obj_geo1_DOP_flexible_div_smoke_sourcevolume1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_sourcevolume1
+opuserdata -n '___Version___' -v '' $_obj_geo1_DOP_flexible_div_smoke_sourcevolume1
+opuserdata -n '___toolcount___' -v '3' $_obj_geo1_DOP_flexible_div_smoke_sourcevolume1
+opuserdata -n '___toolid___' -v 'dynamics_burnsource' $_obj_geo1_DOP_flexible_div_smoke_sourcevolume1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_smokeobject1 (Dop/smokeobject)
+set _obj_geo1_DOP_flexible_div_smoke_smokeobject1 = `run("opadd -e -n -v smokeobject smokeobject1")`
+oplocate -x `$arg2 + -6.0073824904838471` -y `$arg3 + -6.1287928546917803` $_obj_geo1_DOP_flexible_div_smoke_smokeobject1
+opparm $_obj_geo1_DOP_flexible_div_smoke_smokeobject1  multifield_densityramp ( 2 ) multifield_cdramp ( 2 ) multifield_emitramp ( 2 ) multifield_emitcdramp ( 4 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_smokeobject1 sizex
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'bbox(chsop("../sourcevolume1/source_path"), D_XSIZE)' $_obj_geo1_DOP_flexible_div_smoke_smokeobject1/sizex
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_smokeobject1 sizey
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'bbox(chsop("../sourcevolume1/source_path"), D_YSIZE)' $_obj_geo1_DOP_flexible_div_smoke_smokeobject1/sizey
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_smokeobject1 sizez
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'bbox(chsop("../sourcevolume1/source_path"), D_ZSIZE)' $_obj_geo1_DOP_flexible_div_smoke_smokeobject1/sizez
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_smokeobject1 tx
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'centroid(chsop("../sourcevolume1/source_path"), D_X)' $_obj_geo1_DOP_flexible_div_smoke_smokeobject1/tx
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_smokeobject1 ty
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'centroid(chsop("../sourcevolume1/source_path"), D_Y)' $_obj_geo1_DOP_flexible_div_smoke_smokeobject1/ty
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_smokeobject1 tz
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'centroid(chsop("../sourcevolume1/source_path"), D_Z)' $_obj_geo1_DOP_flexible_div_smoke_smokeobject1/tz
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_smokeobject1 createframe
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch(opcreator(".")+"/startframe")' $_obj_geo1_DOP_flexible_div_smoke_smokeobject1/createframe
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_smokeobject1 size_unit_compx
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("./divsize")- ((ch("./sizex")+ch("./tx"))%ch("./divsize"))' $_obj_geo1_DOP_flexible_div_smoke_smokeobject1/size_unit_compx
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_smokeobject1 size_unit_compy
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("./divsize")- ((ch("./sizey")+ch("./ty"))%ch("./divsize"))' $_obj_geo1_DOP_flexible_div_smoke_smokeobject1/size_unit_compy
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_smokeobject1 size_unit_compz
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("./divsize")- ((ch("./sizez")+ch("./tz"))%ch("./divsize"))' $_obj_geo1_DOP_flexible_div_smoke_smokeobject1/size_unit_compz
+chblockend
+opparm $_obj_geo1_DOP_flexible_div_smoke_smokeobject1 div ( 1 1 1 ) size ( sizex sizey sizez ) t ( tx ty tz ) multifield_densityramp2pos ( 1 ) multifield_densityramp2value ( 1 ) multifield_cdramp2pos ( 1 ) multifield_cdramp2c ( 1 1 1 ) multifield_emitramp2pos ( 1 ) multifield_emitramp2value ( 1 ) multifield_emitcdramp2pos ( 0.54000002145767212 ) multifield_emitcdramp2c ( 1 0.43200001120567322 0 ) multifield_emitcdramp2interp ( catmull-rom ) multifield_emitcdramp3pos ( 0.89300000667572021 ) multifield_emitcdramp3c ( 1 0.88330000638961792 0 ) multifield_emitcdramp3interp ( catmull-rom ) multifield_emitcdramp4pos ( 1 ) multifield_emitcdramp4c ( 1 1 1 ) multifield_emitcdramp4interp ( catmull-rom )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_smokeobject1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_smokeobject1
+opuserdata -n '___Version___' -v '' $_obj_geo1_DOP_flexible_div_smoke_smokeobject1
+opuserdata -n '___toolcount___' -v '2' $_obj_geo1_DOP_flexible_div_smoke_smokeobject1
+opuserdata -n '___toolid___' -v 'dynamics_smokebox' $_obj_geo1_DOP_flexible_div_smoke_smokeobject1
+opcf ..
+opcf $_obj_geo1_DOP_flexible_div_smoke
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_output (Dop/output)
+set _obj_geo1_DOP_flexible_div_smoke_output = `run("opadd -e -n -v output output")`
+oplocate -x `$arg2 + -0.33028897796305778` -y `$arg3 + -15.798284518574814` $_obj_geo1_DOP_flexible_div_smoke_output
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_output f1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_DOP_flexible_div_smoke_output/f1
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_output f2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_DOP_flexible_div_smoke_output/f2
+chblockend
+opparm $_obj_geo1_DOP_flexible_div_smoke_output
+opset -d on -r off -h off -f off -y off -t off -l off -s off -u off -F on -c off -e on -b off $_obj_geo1_DOP_flexible_div_smoke_output
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_output
+opuserdata -n '___Version___' -v '' $_obj_geo1_DOP_flexible_div_smoke_output
+opuserdata -n '___toolcount___' -v '1' $_obj_geo1_DOP_flexible_div_smoke_output
+opuserdata -n '___toolid___' -v 'simple_upres' $_obj_geo1_DOP_flexible_div_smoke_output
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_gravity1 (Dop/gravity)
+set _obj_geo1_DOP_flexible_div_smoke_gravity1 = `run("opadd -e -n -v gravity gravity1")`
+oplocate -x `$arg2 + -0.32683897796305778` -y `$arg3 + -12.727684518574815` $_obj_geo1_DOP_flexible_div_smoke_gravity1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_gravity1 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_DOP_flexible_div_smoke_gravity1/activation
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c off -e on -b on $_obj_geo1_DOP_flexible_div_smoke_gravity1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_gravity1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke_gravity1
+opuserdata -n '___toolcount___' -v '1' $_obj_geo1_DOP_flexible_div_smoke_gravity1
+opuserdata -n '___toolid___' -v 'simple_upres' $_obj_geo1_DOP_flexible_div_smoke_gravity1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_merge1 (Dop/merge)
+set _obj_geo1_DOP_flexible_div_smoke_merge1 = `run("opadd -e -n -v merge merge1")`
+oplocate -x `$arg2 + 8.0903967804405461` -y `$arg3 + -8.9538938691196677` $_obj_geo1_DOP_flexible_div_smoke_merge1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_merge1 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_DOP_flexible_div_smoke_merge1/activation
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c off -e on -b off $_obj_geo1_DOP_flexible_div_smoke_merge1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_merge1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke_merge1
+opuserdata -n '___toolcount___' -v '1' $_obj_geo1_DOP_flexible_div_smoke_merge1
+opuserdata -n '___toolid___' -v 'simple_upres' $_obj_geo1_DOP_flexible_div_smoke_merge1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size (Dop/subnet)
+set _obj_geo1_DOP_flexible_div_smoke_over_ride_div_size = `run("opadd -e -n -v subnet over_ride_div_size")`
+oplocate -x `$arg2 + -6.0061324618736176` -y `$arg3 + -7.7437089569353805` $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size
+opspareds '    parm {         name    "override_density"         label   "override_density  "         type    toggle         joinnext         default { "0" }     }     parm {         name    "divsize_density"         label   "divsize_density  "         type    float         default { "0.2" }         disablewhen "{ override_density == 0 }"         range   { 0 10 }         parmtag { "autoscope" "0000000000000000" }     }     parm {         name    "override_vel"         label   "override_vel            "         type    toggle         joinnext         default { "0" }     }     parm {         name    "divsize_vel"         label   "divsize_vel           "         type    float         default { "0.2" }         disablewhen "{ override_vel == 0 }"         range   { 0 10 }         parmtag { "autoscope" "0000000000000000" }     }     parm {         name    "override_collision"         label   "override_collision"         type    toggle         joinnext         default { "0" }     }     parm {         name    "divsize_collision"         label   "divsize_collision"         type    float         default { "0.2" }         disablewhen "{ override_collision == 0 }"         range   { 0 10 }         parmtag { "autoscope" "0000000000000000" }     }     parm {         name    "description"         label   "Description"         type    string         default { "" }         parmtag { "editor" "1" }         parmtag { "editorlines" "5-10" }     } ' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size
+opparm -V 16.5.268 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size override_density ( on ) divsize_density ( 0.050000000000000003 ) override_vel ( on ) override_collision ( on ) divsize_collision ( 0.10000000000000001 ) description ( 'When "override_collision" is on, create "Gas Build Collision Mask"\nand keep "Reference Field" empty and disable collsion on Smoke Solver.\nSmoke solver tries to make collision which has the same resolution of density.' )
+opcolor -c 0.86699998378753662 0 0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size
+opcf $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch1 (Dop/switch)
+set _obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch1 = `run("opadd -e -n -v switch switch1")`
+oplocate -x `$arg2 + -2.0489100000000001e-08` -y `$arg3 + 2.2811599999999999` $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch1 input
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$SF==1 && ch("../override_density")==1' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch1/input
+chblockend
+opparm -V 16.5.268 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch1 input ( input )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata1 (Dop/modifydata)
+set _obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata1 = `run("opadd -e -n -v modifydata modifydata1")`
+oplocate -x `$arg2 + 2.2471999999999999` -y `$arg3 + 3.70872` $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata1
+opparm $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata1  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata1 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata1/activation
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata1 valvaluef0
+chkey -t 0 -v 0.050000000000000003 -m 0 -a 0 -A 0 -T a  -F 'ch("../divsize_density")' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata1/valvaluef0
+chblockend
+opparm -V 16.5.268 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata1 dataname ( density ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch2 (Dop/switch)
+set _obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch2 = `run("opadd -e -n -v switch switch2")`
+oplocate -x `$arg2 + -2.0489100000000001e-08` -y `$arg3 + -2.20804` $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch2
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch2 input
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$SF==1 && ch("../override_vel")==1' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch2/input
+chblockend
+opparm -V 16.5.268 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch2 input ( input )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch2
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch2
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch2
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata2 (Dop/modifydata)
+set _obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata2 = `run("opadd -e -n -v modifydata modifydata2")`
+oplocate -x `$arg2 + 2.5322` -y `$arg3 + 0.84055500000000005` $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata2
+opparm $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata2  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata2 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata2/activation
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata2 valvaluef0
+chkey -t 0 -v 0.20000000000000001 -m 0 -a 0 -A 0 -T a  -F 'ch("../divsize_vel")' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata2/valvaluef0
+chblockend
+opparm -V 16.5.268 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata2 dataname ( vel ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata2
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata2
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata2
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata3 (Dop/modifydata)
+set _obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata3 = `run("opadd -e -n -v modifydata modifydata3")`
+oplocate -x `$arg2 + 2.5322` -y `$arg3 + -0.14804300000000001` $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata3
+opparm $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata3  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata3 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata3/activation
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata3 valvaluef0
+chkey -t 0 -v 0.050000000000000003 -m 0 -a 0 -A 0 -T a  -F 'ch("../modifydata2/valvaluef0")' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata3/valvaluef0
+chblockend
+opparm -V 16.5.268 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata3 dataname ( pressure ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata3
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata3
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata3
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata4 (Dop/modifydata)
+set _obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata4 = `run("opadd -e -n -v modifydata modifydata4")`
+oplocate -x `$arg2 + 2.5322` -y `$arg3 + -1.0796399999999999` $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata4
+opparm $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata4  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata4 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata4/activation
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata4 valvaluef0
+chkey -t 0 -v 0.050000000000000003 -m 0 -a 0 -A 0 -T a  -F 'ch("../modifydata2/valvaluef0")' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata4/valvaluef0
+chblockend
+opparm -V 16.5.268 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata4 dataname ( divergence ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata4
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata4
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata4
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch3 (Dop/switch)
+set _obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch3 = `run("opadd -e -n -v switch switch3")`
+oplocate -x `$arg2 + -2.0489100000000001e-08` -y `$arg3 + -7.1173999999999999` $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch3
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch3 input
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$SF==1' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch3/input
+chblockend
+opparm -V 16.5.268 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch3 input ( input )
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch3
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch3
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch3
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata5 (Dop/modifydata)
+set _obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata5 = `run("opadd -e -n -v modifydata modifydata5")`
+oplocate -x `$arg2 + 2.5322` -y `$arg3 + -3.6871299999999998` $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata5
+opparm $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata5  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata5 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata5/activation
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata5 valvaluef0
+chkey -t 0 -v 0.050000000000000003 -m 0 -a 0 -A 0 -T a  -F 'ch("../divsize_collision")' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata5/valvaluef0
+chblockend
+opparm -V 16.5.268 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata5 dataname ( collision ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata5
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata5
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata5
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata6 (Dop/modifydata)
+set _obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata6 = `run("opadd -e -n -v modifydata modifydata6")`
+oplocate -x `$arg2 + 2.5322` -y `$arg3 + -4.9836600000000004` $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata6
+opparm $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata6  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata6 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata6/activation
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata6 valvaluef0
+chkey -t 0 -v 0.050000000000000003 -m 0 -a 0 -A 0 -T a  -F 'ch("../divsize_collision")' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata6/valvaluef0
+chblockend
+opparm -V 16.5.268 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata6 dataname ( collisionvel ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata6
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata6
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata6
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata7 (Dop/modifydata)
+set _obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata7 = `run("opadd -e -n -v modifydata modifydata7")`
+oplocate -x `$arg2 + 2.5322` -y `$arg3 + -5.9632100000000001` $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata7
+opparm $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata7  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata7 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata7/activation
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata7 valvaluef0
+chkey -t 0 -v 0.050000000000000003 -m 0 -a 0 -A 0 -T a  -F 'ch("../divsize_collision")' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata7/valvaluef0
+chblockend
+opparm -V 16.5.268 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata7 dataname ( collisionindex ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata7
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata7
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata7
+oporder -e switch1 modifydata1 switch2 modifydata2 modifydata3 modifydata4 switch3 modifydata5 modifydata6 modifydata7 
+opcf ..
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_staticobject1 (Dop/staticobject)
+set _obj_geo1_DOP_flexible_div_smoke_staticobject1 = `run("opadd -e -n -v staticobject staticobject1")`
+oplocate -x `$arg2 + -11.011896505331929` -y `$arg3 + -8.8448093430204615` $_obj_geo1_DOP_flexible_div_smoke_staticobject1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_staticobject1 createframe
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch(opcreator(".")+"/startframe")' $_obj_geo1_DOP_flexible_div_smoke_staticobject1/createframe
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_staticobject1 bullet_shrink_amount
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("bullet_collision_margin")' $_obj_geo1_DOP_flexible_div_smoke_staticobject1/bullet_shrink_amount
+chblockend
+opparm -V 4 $_obj_geo1_DOP_flexible_div_smoke_staticobject1 soppath ( '`opinputpath("..",1)`' ) animategeo ( on ) letsopsinterpolate ( on ) display ( off ) std_switcher_0_2_1 ( 1 1 ) collisiondetection ( volume ) div ( 2 2 2 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_staticobject1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_staticobject1
+opuserdata -n '___Version___' -v '4' $_obj_geo1_DOP_flexible_div_smoke_staticobject1
+opuserdata -n '___toolcount___' -v '16' $_obj_geo1_DOP_flexible_div_smoke_staticobject1
+opuserdata -n '___toolid___' -v 'dop_staticobject' $_obj_geo1_DOP_flexible_div_smoke_staticobject1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_staticsolver1 (Dop/staticsolver)
+set _obj_geo1_DOP_flexible_div_smoke_staticsolver1 = `run("opadd -e -n -v staticsolver staticsolver1")`
+oplocate -x `$arg2 + -11.011896505331929` -y `$arg3 + -10.16540934302046` $_obj_geo1_DOP_flexible_div_smoke_staticsolver1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_staticsolver1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_staticsolver1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke_staticsolver1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_merge2 (Dop/merge)
+set _obj_geo1_DOP_flexible_div_smoke_merge2 = `run("opadd -e -n -v merge merge2")`
+oplocate -x `$arg2 + -0.33143897796305777` -y `$arg3 + -14.506884518574815` $_obj_geo1_DOP_flexible_div_smoke_merge2
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_merge2 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_DOP_flexible_div_smoke_merge2/activation
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_merge2
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_merge2
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke_merge2
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_merge3 (Dop/merge)
+set _obj_geo1_DOP_flexible_div_smoke_merge3 = `run("opadd -e -n -v merge merge3")`
+oplocate -x `$arg2 + -0.32798897796305776` -y `$arg3 + -9.3403445185748151` $_obj_geo1_DOP_flexible_div_smoke_merge3
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_merge3 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_DOP_flexible_div_smoke_merge3/activation
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_merge3
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_merge3
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke_merge3
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_switch1 (Dop/switch)
+set _obj_geo1_DOP_flexible_div_smoke_switch1 = `run("opadd -e -n -v switch switch1")`
+oplocate -x `$arg2 + -11.011896514645155` -y `$arg3 + -12.322277061840682` $_obj_geo1_DOP_flexible_div_smoke_switch1
+opparm -V 16.5.268 $_obj_geo1_DOP_flexible_div_smoke_switch1 input ( 1 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_switch1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_switch1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_null1 (Dop/null)
+set _obj_geo1_DOP_flexible_div_smoke_null1 = `run("opadd -e -n -v null null1")`
+oplocate -x `$arg2 + -7.9854611651243559` -y `$arg3 + -10.766810023188215` $_obj_geo1_DOP_flexible_div_smoke_null1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_null1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_null1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_solve_collision (Dop/subnet)
+set _obj_geo1_DOP_flexible_div_smoke_solve_collision = `run("opadd -e -n -v subnet solve_collision")`
+oplocate -x `$arg2 + 1.5520937563967925` -y `$arg3 + -7.7437089569353805` $_obj_geo1_DOP_flexible_div_smoke_solve_collision
+opspareds '    parm {         name    "usepointvelocity"         label   "Use Point Velocity for Collisions"         type    toggle         default { "on" }         parmtag { "autoscope" "0000000000000000" }     }     parm {         name    "usevolumevelocity"         label   "Use Volume Velocity for Collisions"         type    toggle         default { "off" }         parmtag { "autoscope" "0000000000000000" }     }     parm {         name    "allownonsdf"         label   "Collide with Non-SDF"         type    toggle         default { "off" }         parmtag { "autoscope" "0000000000000000" }     }     parm {         name    "kill_temp_inside"         label   "Kill Temperature Inside"         type    toggle         default { "0" }         range   { 0 1 }         parmtag { "autoscope" "0000000000000000" }     } ' $_obj_geo1_DOP_flexible_div_smoke_solve_collision
+opparm -V 16.5.268 $_obj_geo1_DOP_flexible_div_smoke_solve_collision kill_temp_inside ( on )
+opcolor -c 0.86699998378753662 0 0 $_obj_geo1_DOP_flexible_div_smoke_solve_collision
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_solve_collision
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_solve_collision
+opcf $_obj_geo1_DOP_flexible_div_smoke_solve_collision
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1 (Dop/gasbuildcollisionmask)
+set _obj_geo1_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1 = `run("opadd -e -n -v gasbuildcollisionmask gasbuildcollisionmask1")`
+oplocate -x `$arg2 + 1.8811883618136764` -y `$arg3 + 5.0900972340692894` $_obj_geo1_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1 usepointvelocity
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../usepointvelocity")' $_obj_geo1_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1/usepointvelocity
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1 usevolumevelocity
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../usevolumevelocity")' $_obj_geo1_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1/usevolumevelocity
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1 allownonsdf
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../allownonsdf")' $_obj_geo1_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1/allownonsdf
+chblockend
+opparm -V 16.5.268 $_obj_geo1_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1 collisionvelocity ( collisionvel ) index ( collisionindex ) usebandwidth ( on ) usepointvelocity ( usepointvelocity ) usevolumevelocity ( usevolumevelocity ) allownonsdf ( allownonsdf )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_solve_collision_collide_temp_inside (Dop/gascalculate)
+set _obj_geo1_DOP_flexible_div_smoke_solve_collision_collide_temp_inside = `run("opadd -e -n -v gascalculate collide_temp_inside")`
+oplocate -x `$arg2 + 4.3802049627167321` -y `$arg3 + 4.1874473527017884` $_obj_geo1_DOP_flexible_div_smoke_solve_collision_collide_temp_inside
+opparm -V 16.5.268 $_obj_geo1_DOP_flexible_div_smoke_solve_collision_collide_temp_inside fielddst ( temperature ) indexsrc ( collisionindex ) property ( temperature ) srcblend ( collision ) blendmethod ( netnewsdf ) srcblendpremul ( -1 ) defaultparmop ( always )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_DOP_flexible_div_smoke_solve_collision_collide_temp_inside
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_solve_collision_collide_temp_inside
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_solve_collision_collide_temp_inside
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke_solve_collision_collide_temp_inside
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_solve_collision_merge4 (Dop/merge)
+set _obj_geo1_DOP_flexible_div_smoke_solve_collision_merge4 = `run("opadd -e -n -v merge merge4")`
+oplocate -x `$arg2 + 1.8800383497973803` -y `$arg3 + 2.1215473607126532` $_obj_geo1_DOP_flexible_div_smoke_solve_collision_merge4
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_solve_collision_merge4 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_DOP_flexible_div_smoke_solve_collision_merge4/activation
+chblockend
+opset -d off -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_solve_collision_merge4
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_solve_collision_merge4
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_DOP_flexible_div_smoke_solve_collision_merge4
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_solve_collision_merge1 (Dop/merge)
+set _obj_geo1_DOP_flexible_div_smoke_solve_collision_merge1 = `run("opadd -e -n -v merge merge1")`
+oplocate -x `$arg2 + -1.1175870949200169e-08` -y `$arg3 + 0.96625797847014638` $_obj_geo1_DOP_flexible_div_smoke_solve_collision_merge1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_solve_collision_merge1 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_DOP_flexible_div_smoke_solve_collision_merge1/activation
+chblockend
+opset -d on -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_solve_collision_merge1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_solve_collision_merge1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_solve_collision_enablesolver1 (Dop/enablesolver)
+set _obj_geo1_DOP_flexible_div_smoke_solve_collision_enablesolver1 = `run("opadd -e -n -v enablesolver enablesolver1")`
+oplocate -x `$arg2 + 4.3802049627167321` -y `$arg3 + 3.0487879431751002` $_obj_geo1_DOP_flexible_div_smoke_solve_collision_enablesolver1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_solve_collision_enablesolver1 enable
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../kill_temp_inside")' $_obj_geo1_DOP_flexible_div_smoke_solve_collision_enablesolver1/enable
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_solve_collision_enablesolver1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_solve_collision_enablesolver1
+oporder -e gasbuildcollisionmask1 collide_temp_inside merge4 merge1 enablesolver1 
+opcf ..
+oporder -e output pyrosolver1 gasresizefluiddynamic1 sourcevolume1 gravity1 merge1 over_ride_div_size staticobject1 staticsolver1 merge2 merge3 switch1 null1 solve_collision smokeobject1 
+opcf ..
+opset -p on $_obj_geo1_DOP_flexible_div_smoke
+
+opcf $arg1
+opwire -n $_obj_geo1_fluidsource1 -0 $_obj_geo1_DOP_flexible_div_smoke
+opwire -n $_obj_geo1_sphere1 -1 $_obj_geo1_DOP_flexible_div_smoke
+opcf $_obj_geo1_DOP_flexible_div_smoke
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_merge2 -0 $_obj_geo1_DOP_flexible_div_smoke_output
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size -0 $_obj_geo1_DOP_flexible_div_smoke_pyrosolver1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_merge3 -1 $_obj_geo1_DOP_flexible_div_smoke_pyrosolver1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_merge1 -4 $_obj_geo1_DOP_flexible_div_smoke_pyrosolver1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_pyrosolver1 -0 $_obj_geo1_DOP_flexible_div_smoke_gravity1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_sourcevolume1 -0 $_obj_geo1_DOP_flexible_div_smoke_merge1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_smokeobject1 -0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size
+opcf $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size
+opwire -n -i 0 -0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata1 -1 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch1
+opwire -n -i 0 -0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch1 -0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch2
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata4 -1 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch2
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch1 -0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata2
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata2 -0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata3
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata3 -0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata4
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch2 -0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch3
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata7 -1 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch3
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_switch2 -0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata5
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata5 -0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata6
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata6 -0 $_obj_geo1_DOP_flexible_div_smoke_over_ride_div_size_modifydata7
+opcf ..
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_staticobject1 -0 $_obj_geo1_DOP_flexible_div_smoke_staticsolver1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_switch1 -0 $_obj_geo1_DOP_flexible_div_smoke_merge2
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_gravity1 -1 $_obj_geo1_DOP_flexible_div_smoke_merge2
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_gasresizefluiddynamic1 -0 $_obj_geo1_DOP_flexible_div_smoke_merge3
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_solve_collision -1 $_obj_geo1_DOP_flexible_div_smoke_merge3
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_null1 -0 $_obj_geo1_DOP_flexible_div_smoke_switch1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_staticsolver1 -1 $_obj_geo1_DOP_flexible_div_smoke_switch1
+opcf $_obj_geo1_DOP_flexible_div_smoke_solve_collision
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1 -0 $_obj_geo1_DOP_flexible_div_smoke_solve_collision_merge4
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_solve_collision_enablesolver1 -1 $_obj_geo1_DOP_flexible_div_smoke_solve_collision_merge4
+opwire -n -i 0 -0 $_obj_geo1_DOP_flexible_div_smoke_solve_collision_merge1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_solve_collision_merge4 -1 $_obj_geo1_DOP_flexible_div_smoke_solve_collision_merge1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_solve_collision_collide_temp_inside -0 $_obj_geo1_DOP_flexible_div_smoke_solve_collision_enablesolver1
+opcf ..
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_DOP_flexible_div_smoke
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_DOP_flexible_div_smoke
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
 </shelfDocument>

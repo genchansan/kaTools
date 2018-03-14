@@ -563,14 +563,6 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
 ]]></script>
   </tool>
 
-  <shelfSet name="shelf_set_3" label="New Shelf Set">
-    <memberToolshelf name="kaTools"/>
-    <memberToolshelf name="kaToolsVop"/>
-    <memberToolshelf name="kaToolsDOP"/>
-    <memberToolshelf name="kaToolsSop"/>
-    <memberToolshelf name="kaToolsObj"/>
-  </shelfSet>
-
   <tool name="python" label="python_verb" icon="SOP_python">
     <helpURL>operator:Sop/python</helpURL>
     <toolMenuContext name="network">
@@ -3537,6 +3529,7 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
     <memberTool name="dopnet"/>
     <memberTool name="override_div_size"/>
     <memberTool name="solve_collision"/>
+    <memberTool name="dop_flexible_div_smoke"/>
   </toolshelf>
 
   <tool name="GET_all_frames_geo0" label="GET_all_frames_geo" icon="CHOP_layer">
@@ -8260,4 +8253,12 @@ opcf $saved_path
 hou.hscript(h_preamble + h_extra_args + h_cmd)
 ]]></script>
   </tool>
+
+  <shelfSet name="kaToolsShelf" label="kaTools">
+    <memberToolshelf name="kaTools"/>
+    <memberToolshelf name="kaToolsVop"/>
+    <memberToolshelf name="kaToolsDOP"/>
+    <memberToolshelf name="kaToolsSop"/>
+    <memberToolshelf name="kaToolsObj"/>
+  </shelfSet>
 </shelfDocument>
