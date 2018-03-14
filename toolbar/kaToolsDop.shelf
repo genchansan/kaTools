@@ -2932,4 +2932,309 @@ opcf $saved_path
 hou.hscript(h_preamble + h_extra_args + h_cmd)
 ]]></script>
   </tool>
+
+  <tool name="override_div_size" label="Override Div Size" icon="DOP_gasupres">
+    <helpURL>operator:Dop/subnet</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Dop/subnet</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('subnet'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_dopnet1_over_ride_div_size (Dop/subnet)
+set _obj_geo1_dopnet1_over_ride_div_size = `run("opadd -e -n -v subnet over_ride_div_size")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_dopnet1_over_ride_div_size
+opspareds '    parm {         name    "override_density"         label   "override_density  "         type    toggle         joinnext         default { "0" }     }     parm {         name    "divsize_density"         label   "divsize_density  "         type    float         default { "0.2" }         disablewhen "{ override_density == 0 }"         range   { 0 10 }         parmtag { "autoscope" "0000000000000000" }     }     parm {         name    "override_vel"         label   "override_vel            "         type    toggle         joinnext         default { "0" }     }     parm {         name    "divsize_vel"         label   "divsize_vel           "         type    float         default { "0.2" }         disablewhen "{ override_vel == 0 }"         range   { 0 10 }         parmtag { "autoscope" "0000000000000000" }     }     parm {         name    "override_collision"         label   "override_collision"         type    toggle         joinnext         default { "0" }     }     parm {         name    "divsize_collision"         label   "divsize_collision"         type    float         default { "0.2" }         disablewhen "{ override_collision == 0 }"         range   { 0 10 }         parmtag { "autoscope" "0000000000000000" }     }     parm {         name    "description"         label   "Description"         type    string         default { "" }         parmtag { "editor" "1" }         parmtag { "editorlines" "5-10" }     } ' $_obj_geo1_dopnet1_over_ride_div_size
+opparm -V 16.5.268 $_obj_geo1_dopnet1_over_ride_div_size override_density ( on ) divsize_density ( 0.050000000000000003 ) override_vel ( on ) override_collision ( on ) divsize_collision ( 0.10000000000000001 ) description ( 'When "override_collision" is on, create "Gas Build Collision Mask"\nand keep "Reference Field" empty and disable collsion on Smoke Solver.\nSmoke solver tries to make collision which has the same resolution of density.' )
+opcolor -c 0.86699998378753662 0 0 $_obj_geo1_dopnet1_over_ride_div_size
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_dopnet1_over_ride_div_size
+opexprlanguage -s hscript $_obj_geo1_dopnet1_over_ride_div_size
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_dopnet1_over_ride_div_size
+opcf $_obj_geo1_dopnet1_over_ride_div_size
+
+# Node $_obj_geo1_dopnet1_over_ride_div_size_switch1 (Dop/switch)
+set _obj_geo1_dopnet1_over_ride_div_size_switch1 = `run("opadd -e -n -v switch switch1")`
+oplocate -x `$arg2 + -2.0489100000000001e-08` -y `$arg3 + 2.2811599999999999` $_obj_geo1_dopnet1_over_ride_div_size_switch1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_dopnet1_over_ride_div_size_switch1 input
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$SF==1 && ch("../override_density")==1' $_obj_geo1_dopnet1_over_ride_div_size_switch1/input
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_dopnet1_over_ride_div_size_switch1
+opexprlanguage -s hscript $_obj_geo1_dopnet1_over_ride_div_size_switch1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_dopnet1_over_ride_div_size_switch1
+
+# Node $_obj_geo1_dopnet1_over_ride_div_size_modifydata1 (Dop/modifydata)
+set _obj_geo1_dopnet1_over_ride_div_size_modifydata1 = `run("opadd -e -n -v modifydata modifydata1")`
+oplocate -x `$arg2 + 2.2471999999999999` -y `$arg3 + 3.70872` $_obj_geo1_dopnet1_over_ride_div_size_modifydata1
+opparm $_obj_geo1_dopnet1_over_ride_div_size_modifydata1  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata1 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_dopnet1_over_ride_div_size_modifydata1/activation
+chadd -t 0 0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata1 valvaluef0
+chkey -t 0 -v 0.050000000000000003 -m 0 -a 0 -A 0 -T a  -F 'ch("../divsize_density")' $_obj_geo1_dopnet1_over_ride_div_size_modifydata1/valvaluef0
+chblockend
+opparm -V 16.5.268 $_obj_geo1_dopnet1_over_ride_div_size_modifydata1 dataname ( density ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_dopnet1_over_ride_div_size_modifydata1
+opexprlanguage -s hscript $_obj_geo1_dopnet1_over_ride_div_size_modifydata1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_dopnet1_over_ride_div_size_modifydata1
+
+# Node $_obj_geo1_dopnet1_over_ride_div_size_switch2 (Dop/switch)
+set _obj_geo1_dopnet1_over_ride_div_size_switch2 = `run("opadd -e -n -v switch switch2")`
+oplocate -x `$arg2 + -2.0489100000000001e-08` -y `$arg3 + -2.20804` $_obj_geo1_dopnet1_over_ride_div_size_switch2
+chblockbegin
+chadd -t 0 0 $_obj_geo1_dopnet1_over_ride_div_size_switch2 input
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$SF==1 && ch("../override_vel")==1' $_obj_geo1_dopnet1_over_ride_div_size_switch2/input
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_dopnet1_over_ride_div_size_switch2
+opexprlanguage -s hscript $_obj_geo1_dopnet1_over_ride_div_size_switch2
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_dopnet1_over_ride_div_size_switch2
+
+# Node $_obj_geo1_dopnet1_over_ride_div_size_modifydata2 (Dop/modifydata)
+set _obj_geo1_dopnet1_over_ride_div_size_modifydata2 = `run("opadd -e -n -v modifydata modifydata2")`
+oplocate -x `$arg2 + 2.5322` -y `$arg3 + 0.84055500000000005` $_obj_geo1_dopnet1_over_ride_div_size_modifydata2
+opparm $_obj_geo1_dopnet1_over_ride_div_size_modifydata2  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata2 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_dopnet1_over_ride_div_size_modifydata2/activation
+chadd -t 0 0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata2 valvaluef0
+chkey -t 0 -v 0.20000000000000001 -m 0 -a 0 -A 0 -T a  -F 'ch("../divsize_vel")' $_obj_geo1_dopnet1_over_ride_div_size_modifydata2/valvaluef0
+chblockend
+opparm -V 16.5.268 $_obj_geo1_dopnet1_over_ride_div_size_modifydata2 dataname ( vel ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_dopnet1_over_ride_div_size_modifydata2
+opexprlanguage -s hscript $_obj_geo1_dopnet1_over_ride_div_size_modifydata2
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_dopnet1_over_ride_div_size_modifydata2
+
+# Node $_obj_geo1_dopnet1_over_ride_div_size_modifydata3 (Dop/modifydata)
+set _obj_geo1_dopnet1_over_ride_div_size_modifydata3 = `run("opadd -e -n -v modifydata modifydata3")`
+oplocate -x `$arg2 + 2.5322` -y `$arg3 + -0.14804300000000001` $_obj_geo1_dopnet1_over_ride_div_size_modifydata3
+opparm $_obj_geo1_dopnet1_over_ride_div_size_modifydata3  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata3 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_dopnet1_over_ride_div_size_modifydata3/activation
+chadd -t 0 0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata3 valvaluef0
+chkey -t 0 -v 0.050000000000000003 -m 0 -a 0 -A 0 -T a  -F 'ch("../modifydata2/valvaluef0")' $_obj_geo1_dopnet1_over_ride_div_size_modifydata3/valvaluef0
+chblockend
+opparm -V 16.5.268 $_obj_geo1_dopnet1_over_ride_div_size_modifydata3 dataname ( pressure ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_dopnet1_over_ride_div_size_modifydata3
+opexprlanguage -s hscript $_obj_geo1_dopnet1_over_ride_div_size_modifydata3
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_dopnet1_over_ride_div_size_modifydata3
+
+# Node $_obj_geo1_dopnet1_over_ride_div_size_modifydata4 (Dop/modifydata)
+set _obj_geo1_dopnet1_over_ride_div_size_modifydata4 = `run("opadd -e -n -v modifydata modifydata4")`
+oplocate -x `$arg2 + 2.5322` -y `$arg3 + -1.0796399999999999` $_obj_geo1_dopnet1_over_ride_div_size_modifydata4
+opparm $_obj_geo1_dopnet1_over_ride_div_size_modifydata4  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata4 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_dopnet1_over_ride_div_size_modifydata4/activation
+chadd -t 0 0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata4 valvaluef0
+chkey -t 0 -v 0.050000000000000003 -m 0 -a 0 -A 0 -T a  -F 'ch("../modifydata2/valvaluef0")' $_obj_geo1_dopnet1_over_ride_div_size_modifydata4/valvaluef0
+chblockend
+opparm -V 16.5.268 $_obj_geo1_dopnet1_over_ride_div_size_modifydata4 dataname ( divergence ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_dopnet1_over_ride_div_size_modifydata4
+opexprlanguage -s hscript $_obj_geo1_dopnet1_over_ride_div_size_modifydata4
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_dopnet1_over_ride_div_size_modifydata4
+
+# Node $_obj_geo1_dopnet1_over_ride_div_size_switch3 (Dop/switch)
+set _obj_geo1_dopnet1_over_ride_div_size_switch3 = `run("opadd -e -n -v switch switch3")`
+oplocate -x `$arg2 + -2.0489100000000001e-08` -y `$arg3 + -7.1173999999999999` $_obj_geo1_dopnet1_over_ride_div_size_switch3
+chblockbegin
+chadd -t 0 0 $_obj_geo1_dopnet1_over_ride_div_size_switch3 input
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$SF==1' $_obj_geo1_dopnet1_over_ride_div_size_switch3/input
+chblockend
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_dopnet1_over_ride_div_size_switch3
+opexprlanguage -s hscript $_obj_geo1_dopnet1_over_ride_div_size_switch3
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_dopnet1_over_ride_div_size_switch3
+
+# Node $_obj_geo1_dopnet1_over_ride_div_size_modifydata5 (Dop/modifydata)
+set _obj_geo1_dopnet1_over_ride_div_size_modifydata5 = `run("opadd -e -n -v modifydata modifydata5")`
+oplocate -x `$arg2 + 2.5322` -y `$arg3 + -3.6871299999999998` $_obj_geo1_dopnet1_over_ride_div_size_modifydata5
+opparm $_obj_geo1_dopnet1_over_ride_div_size_modifydata5  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata5 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_dopnet1_over_ride_div_size_modifydata5/activation
+chadd -t 0 0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata5 valvaluef0
+chkey -t 0 -v 0.050000000000000003 -m 0 -a 0 -A 0 -T a  -F 'ch("../divsize_collision")' $_obj_geo1_dopnet1_over_ride_div_size_modifydata5/valvaluef0
+chblockend
+opparm -V 16.5.268 $_obj_geo1_dopnet1_over_ride_div_size_modifydata5 dataname ( collision ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_dopnet1_over_ride_div_size_modifydata5
+opexprlanguage -s hscript $_obj_geo1_dopnet1_over_ride_div_size_modifydata5
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_dopnet1_over_ride_div_size_modifydata5
+
+# Node $_obj_geo1_dopnet1_over_ride_div_size_modifydata6 (Dop/modifydata)
+set _obj_geo1_dopnet1_over_ride_div_size_modifydata6 = `run("opadd -e -n -v modifydata modifydata6")`
+oplocate -x `$arg2 + 2.5322` -y `$arg3 + -4.9836600000000004` $_obj_geo1_dopnet1_over_ride_div_size_modifydata6
+opparm $_obj_geo1_dopnet1_over_ride_div_size_modifydata6  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata6 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_dopnet1_over_ride_div_size_modifydata6/activation
+chadd -t 0 0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata6 valvaluef0
+chkey -t 0 -v 0.050000000000000003 -m 0 -a 0 -A 0 -T a  -F 'ch("../divsize_collision")' $_obj_geo1_dopnet1_over_ride_div_size_modifydata6/valvaluef0
+chblockend
+opparm -V 16.5.268 $_obj_geo1_dopnet1_over_ride_div_size_modifydata6 dataname ( collisionvel ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_dopnet1_over_ride_div_size_modifydata6
+opexprlanguage -s hscript $_obj_geo1_dopnet1_over_ride_div_size_modifydata6
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_dopnet1_over_ride_div_size_modifydata6
+
+# Node $_obj_geo1_dopnet1_over_ride_div_size_modifydata7 (Dop/modifydata)
+set _obj_geo1_dopnet1_over_ride_div_size_modifydata7 = `run("opadd -e -n -v modifydata modifydata7")`
+oplocate -x `$arg2 + 2.5322` -y `$arg3 + -5.9632100000000001` $_obj_geo1_dopnet1_over_ride_div_size_modifydata7
+opparm $_obj_geo1_dopnet1_over_ride_div_size_modifydata7  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata7 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_dopnet1_over_ride_div_size_modifydata7/activation
+chadd -t 0 0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata7 valvaluef0
+chkey -t 0 -v 0.050000000000000003 -m 0 -a 0 -A 0 -T a  -F 'ch("../divsize_collision")' $_obj_geo1_dopnet1_over_ride_div_size_modifydata7/valvaluef0
+chblockend
+opparm -V 16.5.268 $_obj_geo1_dopnet1_over_ride_div_size_modifydata7 dataname ( collisionindex ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_dopnet1_over_ride_div_size_modifydata7
+opexprlanguage -s hscript $_obj_geo1_dopnet1_over_ride_div_size_modifydata7
+opuserdata -n '___Version___' -v '16.5.268' $_obj_geo1_dopnet1_over_ride_div_size_modifydata7
+oporder -e switch1 modifydata1 switch2 modifydata2 modifydata3 modifydata4 switch3 modifydata5 modifydata6 modifydata7 
+opcf ..
+opset -p on $_obj_geo1_dopnet1_over_ride_div_size
+
+opcf $arg1
+opwire -n $_obj_geo1_dopnet1_smokeobject1 -0 $_obj_geo1_dopnet1_over_ride_div_size
+opcf $_obj_geo1_dopnet1_over_ride_div_size
+opwire -n -i 0 -0 $_obj_geo1_dopnet1_over_ride_div_size_switch1
+opwire -n $_obj_geo1_dopnet1_over_ride_div_size_modifydata1 -1 $_obj_geo1_dopnet1_over_ride_div_size_switch1
+opwire -n -i 0 -0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata1
+opwire -n $_obj_geo1_dopnet1_over_ride_div_size_switch1 -0 $_obj_geo1_dopnet1_over_ride_div_size_switch2
+opwire -n $_obj_geo1_dopnet1_over_ride_div_size_modifydata4 -1 $_obj_geo1_dopnet1_over_ride_div_size_switch2
+opwire -n $_obj_geo1_dopnet1_over_ride_div_size_switch1 -0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata2
+opwire -n $_obj_geo1_dopnet1_over_ride_div_size_modifydata2 -0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata3
+opwire -n $_obj_geo1_dopnet1_over_ride_div_size_modifydata3 -0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata4
+opwire -n $_obj_geo1_dopnet1_over_ride_div_size_switch2 -0 $_obj_geo1_dopnet1_over_ride_div_size_switch3
+opwire -n $_obj_geo1_dopnet1_over_ride_div_size_modifydata7 -1 $_obj_geo1_dopnet1_over_ride_div_size_switch3
+opwire -n $_obj_geo1_dopnet1_over_ride_div_size_switch2 -0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata5
+opwire -n $_obj_geo1_dopnet1_over_ride_div_size_modifydata5 -0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata6
+opwire -n $_obj_geo1_dopnet1_over_ride_div_size_modifydata6 -0 $_obj_geo1_dopnet1_over_ride_div_size_modifydata7
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_dopnet1_over_ride_div_size
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_dopnet1_over_ride_div_size
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
 </shelfDocument>
