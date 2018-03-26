@@ -8,10 +8,17 @@
   <toolshelf name="kaToolsSop" label="kaToolsSop">
     <memberTool name="uv_fixer"/>
     <memberTool name="remesh_for_deforming_geo"/>
-    <memberTool name="GET_subframe_geo"/>
+    <memberTool name="subframe_geo"/>
+    <memberTool name="mix_to_noise"/>
+    <memberTool name="all_frames_geo"/>
+    <memberTool name="GET_interporation_by_id"/>
+    <memberTool name="nonP_trans"/>
+    <memberTool name="CALC_size"/>
+    <memberTool name="timeblend_vol"/>
+    <memberTool name="timeblend_vol_with_advection"/>
   </toolshelf>
 
-  <tool name="remesh_for_deforming_geo" label="remesh_for_deforming_geo" icon="SOP_subnet">
+  <tool name="remesh_for_deforming_geo" label="Remesh For Deforming Geo" icon="SOP_subnet">
     <helpURL>operator:Sop/subnet</helpURL>
     <toolMenuContext name="network">
       <contextOpType>Sop/subnet</contextOpType>
@@ -272,7 +279,7 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
 ]]></script>
   </tool>
 
-  <tool name="uv_fixer" label="uv_fixer" icon="SOP_subnet">
+  <tool name="uv_fixer" label="UV Fixfer" icon="SOP_texture">
     <helpURL>operator:Sop/subnet</helpURL>
     <toolMenuContext name="network">
       <contextOpType>Sop/subnet</contextOpType>
@@ -1180,7 +1187,154 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
 ]]></script>
   </tool>
 
-  <tool name="GET_subframe_geo" label="GET_subframe_geo" icon="SOP_subnet">
+  <tool name="opencl" label="opencl" icon="SOP_opencl">
+    <helpURL>operator:Sop/opencl</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/opencl</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('opencl'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_sphere1_opencl1 (Sop/opencl)
+set _obj_sphere1_opencl1 = `run("opadd -e -n -v opencl opencl1")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_sphere1_opencl1
+opparm $_obj_sphere1_opencl1  bindings ( 1 ) bindings1_ramp ( 2 )
+opparm -V 16.0.557 $_obj_sphere1_opencl1 kernelname ( simple ) usecode ( on ) kernelcode ( 'kernel void simple( int p_length,  global float * p )\n{\n    int idx = get_global_id(0);\n    //if (idx >= p_length)\n    //    return;\n    p[idx*3] += 1;\n}' ) bindings1_name ( p ) stdswitcher_child_1 ( 1 ) bindings1_type ( attribute ) bindings1_attribute ( P ) bindings1_attribsize ( 3 ) bindings1_writeable ( on ) bindings1_ramp2pos ( 1 ) bindings1_ramp2value ( 1 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sphere1_opencl1
+opexprlanguage -s hscript $_obj_sphere1_opencl1
+opset -p on $_obj_sphere1_opencl1
+
+opcf $arg1
+opwire -n $_obj_sphere1_sphere1 -0 $_obj_sphere1_opencl1
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_sphere1_opencl1
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_sphere1_opencl1
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="subframe_geo" label="Subframe Geo" icon="SOP_subnet">
     <helpURL>operator:Sop/subnet</helpURL>
     <toolMenuContext name="network">
       <contextOpType>Sop/subnet</contextOpType>
@@ -1410,10 +1564,10 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
 ]]></script>
   </tool>
 
-  <tool name="opencl" label="opencl" icon="SOP_opencl">
-    <helpURL>operator:Sop/opencl</helpURL>
+  <tool name="all_frames_geo" label="All Frames Geo" icon="SOP_each">
+    <helpURL>operator:Sop/subnet</helpURL>
     <toolMenuContext name="network">
-      <contextOpType>Sop/opencl</contextOpType>
+      <contextOpType>Sop/subnet</contextOpType>
     </toolMenuContext>
     <script scriptType="python"><![CDATA[
 import sys
@@ -1490,7 +1644,7 @@ h_extra_args += 'set argc = "' + str(num_args) + '"\n'
 pane_node = pane.pwd()
 child_type = pane_node.childTypeCategory().nodeTypes()
 
-if not child_type.has_key('opencl'):
+if not child_type.has_key('subnet'):
    hou.ui.displayMessage(
            'Cannot create node: incompatible pane network type')
    sys.exit(0)
@@ -1522,17 +1676,169 @@ endif
 set saved_path = `execute("oppwf")`
 opcf $arg1
 
-# Node $_obj_sphere1_opencl1 (Sop/opencl)
-set _obj_sphere1_opencl1 = `run("opadd -e -n -v opencl opencl1")`
-oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_sphere1_opencl1
-opparm $_obj_sphere1_opencl1  bindings ( 1 ) bindings1_ramp ( 2 )
-opparm -V 16.0.557 $_obj_sphere1_opencl1 kernelname ( simple ) usecode ( on ) kernelcode ( 'kernel void simple( int p_length,  global float * p )\n{\n    int idx = get_global_id(0);\n    //if (idx >= p_length)\n    //    return;\n    p[idx*3] += 1;\n}' ) bindings1_name ( p ) stdswitcher_child_1 ( 1 ) bindings1_type ( attribute ) bindings1_attribute ( P ) bindings1_attribsize ( 3 ) bindings1_writeable ( on ) bindings1_ramp2pos ( 1 ) bindings1_ramp2value ( 1 )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_sphere1_opencl1
-opexprlanguage -s hscript $_obj_sphere1_opencl1
-opset -p on $_obj_sphere1_opencl1
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1 (Sop/subnet)
+set _obj_crowd01_workarea_GET_all_frames_geo1 = `run("opadd -e -n -v subnet GET_all_frames_geo1")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_crowd01_workarea_GET_all_frames_geo1
+opspareds '    parm {   name    "label1"        baseparm        label   "Input #1 Label"        invisible       export  all     }     parm {    name    "label2"        baseparm        label   "Input #2 Label"        invisible       export  all     }     parm {    name    "label3"        baseparm        label   "Input #3 Label"        invisible       export  all     }     parm {    name    "label4"        baseparm        label   "Input #4 Label"        invisible       export  all     }     parm {    name    "create_frame_atr"      label   "create_frame_atr"      type    toggle  default { "0" }         range   { 0! 10 }       parmtag { "autoscope" "0000000000000000" }     }     parm {     name    "start_frame"   label   "start_frame"   type    integer         default { [ "$SHOT_START - $PREROLL" hscript-expr ] }   range   { 0 10 }        parmtag { "autoscope" "0000000000000000" }     }     parm {     name    "end_frame"     label   "end_frame"     type    integer         default { [ "$SHOT_END + $POSTROLL" hscript-expr ] }    range   { 0 10 }        parmtag { "autoscope" "0000000000000000" }     }     parm {     name    "step"  label   "step"  type    integer         default { "5" }         range   { 0 10 }        parmtag { "autoscope" "0000000000000000" }     } ' $_obj_crowd01_workarea_GET_all_frames_geo1
+chblockbegin
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1 start_frame
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$SHOT_START - $PREROLL' $_obj_crowd01_workarea_GET_all_frames_geo1/start_frame
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1 end_frame
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$SHOT_END + $POSTROLL' $_obj_crowd01_workarea_GET_all_frames_geo1/end_frame
+chblockend
+opparm -V 16.0.674 $_obj_crowd01_workarea_GET_all_frames_geo1
+opcolor -c 0.86699998378753662 0 0 $_obj_crowd01_workarea_GET_all_frames_geo1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1
+opcf $_obj_crowd01_workarea_GET_all_frames_geo1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame (Sop/attribwrangle)
+set _obj_crowd01_workarea_GET_all_frames_geo1_crt_frame = `run("opadd -e -n -v attribwrangle crt_frame")`
+oplocate -x `$arg2 + 4.1219200000000003` -y `$arg3 + -0.59652400000000005` $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opparm $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame snippet ( '@frame = @Frame;' )
+opcolor -c 1 0.80000001192092896 0 $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opuserdata -n '___Version___' -v '' $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opcf ..
+opcf $_obj_crowd01_workarea_GET_all_frames_geo1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 (Sop/block_end)
+set _obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 = `run("opadd -e -n -v block_end repeat_end1")`
+oplocate -x `$arg2 + 2.6271900000000001` -y `$arg3 + -4.2633200000000002` $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opspareds '    parm {   name    "itermethod"    baseparm        label   "Iteration Method"      export  none     }     parm {   name    "method"        baseparm        label   "Gather Method"         export  none     }     parm {   name    "iterations"    baseparm        label   "Iterations"    export  none     }     parm {   name    "startvalue"    baseparm        label   "Start Value"   export  none     }     parm {   name    "increment"     baseparm        label   "Increment"     export  none     }     parm {   name    "class"         baseparm        label   "Piece Elements"        export  none     }     parm {   name    "useattrib"     baseparm        label   "Piece Attribute"       joinnext        export  none     }     parm {   name    "attrib"        baseparm        label   "Piece Attribute"       export  none     }     parm {   name    "usemaxiter"    baseparm        label   "Max Iterations"        joinnext        export  none     }     parm {   name    "maxiter"       baseparm        label   "Max Iterations"        export  none     }     parm {   name    "blockpath"     baseparm        label   "Default Block Path"    export  none     }     parm {   name    "templatepath"  baseparm        label   "Piece Block Path"      export  none     }     parm {   name    "resetcookpass"         baseparm        label   "Reset Cached Pass"     export  none     }     parm {   name    "dosinglepass"  baseparm        label   "Do Single Pass"        joinnext        export  none     }     parm {   name    "singlepass"    baseparm        label   "Single Pass"   export  none     }     parm {   name    "stopcondition"         baseparm        label   "Stop Condition"        export  none     }     parm {   name    "multithread"   baseparm        label   "Multithread when Compiled"     export  none     }     parm {   name    "start_frame"   label   "start_frame"   type    integer         default { "0" }         range   { 0 10 }     }     parm {       name    "end_frame"     label   "end_frame"     type    integer         default { "0" }         range   { 0 10 }     }     parm {       name    "step"  label   "step"  type    integer         default { "1" }         range   { 0 10 }     } ' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+chblockbegin
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 iterations
+chkey -t 41.458333333333002 -v 10 -m 0 -a 0 -A 0 -T a  -F 'ceil((ch("end_frame") - ch("start_frame") + 1)/ch("step"))' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1/iterations
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 start_frame
+chkey -t 41.458333333333002 -v 986 -m 0 -a 0 -A 0 -T a  -F 'ch("../start_frame")' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1/start_frame
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 end_frame
+chkey -t 41.458333333333002 -v 1071 -m 0 -a 0 -A 0 -T a  -F 'ch("../end_frame")' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1/end_frame
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 step
+chkey -t 41.458333333333002 -v 5 -m 0 -a 0 -A 0 -T a  -F 'ch("../step")' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1/step
+chblockend
+opparm -V 16.0.674 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 itermethod ( count ) method ( merge ) iterations ( iterations ) blockpath ( ../repeat_begin1 ) start_frame ( start_frame ) end_frame ( end_frame ) step ( step )
+opcolor -c 0.75 0.40000000596046448 0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1 (Sop/block_begin)
+set _obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1 = `run("opadd -e -n -v block_begin repeat_begin1")`
+oplocate -x `$arg2 + 0.0016000000000000001` -y `$arg3 + 1.5075000000000001` $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opparm -V 16.0.674 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1 blockpath ( ../repeat_end1 ) label1 ( 'iteration, numiteration, value, ivalue' )
+opcolor -c 0.75 0.40000000596046448 0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2 (Sop/block_begin)
+set _obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2 = `run("opadd -e -n -v block_begin repeat_begin2")`
+oplocate -x `$arg2 + 2.6271900000000001` -y `$arg3 + 1.5075000000000001` $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opparm -V 16.0.674 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2 method ( input ) blockpath ( ../repeat_end1 ) label1 ( 'iteration, numiteration, value, ivalue' )
+opcolor -c 0.75 0.40000000596046448 0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1 (Sop/block_begin)
+set _obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1 = `run("opadd -e -n -v block_begin repeat_begin1_metadata1")`
+oplocate -x `$arg2 + 5.4409400000000003` -y `$arg3 + 1.5075000000000001` $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+opparm -V 16.0.674 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1 method ( metadata ) blockpath ( ../repeat_end1 ) label1 ( 'iteration, numiteration, value, ivalue' )
+opcolor -c 0.75 0.40000000596046448 0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1_metadata1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_output1 (Sop/output)
+set _obj_crowd01_workarea_GET_all_frames_geo1_output1 = `run("opadd -e -n -v output output1")`
+oplocate -x `$arg2 + 2.6255899999999999` -y `$arg3 + -5.7526599999999997` $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+chblockbegin
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_output1 outputidx
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F 'max(opdigits(".")-1,0)' $_obj_crowd01_workarea_GET_all_frames_geo1_output1/outputidx
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_null1 (Sop/null)
+set _obj_crowd01_workarea_GET_all_frames_geo1_null1 = `run("opadd -e -n -v null null1")`
+oplocate -x `$arg2 + -1.11759e-08` -y `$arg3 + 3.8542100000000001` $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_switch1 (Sop/switch)
+set _obj_crowd01_workarea_GET_all_frames_geo1_switch1 = `run("opadd -e -n -v switch switch1")`
+oplocate -x `$arg2 + 2.6255899999999999` -y `$arg3 + -1.9944` $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+chblockbegin
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_switch1 input
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../create_frame_atr")' $_obj_crowd01_workarea_GET_all_frames_geo1_switch1/input
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+
+# Node $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 (Sop/timeshift)
+set _obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 = `run("opadd -e -n -v timeshift timeshift2")`
+oplocate -x `$arg2 + 2.6255899999999999` -y `$arg3 + -3.22844` $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+chblockbegin
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 frame
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F 'detail("../repeat_begin1_metadata1/","iteration",0) * ch("../repeat_end1/step") + ch("../repeat_end1/start_frame")' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2/frame
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 time
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2/time
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 frange1
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2/frange1
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 frange2
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2/frange2
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 trange1
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2/trange1
+chadd -t 41.458333333333002 41.458333333333002 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 trange2
+chkey -t 41.458333333333002 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2/trange2
+chblockend
+opparm -V 16.0.674 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 frame ( frame )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+opexprlanguage -s hscript $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+opuserdata -n '___Version___' -v '16.0.674' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+opuserdata -n '___toolcount___' -v '43' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+opuserdata -n '___toolid___' -v 'subnet6' $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+oporder -e repeat_end1 repeat_begin1 repeat_begin2 repeat_begin1_metadata1 output1 null1 crt_frame switch1 timeshift2 
+opcf ..
+opset -p on $_obj_crowd01_workarea_GET_all_frames_geo1
 
 opcf $arg1
-opwire -n $_obj_sphere1_sphere1 -0 $_obj_sphere1_opencl1
+opwire -n $_obj_crowd01_workarea_frustum1 -0 $_obj_crowd01_workarea_GET_all_frames_geo1
+opcf $_obj_crowd01_workarea_GET_all_frames_geo1
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_null1 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin1
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_null1 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_end1 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_output1
+opwire -n -i 0 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_null1
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_repeat_begin2 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_crt_frame -1 $_obj_crowd01_workarea_GET_all_frames_geo1_switch1
+opwire -n $_obj_crowd01_workarea_GET_all_frames_geo1_switch1 -0 $_obj_crowd01_workarea_GET_all_frames_geo1_timeshift2
+opcf ..
 
 set oidx = 0
 if ($argc >= 9 && "$arg9" != "") then
@@ -1540,11 +1846,336 @@ if ($argc >= 9 && "$arg9" != "") then
 endif
 
 if ($argc >= 5 && "$arg4" != "") then
-    set output = $_obj_sphere1_opencl1
+    set output = $_obj_crowd01_workarea_GET_all_frames_geo1
     opwire -n $output -$arg5 $arg4
 endif
 if ($argc >= 6 && "$arg6" != "") then
-    set input = $_obj_sphere1_opencl1
+    set input = $_obj_crowd01_workarea_GET_all_frames_geo1
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="timeblend_vol" label="Timeblend Vol" icon="SOP_timeblend">
+    <helpURL>operator:Sop/timeblend</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/timeblend</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('timeblend'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_timeblend_vol (Sop/timeblend)
+set _obj_geo1_timeblend_vol = `run("opadd -e -n -u -v timeblend timeblend_vol")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_timeblend_vol
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_timeblend_vol
+opexprlanguage -s hscript $_obj_geo1_timeblend_vol
+opuserdata -n '___Version___' -v '' $_obj_geo1_timeblend_vol
+opcf $_obj_geo1_timeblend_vol
+
+# Node $_obj_geo1_timeblend_vol_floor_frame (Sop/timeshift)
+set _obj_geo1_timeblend_vol_floor_frame = `run("opadd -e -n -v timeshift floor_frame")`
+oplocate -x `$arg2 + 0.61177000000000004` -y `$arg3 + 3.3500000000000001` $_obj_geo1_timeblend_vol_floor_frame
+chblockbegin
+chadd -t 0 0 $_obj_geo1_timeblend_vol_floor_frame frame
+chkey -t 0 -v 4 -m 0 -a 0 -A 0 -T a  -F 'floor($FF)' $_obj_geo1_timeblend_vol_floor_frame/frame
+chadd -t 0 0 $_obj_geo1_timeblend_vol_floor_frame time
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_timeblend_vol_floor_frame/time
+chadd -t 0 0 $_obj_geo1_timeblend_vol_floor_frame frange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_timeblend_vol_floor_frame/frange1
+chadd -t 0 0 $_obj_geo1_timeblend_vol_floor_frame frange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_timeblend_vol_floor_frame/frange2
+chadd -t 0 0 $_obj_geo1_timeblend_vol_floor_frame trange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_timeblend_vol_floor_frame/trange1
+chadd -t 0 0 $_obj_geo1_timeblend_vol_floor_frame trange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_timeblend_vol_floor_frame/trange2
+chblockend
+opparm -V 16.0.557 $_obj_geo1_timeblend_vol_floor_frame frame ( frame )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_timeblend_vol_floor_frame
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_timeblend_vol_floor_frame
+opexprlanguage -s hscript $_obj_geo1_timeblend_vol_floor_frame
+opuserdata -n '___Version___' -v '16.0.557' $_obj_geo1_timeblend_vol_floor_frame
+
+# Node $_obj_geo1_timeblend_vol_ceil_frame (Sop/timeshift)
+set _obj_geo1_timeblend_vol_ceil_frame = `run("opadd -e -n -v timeshift ceil_frame")`
+oplocate -x `$arg2 + 3.0117699999999998` -y `$arg3 + 3.3500000000000001` $_obj_geo1_timeblend_vol_ceil_frame
+chblockbegin
+chadd -t 0 0 $_obj_geo1_timeblend_vol_ceil_frame frame
+chkey -t 0 -v 5 -m 0 -a 0 -A 0 -T a  -F 'ceil($FF)' $_obj_geo1_timeblend_vol_ceil_frame/frame
+chadd -t 0 0 $_obj_geo1_timeblend_vol_ceil_frame time
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_timeblend_vol_ceil_frame/time
+chadd -t 0 0 $_obj_geo1_timeblend_vol_ceil_frame frange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_timeblend_vol_ceil_frame/frange1
+chadd -t 0 0 $_obj_geo1_timeblend_vol_ceil_frame frange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_timeblend_vol_ceil_frame/frange2
+chadd -t 0 0 $_obj_geo1_timeblend_vol_ceil_frame trange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_timeblend_vol_ceil_frame/trange1
+chadd -t 0 0 $_obj_geo1_timeblend_vol_ceil_frame trange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_timeblend_vol_ceil_frame/trange2
+chblockend
+opparm -V 16.0.557 $_obj_geo1_timeblend_vol_ceil_frame frame ( frame )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_timeblend_vol_ceil_frame
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_timeblend_vol_ceil_frame
+opexprlanguage -s hscript $_obj_geo1_timeblend_vol_ceil_frame
+opuserdata -n '___Version___' -v '16.0.557' $_obj_geo1_timeblend_vol_ceil_frame
+
+# Node $_obj_geo1_timeblend_vol_null1 (Sop/null)
+set _obj_geo1_timeblend_vol_null1 = `run("opadd -e -n -v null null1")`
+oplocate -x `$arg2 + 1` -y `$arg3 + 4.75` $_obj_geo1_timeblend_vol_null1
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_timeblend_vol_null1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_timeblend_vol_null1
+opexprlanguage -s hscript $_obj_geo1_timeblend_vol_null1
+opuserdata -n '___Version___' -v '16.0.557' $_obj_geo1_timeblend_vol_null1
+
+# Node $_obj_geo1_timeblend_vol_first_frame (Sop/timeshift)
+set _obj_geo1_timeblend_vol_first_frame = `run("opadd -e -n -v timeshift first_frame")`
+oplocate -x `$arg2 + -1.5058800000000001` -y `$arg3 + 2.85588` $_obj_geo1_timeblend_vol_first_frame
+chblockbegin
+chadd -t 0 0 $_obj_geo1_timeblend_vol_first_frame frame
+chkey -t 0 -v 2 -m 0 -a 0 -A 0 -T a  -F 'ch("../firstframe")' $_obj_geo1_timeblend_vol_first_frame/frame
+chadd -t 0 0 $_obj_geo1_timeblend_vol_first_frame time
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_timeblend_vol_first_frame/time
+chadd -t 0 0 $_obj_geo1_timeblend_vol_first_frame frange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_timeblend_vol_first_frame/frange1
+chadd -t 0 0 $_obj_geo1_timeblend_vol_first_frame frange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_timeblend_vol_first_frame/frange2
+chadd -t 0 0 $_obj_geo1_timeblend_vol_first_frame trange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_timeblend_vol_first_frame/trange1
+chadd -t 0 0 $_obj_geo1_timeblend_vol_first_frame trange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_timeblend_vol_first_frame/trange2
+chblockend
+opparm -V 16.0.557 $_obj_geo1_timeblend_vol_first_frame frame ( frame ) integerframe ( off )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_timeblend_vol_first_frame
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_timeblend_vol_first_frame
+opexprlanguage -s hscript $_obj_geo1_timeblend_vol_first_frame
+opuserdata -n '___Version___' -v '16.0.557' $_obj_geo1_timeblend_vol_first_frame
+
+# Node $_obj_geo1_timeblend_vol_last_frame (Sop/timeshift)
+set _obj_geo1_timeblend_vol_last_frame = `run("opadd -e -n -v timeshift last_frame")`
+oplocate -x `$arg2 + 5.3882399999999997` -y `$arg3 + 3.3500000000000001` $_obj_geo1_timeblend_vol_last_frame
+chblockbegin
+chadd -t 0 0 $_obj_geo1_timeblend_vol_last_frame frame
+chkey -t 0 -v 2 -m 0 -a 0 -A 0 -T a  -F 'ch("../lastframe")' $_obj_geo1_timeblend_vol_last_frame/frame
+chadd -t 0 0 $_obj_geo1_timeblend_vol_last_frame time
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_timeblend_vol_last_frame/time
+chadd -t 0 0 $_obj_geo1_timeblend_vol_last_frame frange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_geo1_timeblend_vol_last_frame/frange1
+chadd -t 0 0 $_obj_geo1_timeblend_vol_last_frame frange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_geo1_timeblend_vol_last_frame/frange2
+chadd -t 0 0 $_obj_geo1_timeblend_vol_last_frame trange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_timeblend_vol_last_frame/trange1
+chadd -t 0 0 $_obj_geo1_timeblend_vol_last_frame trange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_timeblend_vol_last_frame/trange2
+chblockend
+opparm -V 16.0.557 $_obj_geo1_timeblend_vol_last_frame frame ( frame ) integerframe ( off )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_timeblend_vol_last_frame
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_timeblend_vol_last_frame
+opexprlanguage -s hscript $_obj_geo1_timeblend_vol_last_frame
+opuserdata -n '___Version___' -v '16.0.557' $_obj_geo1_timeblend_vol_last_frame
+
+# Node $_obj_geo1_timeblend_vol_switch1 (Sop/switch)
+set _obj_geo1_timeblend_vol_switch1 = `run("opadd -e -n -v switch switch1")`
+oplocate -x `$arg2 + 1.9211800000000001` -y `$arg3 + 0.15564` $_obj_geo1_timeblend_vol_switch1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_timeblend_vol_switch1 input
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '(!ch("../holdfirst") || ($FF > ch("../firstframe"))) + (ch("../holdlast") && ($FF > ch("../lastframe")))' $_obj_geo1_timeblend_vol_switch1/input
+chblockend
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_timeblend_vol_switch1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_timeblend_vol_switch1
+opexprlanguage -s hscript $_obj_geo1_timeblend_vol_switch1
+opuserdata -n '___Version___' -v '16.0.557' $_obj_geo1_timeblend_vol_switch1
+
+# Node $_obj_geo1_timeblend_vol_switch2 (Sop/switch)
+set _obj_geo1_timeblend_vol_switch2 = `run("opadd -e -n -v switch switch2")`
+oplocate -x `$arg2 + 1` -y `$arg3 + -1.0090699999999999` $_obj_geo1_timeblend_vol_switch2
+chblockbegin
+chadd -t 0 0 $_obj_geo1_timeblend_vol_switch2 input
+chkey -t 0 -v 0 -m 0 -a 0.33333333333333331 -A 0.33333333333333331 -T a  -F 'hou.pwd().inputs()[0].isTimeDependent()' -l p $_obj_geo1_timeblend_vol_switch2/input
+chblockend
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_timeblend_vol_switch2
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_timeblend_vol_switch2
+opexprlanguage -s hscript $_obj_geo1_timeblend_vol_switch2
+opuserdata -n '___Version___' -v '16.0.557' $_obj_geo1_timeblend_vol_switch2
+
+# Node $_obj_geo1_timeblend_vol_time_clamp (Sop/timeshift)
+set _obj_geo1_timeblend_vol_time_clamp = `run("opadd -e -n -v timeshift time_clamp")`
+oplocate -x `$arg2 + 1` -y `$arg3 + -2.06413` $_obj_geo1_timeblend_vol_time_clamp
+chblockbegin
+chadd -t 0 0 $_obj_geo1_timeblend_vol_time_clamp frame
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FF' $_obj_geo1_timeblend_vol_time_clamp/frame
+chadd -t 0 0 $_obj_geo1_timeblend_vol_time_clamp time
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$T' $_obj_geo1_timeblend_vol_time_clamp/time
+chadd -t 0 0 $_obj_geo1_timeblend_vol_time_clamp rangeclamp
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '{\n    if (ch("../holdfirst") == 0 && ch("../holdlast") == 0)\n        return 0;\n    if (ch("../holdfirst") != 0 && ch("../holdlast") == 0)\n        return 1;\n    if (ch("../holdfirst") == 0 && ch("../holdlast") != 0)\n        return 2;\n    return 3;\n}' $_obj_geo1_timeblend_vol_time_clamp/rangeclamp
+chadd -t 0 0 $_obj_geo1_timeblend_vol_time_clamp frange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../firstframe")' $_obj_geo1_timeblend_vol_time_clamp/frange1
+chadd -t 0 0 $_obj_geo1_timeblend_vol_time_clamp frange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../lastframe")' $_obj_geo1_timeblend_vol_time_clamp/frange2
+chadd -t 0 0 $_obj_geo1_timeblend_vol_time_clamp trange1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TSTART' $_obj_geo1_timeblend_vol_time_clamp/trange1
+chadd -t 0 0 $_obj_geo1_timeblend_vol_time_clamp trange2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$TEND' $_obj_geo1_timeblend_vol_time_clamp/trange2
+chblockend
+opparm -V 16.0.557 $_obj_geo1_timeblend_vol_time_clamp frame ( frame ) integerframe ( off ) rangeclamp ( rangeclamp ) frange ( frange1 frange2 )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_timeblend_vol_time_clamp
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_timeblend_vol_time_clamp
+opexprlanguage -s hscript $_obj_geo1_timeblend_vol_time_clamp
+opuserdata -n '___Version___' -v '16.0.557' $_obj_geo1_timeblend_vol_time_clamp
+
+# Node $_obj_geo1_timeblend_vol_volumemix1 (Sop/volumemix)
+set _obj_geo1_timeblend_vol_volumemix1 = `run("opadd -e -n -v volumemix volumemix1")`
+oplocate -x `$arg2 + 1.9211800093132261` -y `$arg3 + 1.9978228356805885` $_obj_geo1_timeblend_vol_volumemix1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_timeblend_vol_volumemix1 blend
+chkey -t 0 -v 0.5 -m 0 -a 0 -A 0 -T a  -F '$FF - floor($FF)' $_obj_geo1_timeblend_vol_volumemix1/blend
+chadd -t 0 0 $_obj_geo1_timeblend_vol_volumemix1 expr
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$V' $_obj_geo1_timeblend_vol_volumemix1/expr
+chblockend
+opparm -V 16.0.557 $_obj_geo1_timeblend_vol_volumemix1 mixmethod ( blend ) blend ( blend )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_timeblend_vol_volumemix1
+opexprlanguage -s hscript $_obj_geo1_timeblend_vol_volumemix1
+oporder -e floor_frame ceil_frame null1 first_frame last_frame switch1 switch2 time_clamp volumemix1 
+opcf ..
+opset -p on $_obj_geo1_timeblend_vol
+
+opcf $arg1
+opcf $_obj_geo1_timeblend_vol
+opwire -n $_obj_geo1_timeblend_vol_null1 -0 $_obj_geo1_timeblend_vol_floor_frame
+opwire -n $_obj_geo1_timeblend_vol_null1 -0 $_obj_geo1_timeblend_vol_ceil_frame
+opwire -n -i 0 -0 $_obj_geo1_timeblend_vol_null1
+opwire -n $_obj_geo1_timeblend_vol_null1 -0 $_obj_geo1_timeblend_vol_first_frame
+opwire -n $_obj_geo1_timeblend_vol_null1 -0 $_obj_geo1_timeblend_vol_last_frame
+opwire -n $_obj_geo1_timeblend_vol_first_frame -0 $_obj_geo1_timeblend_vol_switch1
+opwire -n $_obj_geo1_timeblend_vol_volumemix1 -1 $_obj_geo1_timeblend_vol_switch1
+opwire -n $_obj_geo1_timeblend_vol_last_frame -2 $_obj_geo1_timeblend_vol_switch1
+opwire -n $_obj_geo1_timeblend_vol_null1 -0 $_obj_geo1_timeblend_vol_switch2
+opwire -n $_obj_geo1_timeblend_vol_switch1 -1 $_obj_geo1_timeblend_vol_switch2
+opwire -n $_obj_geo1_timeblend_vol_switch2 -0 $_obj_geo1_timeblend_vol_time_clamp
+opwire -n $_obj_geo1_timeblend_vol_floor_frame -0 $_obj_geo1_timeblend_vol_volumemix1
+opwire -n $_obj_geo1_timeblend_vol_ceil_frame -1 $_obj_geo1_timeblend_vol_volumemix1
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_timeblend_vol
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_timeblend_vol
     if ($arg8) then
         opwire -n -i $arg6 -0 $input
     else

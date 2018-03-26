@@ -154,4 +154,334 @@ opcf $saved_path
 hou.hscript(h_preamble + h_extra_args + h_cmd)
 ]]></script>
   </tool>
+
+  <tool name="trans_by_pt" label="Trans By Pt" icon="SOP_attribvop">
+    <helpURL>operator:Sop/attribvop</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/attribvop</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('attribvop'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_trans_by_pt (Sop/attribvop)
+set _obj_geo1_trans_by_pt = `run("opadd -e -n -v attribvop trans_by_pt")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_trans_by_pt
+opspareds '    parm {         name    "bindgroup"         baseparm         label   "Group"         export  none         bindselector uvselect "Modify Points"             "Select the points to affect and press Enter to complete."             0 1 0xffffffff 0 bindgrouptype 0     }     parm {         name    "bindgrouptype"         baseparm         label   "Group Type"         export  none     }     parm {         name    "bindclass"         baseparm         label   "Run Over"         export  none     }     parm {         name    "vex_numcount"         baseparm         label   "Number Count"         export  none     }     parm {         name    "vex_threadjobsize"         baseparm         label   "Thread Job Size"         export  none     }     group {         name    "stdswitcher3"         label   "Vex Setup"          parm {             name    "vexsrc"             baseparm             label   "Vex Source"             export  all         }         parm {             name    "shoppath"             baseparm             label   "Shop Path"             export  all         }         parm {             name    "script"             baseparm             label   "Script"             export  all         }         parm {             name    "clear"             baseparm             label   "Re-load VEX Functions"             export  all         }         parm {             name    "vop_compiler"             baseparm             label   "Compiler"             export  none         }         parm {             name    "vop_forcecompile"             baseparm             label   "Force Compile"             export  none         }         parm {             name    "vex_cwdpath"             baseparm             label   "Evaluation Node Path"             export  none         }         parm {             name    "vex_outputmask"             baseparm             label   "Export Parameters"             export  none         }         parm {             name    "vex_multithread"             baseparm             label   "Enable Multithreading"             export  none         }     }      group {         name    "stdswitcher3_1"         label   "Attribute Bindings"          parm {             name    "autobind"             baseparm             label   "Autobind by Name"             export  none         }         multiparm {             name    "bindings"             label    "Number of Bindings"             baseparm             default 0             parmtag { "multistartoffset" "1" }              parm {                 name    "bindname#"                 baseparm                 label   "Attribute Name"                 export  none             }             parm {                 name    "bindparm#"                 baseparm                 label   "VEX Parameter"                 export  none             }         }          parm {             name    "groupautobind"             baseparm             label   "Autobind Groups by Name"             export  none         }         multiparm {             name    "groupbindings"             label    "Group Bindings"             baseparm             default 0             parmtag { "multistartoffset" "1" }              parm {                 name    "bindgroupname#"                 baseparm                 label   "Group Name"                 export  none             }             parm {                 name    "bindgroupparm#"                 baseparm                 label   "VEX Parameter"                 export  none             }         }          parm {             name    "vex_updatenmls"             baseparm             label   "Update Normals If Displaced"             export  none         }         parm {             name    "vex_matchattrib"             baseparm             label   "Attribute to Match"             export  none         }         parm {             name    "vex_inplace"             baseparm             label   "Compute Results In Place"             export  none         }         parm {             name    "vex_selectiongroup"             baseparm             label   "Output Selection Group"             export  none         }     }      parm {         name    "ptnum"         label   "Point Number"         type    integer         invisible         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "vtxnum"         label   "Vertex Number"         type    integer         invisible         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "primnum"         label   "Primitive Number"         type    integer         invisible         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "id"         label   "Id"         type    integer         invisible         default { "-1" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "numpt"         label   "Number of Points"         type    integer         invisible         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "numvtx"         label   "Number of Vertices"         type    integer         invisible         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "numprim"         label   "Number of Prims"         type    integer         invisible         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "Time"         label   "Time"         type    float         invisible         default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "TimeInc"         label   "Time Inc"         type    float         invisible         default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "Frame"         label   "Frame"         type    float         invisible         default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "life"         label   "Life"         type    float         invisible         default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "age"         label   "Age"         type    float         invisible         default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "OpInput2"         label   "Second Input"         type    string         invisible         default { "" }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "OpInput3"         label   "Third Input"         type    string         invisible         default { "" }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "OpInput4"         label   "Fourth Input"         type    string         invisible         default { "" }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "OpInput1"         label   "First Input"         type    string         invisible         default { "" }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "uv"         label   "UV"         type    float         invisible         size    3         default { "0" "0" "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "P"         label   "P"         type    float         invisible         size    3         default { "0" "0" "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "v"         label   "Velocity"         type    float         invisible         size    3         default { "0" "0" "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "force"         label   "Force"         type    float         invisible         size    3         default { "0" "0" "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "Cd"         label   "Cd"         type    float         invisible         size    3         default { "1" "1" "1" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "N"         label   "N"         type    float         invisible         size    3         default { "0" "0" "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "pt0"         label   "pt0"         type    integer         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "pt1"         label   "pt1"         type    integer         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "pt2"         label   "pt2"         type    integer         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     } ' $_obj_geo1_trans_by_pt
+opparm $_obj_geo1_trans_by_pt  bindings ( 0 ) groupbindings ( 0 )
+opcolor -c 1 1 0.60000002384185791 $_obj_geo1_trans_by_pt
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_trans_by_pt
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt
+opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_trans_by_pt
+opcf $_obj_geo1_trans_by_pt
+
+# Node $_obj_geo1_trans_by_pt_geometryvopglobal1 (Vop/geometryvopglobal::2.0)
+set _obj_geo1_trans_by_pt_geometryvopglobal1 = `run("opadd -e -n -v geometryvopglobal::2.0 geometryvopglobal1")`
+oplocate -x `$arg2 + 3.7629123087099998` -y `$arg3 + -3.3493327266800001` $_obj_geo1_trans_by_pt_geometryvopglobal1
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_trans_by_pt_geometryvopglobal1
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt_geometryvopglobal1
+opuserdata -n '___Version___' -v '' $_obj_geo1_trans_by_pt_geometryvopglobal1
+
+# Node $_obj_geo1_trans_by_pt_geometryvopoutput1 (Vop/geometryvopoutput)
+set _obj_geo1_trans_by_pt_geometryvopoutput1 = `run("opadd -e -n -v geometryvopoutput geometryvopoutput1")`
+oplocate -x `$arg2 + 35.125522308709996` -y `$arg3 + -6.1277887266800004` $_obj_geo1_trans_by_pt_geometryvopoutput1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_trans_by_pt_geometryvopoutput1
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt_geometryvopoutput1
+opuserdata -n '___Version___' -v '' $_obj_geo1_trans_by_pt_geometryvopoutput1
+
+# Node $_obj_geo1_trans_by_pt_lookat1 (Vop/lookat)
+set _obj_geo1_trans_by_pt_lookat1 = `run("opadd -e -n -v lookat lookat1")`
+oplocate -x `$arg2 + 9.1082923087100003` -y `$arg3 + -11.51394272668` $_obj_geo1_trans_by_pt_lookat1
+opparm $_obj_geo1_trans_by_pt_lookat1 from ( 0 0 0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_trans_by_pt_lookat1
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt_lookat1
+opuserdata -n '___Version___' -v '' $_obj_geo1_trans_by_pt_lookat1
+
+# Node $_obj_geo1_trans_by_pt_translate1 (Vop/translate)
+set _obj_geo1_trans_by_pt_translate1 = `run("opadd -e -n -v translate translate1")`
+oplocate -x `$arg2 + 15.277522308710001` -y `$arg3 + -11.66394272668` $_obj_geo1_trans_by_pt_translate1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_trans_by_pt_translate1
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt_translate1
+opuserdata -n '___Version___' -v '' $_obj_geo1_trans_by_pt_translate1
+
+# Node $_obj_geo1_trans_by_pt_lookat2 (Vop/lookat)
+set _obj_geo1_trans_by_pt_lookat2 = `run("opadd -e -n -v lookat lookat2")`
+oplocate -x `$arg2 + 9.4215423087100003` -y `$arg3 + -18.640842726679999` $_obj_geo1_trans_by_pt_lookat2
+opparm $_obj_geo1_trans_by_pt_lookat2 from ( 0 0 0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_trans_by_pt_lookat2
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt_lookat2
+opuserdata -n '___Version___' -v '' $_obj_geo1_trans_by_pt_lookat2
+
+# Node $_obj_geo1_trans_by_pt_m3tom41 (Vop/m3tom4)
+set _obj_geo1_trans_by_pt_m3tom41 = `run("opadd -e -n -v m3tom4 m3tom41")`
+oplocate -x `$arg2 + 12.26432230871` -y `$arg3 + -11.66394272668` $_obj_geo1_trans_by_pt_m3tom41
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_trans_by_pt_m3tom41
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt_m3tom41
+opuserdata -n '___Version___' -v '' $_obj_geo1_trans_by_pt_m3tom41
+
+# Node $_obj_geo1_trans_by_pt_translate2 (Vop/translate)
+set _obj_geo1_trans_by_pt_translate2 = `run("opadd -e -n -v translate translate2")`
+oplocate -x `$arg2 + 15.75892230871` -y `$arg3 + -18.640842726679999` $_obj_geo1_trans_by_pt_translate2
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_trans_by_pt_translate2
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt_translate2
+opuserdata -n '___Version___' -v '' $_obj_geo1_trans_by_pt_translate2
+
+# Node $_obj_geo1_trans_by_pt_m3tom42 (Vop/m3tom4)
+set _obj_geo1_trans_by_pt_m3tom42 = `run("opadd -e -n -v m3tom4 m3tom42")`
+oplocate -x `$arg2 + 12.74572230871` -y `$arg3 + -18.640842726679999` $_obj_geo1_trans_by_pt_m3tom42
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_trans_by_pt_m3tom42
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt_m3tom42
+opuserdata -n '___Version___' -v '' $_obj_geo1_trans_by_pt_m3tom42
+
+# Node $_obj_geo1_trans_by_pt_multiply1 (Vop/multiply)
+set _obj_geo1_trans_by_pt_multiply1 = `run("opadd -e -n -v multiply multiply1")`
+oplocate -x `$arg2 + 23.863822308709999` -y `$arg3 + -11.92916272668` $_obj_geo1_trans_by_pt_multiply1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_trans_by_pt_multiply1
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt_multiply1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_trans_by_pt_multiply1
+
+# Node $_obj_geo1_trans_by_pt_multiply2 (Vop/multiply)
+set _obj_geo1_trans_by_pt_multiply2 = `run("opadd -e -n -v multiply multiply2")`
+oplocate -x `$arg2 + 28.237522308710002` -y `$arg3 + -10.18506272668` $_obj_geo1_trans_by_pt_multiply2
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_trans_by_pt_multiply2
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt_multiply2
+opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_trans_by_pt_multiply2
+
+# Node $_obj_geo1_trans_by_pt_invert1 (Vop/invert)
+set _obj_geo1_trans_by_pt_invert1 = `run("opadd -e -n -v invert invert1")`
+oplocate -x `$arg2 + 19.598722308709998` -y `$arg3 + -11.813942726680001` $_obj_geo1_trans_by_pt_invert1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_trans_by_pt_invert1
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt_invert1
+opuserdata -n '___Version___' -v '' $_obj_geo1_trans_by_pt_invert1
+
+# Node $_obj_geo1_trans_by_pt_snippet2 (Vop/snippet)
+set _obj_geo1_trans_by_pt_snippet2 = `run("opadd -e -n -v snippet snippet2")`
+oplocate -x `$arg2 + 5.1733425777566406` -y `$arg3 + -10.865083336774722` $_obj_geo1_trans_by_pt_snippet2
+opparm $_obj_geo1_trans_by_pt_snippet2  namenum ( 7 )
+opparm -V 16.5.268 $_obj_geo1_trans_by_pt_snippet2 code ( 'p = point(in,"P",pt0);\nn = point(in,"P",pt1);\nup = point(in,"P",pt2);\n\nn = normalize(n-p);\nup = normalize(up-p);' ) namenum ( 7 ) name1 ( p ) name2 ( n ) name3 ( up ) name7 ( in )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_trans_by_pt_snippet2
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt_snippet2
+opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_trans_by_pt_snippet2
+
+# Node $_obj_geo1_trans_by_pt_next1 (Vop/constant)
+set _obj_geo1_trans_by_pt_next1 = `run("opadd -e -n -v constant next1")`
+oplocate -x `$arg2 + 3.1733425777566402` -y `$arg3 + -10.865083336774722` $_obj_geo1_trans_by_pt_next1
+opparm -V 16.5.268 $_obj_geo1_trans_by_pt_next1 consttype ( vector ) constname ( next ) constlabel ( 'next: 0' )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_trans_by_pt_next1
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt_next1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_trans_by_pt_next1
+
+# Node $_obj_geo1_trans_by_pt_pt0 (Vop/parameter)
+set _obj_geo1_trans_by_pt_pt0 = `run("opadd -e -n -v parameter pt0")`
+oplocate -x `$arg2 + 0.88201757775664036` -y `$arg3 + -11.818983336774721` $_obj_geo1_trans_by_pt_pt0
+opparm -V 16.5.268 $_obj_geo1_trans_by_pt_pt0 parmname ( '$OS' ) parmtype ( int ) exportcontext ( cvex )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_trans_by_pt_pt0
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt_pt0
+opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_trans_by_pt_pt0
+
+# Node $_obj_geo1_trans_by_pt_pt1 (Vop/parameter)
+set _obj_geo1_trans_by_pt_pt1 = `run("opadd -e -n -v parameter pt1")`
+oplocate -x `$arg2 + 0.88201757775664047` -y `$arg3 + -13.463903996171652` $_obj_geo1_trans_by_pt_pt1
+opparm -V 16.5.268 $_obj_geo1_trans_by_pt_pt1 parmname ( '$OS' ) parmtype ( int ) exportcontext ( cvex )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_trans_by_pt_pt1
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt_pt1
+opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_trans_by_pt_pt1
+
+# Node $_obj_geo1_trans_by_pt_pt2 (Vop/parameter)
+set _obj_geo1_trans_by_pt_pt2 = `run("opadd -e -n -v parameter pt2")`
+oplocate -x `$arg2 + 0.88201757775664047` -y `$arg3 + -15.058530597131655` $_obj_geo1_trans_by_pt_pt2
+opparm -V 16.5.268 $_obj_geo1_trans_by_pt_pt2 parmname ( '$OS' ) parmtype ( int ) exportcontext ( cvex )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_trans_by_pt_pt2
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt_pt2
+opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_trans_by_pt_pt2
+
+# Node $_obj_geo1_trans_by_pt_next_4 (Vop/constant)
+set _obj_geo1_trans_by_pt_next_4 = `run("opadd -e -n -v constant next_4")`
+oplocate -x `$arg2 + 0.88201757775664047` -y `$arg3 + -16.734333487174727` $_obj_geo1_trans_by_pt_next_4
+opparm -V 16.5.268 $_obj_geo1_trans_by_pt_next_4 consttype ( int ) intdef ( 1 ) constname ( next_4 ) constlabel ( 'next_4: 0' )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_trans_by_pt_next_4
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt_next_4
+opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_trans_by_pt_next_4
+
+# Node $_obj_geo1_trans_by_pt_snippet3 (Vop/snippet)
+set _obj_geo1_trans_by_pt_snippet3 = `run("opadd -e -n -v snippet snippet3")`
+oplocate -x `$arg2 + 5.2973907915575555` -y `$arg3 + -17.740842690917212` $_obj_geo1_trans_by_pt_snippet3
+opparm $_obj_geo1_trans_by_pt_snippet3  namenum ( 7 )
+opparm -V 16.5.268 $_obj_geo1_trans_by_pt_snippet3 code ( 'p = point(in,"P",pt0);\nn = point(in,"P",pt1);\nup = point(in,"P",pt2);\n\nn = normalize(n-p);\nup = normalize(up-p);' ) namenum ( 7 ) name1 ( p ) name2 ( n ) name3 ( up ) name7 ( in )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_trans_by_pt_snippet3
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt_snippet3
+opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_trans_by_pt_snippet3
+
+# Node $_obj_geo1_trans_by_pt_next_5 (Vop/constant)
+set _obj_geo1_trans_by_pt_next_5 = `run("opadd -e -n -v constant next_5")`
+oplocate -x `$arg2 + 0.88201757775664036` -y `$arg3 + -19.89506083747721` $_obj_geo1_trans_by_pt_next_5
+opparm -V 16.5.268 $_obj_geo1_trans_by_pt_next_5 consttype ( int ) intdef ( 2 ) constname ( next_4 ) constlabel ( 'next_4: 0' )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_trans_by_pt_next_5
+opexprlanguage -s hscript $_obj_geo1_trans_by_pt_next_5
+opuserdata -n '___Version___' -v '16.0.633' $_obj_geo1_trans_by_pt_next_5
+opcf ..
+opcf $_obj_geo1_trans_by_pt
+oporder -e geometryvopglobal1 geometryvopoutput1 lookat1 translate1 lookat2 m3tom41 translate2 m3tom42 multiply1 multiply2 invert1 snippet2 next1 pt0 pt1 pt2 next_4 snippet3 next_5 
+opcf ..
+opset -p on $_obj_geo1_trans_by_pt
+
+opcf $arg1
+opcf $_obj_geo1_trans_by_pt
+opwire -n $_obj_geo1_trans_by_pt_multiply2 -0 $_obj_geo1_trans_by_pt_geometryvopoutput1
+opwire -n -o 1 $_obj_geo1_trans_by_pt_snippet2 -1 $_obj_geo1_trans_by_pt_lookat1
+opwire -n -o 2 $_obj_geo1_trans_by_pt_snippet2 -2 $_obj_geo1_trans_by_pt_lookat1
+opwire -n $_obj_geo1_trans_by_pt_m3tom41 -0 $_obj_geo1_trans_by_pt_translate1
+opwire -n $_obj_geo1_trans_by_pt_snippet2 -1 $_obj_geo1_trans_by_pt_translate1
+opwire -n -o 1 $_obj_geo1_trans_by_pt_snippet3 -1 $_obj_geo1_trans_by_pt_lookat2
+opwire -n -o 2 $_obj_geo1_trans_by_pt_snippet3 -2 $_obj_geo1_trans_by_pt_lookat2
+opwire -n $_obj_geo1_trans_by_pt_lookat1 -0 $_obj_geo1_trans_by_pt_m3tom41
+opwire -n $_obj_geo1_trans_by_pt_m3tom42 -0 $_obj_geo1_trans_by_pt_translate2
+opwire -n $_obj_geo1_trans_by_pt_snippet3 -1 $_obj_geo1_trans_by_pt_translate2
+opwire -n $_obj_geo1_trans_by_pt_lookat2 -0 $_obj_geo1_trans_by_pt_m3tom42
+opwire -n $_obj_geo1_trans_by_pt_invert1 -0 $_obj_geo1_trans_by_pt_multiply1
+opwire -n $_obj_geo1_trans_by_pt_translate2 -1 $_obj_geo1_trans_by_pt_multiply1
+opwire -n $_obj_geo1_trans_by_pt_geometryvopglobal1 -0 $_obj_geo1_trans_by_pt_multiply2
+opwire -n $_obj_geo1_trans_by_pt_multiply1 -1 $_obj_geo1_trans_by_pt_multiply2
+opwire -n $_obj_geo1_trans_by_pt_translate1 -0 $_obj_geo1_trans_by_pt_invert1
+opwire -n $_obj_geo1_trans_by_pt_next1 -0 $_obj_geo1_trans_by_pt_snippet2
+opwire -n $_obj_geo1_trans_by_pt_next1 -1 $_obj_geo1_trans_by_pt_snippet2
+opwire -n $_obj_geo1_trans_by_pt_next1 -2 $_obj_geo1_trans_by_pt_snippet2
+opwire -n $_obj_geo1_trans_by_pt_pt0 -3 $_obj_geo1_trans_by_pt_snippet2
+opwire -n $_obj_geo1_trans_by_pt_pt1 -4 $_obj_geo1_trans_by_pt_snippet2
+opwire -n $_obj_geo1_trans_by_pt_pt2 -5 $_obj_geo1_trans_by_pt_snippet2
+opwire -n $_obj_geo1_trans_by_pt_next_4 -6 $_obj_geo1_trans_by_pt_snippet2
+opwire -n $_obj_geo1_trans_by_pt_next1 -0 $_obj_geo1_trans_by_pt_snippet3
+opwire -n $_obj_geo1_trans_by_pt_next1 -1 $_obj_geo1_trans_by_pt_snippet3
+opwire -n $_obj_geo1_trans_by_pt_next1 -2 $_obj_geo1_trans_by_pt_snippet3
+opwire -n $_obj_geo1_trans_by_pt_pt0 -3 $_obj_geo1_trans_by_pt_snippet3
+opwire -n $_obj_geo1_trans_by_pt_pt1 -4 $_obj_geo1_trans_by_pt_snippet3
+opwire -n $_obj_geo1_trans_by_pt_pt2 -5 $_obj_geo1_trans_by_pt_snippet3
+opwire -n $_obj_geo1_trans_by_pt_next_5 -6 $_obj_geo1_trans_by_pt_snippet3
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_trans_by_pt
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_trans_by_pt
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
 </shelfDocument>
