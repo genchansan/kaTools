@@ -12,13 +12,14 @@ def checkRamps(node):
             name = parm.name()
             #print "not" + name
     return rampList
-####################################
+####################################s
 def selectRamp(rampList):
     names = []
     count = 0
     for ramp in rampList:
         names.append( ramp.name())
-    return hou.ui.selectFromList(names)
+    
+    return hou.ui.selectFromList(names, default_choices = (0,))
 
 ####################################
 
