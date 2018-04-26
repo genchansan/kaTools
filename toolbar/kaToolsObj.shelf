@@ -9,7 +9,7 @@
     <memberTool name="graph"/>
     <memberTool name="pc_crowd"/>
     <memberTool name="pc_crowd_new"/>
-    <memberTool name="split"/>
+    <memberTool name="clothSample"/>
   </toolshelf>
 
   <tool name="graph" label="graph" icon="OBJ_geo">
@@ -2454,10 +2454,10 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
 ]]></script>
   </tool>
 
-  <tool name="split" label="split" icon="OBJ_geo">
-    <helpURL>operator:Object/geo</helpURL>
+  <tool name="clothSample" label="Cloth Sample" icon="OBJ_subnet">
+    <helpURL>operator:Object/subnet</helpURL>
     <toolMenuContext name="network">
-      <contextOpType>Object/geo</contextOpType>
+      <contextOpType>Object/subnet</contextOpType>
     </toolMenuContext>
     <script scriptType="python"><![CDATA[
 import sys
@@ -2534,7 +2534,7 @@ h_extra_args += 'set argc = "' + str(num_args) + '"\n'
 pane_node = pane.pwd()
 child_type = pane_node.childTypeCategory().nodeTypes()
 
-if not child_type.has_key('geo'):
+if not child_type.has_key('subnet'):
    hou.ui.displayMessage(
            'Cannot create node: incompatible pane network type')
    sys.exit(0)
@@ -2566,104 +2566,588 @@ endif
 set saved_path = `execute("oppwf")`
 opcf $arg1
 
-# Node $_obj_grid1 (Object/geo)
-set _obj_grid1 = `run("opadd -e -n -v geo grid1")`
-oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_grid1
-opspareds '    group {         name    "stdswitcher4"         label   "Transform"          parm {             name    "xOrd"             baseparm             label   "Transform Order"             joinnext             export  none         }         parm {             name    "rOrd"             baseparm             label   "Rotate Order"             nolabel             export  none         }         parm {             name    "t"             baseparm             label   "Translate"             export  all         }         parm {             name    "r"             baseparm             label   "Rotate"             export  all         }         parm {             name    "s"             baseparm             label   "Scale"             export  none         }         parm {             name    "p"             baseparm             label   "Pivot Translate"             export  none         }         parm {             name    "pr"             baseparm             label   "Pivot Rotate"             export  none         }         parm {             name    "scale"             baseparm             label   "Uniform Scale"             export  none         }         parm {             name    "pre_xform"             baseparm             label   "Modify Pre-Transform"             export  none         }         parm {             name    "keeppos"             baseparm             label   "Keep Position When Parenting"             export  none         }         parm {             name    "childcomp"             baseparm             label   "Child Compensation"             export  none         }         parm {             name    "constraints_on"             baseparm             label   "Enable Constraints"             export  none         }         parm {             name    "constraints_path"             baseparm             label   "Constraints"             export  none         }         parm {             name    "lookatpath"             baseparm             label   "Look At"             invisible             export  none         }         parm {             name    "lookupobjpath"             baseparm             label   "Look Up Object"             invisible             export  none         }         parm {             name    "lookup"             baseparm             label   "Look At Up Vector"             invisible             export  none         }         parm {             name    "pathobjpath"             baseparm             label   "Path Object"             invisible             export  none         }         parm {             name    "roll"             baseparm             label   "Roll"             invisible             export  none         }         parm {             name    "pos"             baseparm             label   "Position"             invisible             export  none         }         parm {             name    "uparmtype"             baseparm             label   "Parameterization"             invisible             export  none         }         parm {             name    "pathorient"             baseparm             label   "Orient Along Path"             invisible             export  none         }         parm {             name    "up"             baseparm             label   "Orient Up Vector"             invisible             export  none         }         parm {             name    "bank"             baseparm             label   "Auto-Bank factor"             invisible             export  none         }     }      group {         name    "stdswitcher4_1"         label   "Render"          parm {             name    "shop_materialpath"             baseparm             label   "Material"             export  none         }         parm {             name    "shop_materialopts"             baseparm             label   "Options"             invisible             export  none         }         parm {             name    "tdisplay"             baseparm             label   "Display"             joinnext             export  none         }         parm {             name    "display"             baseparm             label   "Display"             export  none         }         parm {             name    "viewportlod"             label   "Display As"             type    ordinal             default { "full" }             help    "Choose how the object\'s geometry should be rendered in the viewport"             menu {                 "full"      "Full Geometry"                 "points"    "Point Cloud"                 "box"       "Bounding Box"                 "centroid"  "Centroid"                 "hidden"    "Hidden"                 "subd"      "Subdivision Surface / Curves"             }             parmtag { "spare_category" "Render" }         }         parm {             name    "vm_rendervisibility"             label   "Render Visibility"             type    string             default { "*" }             menureplace {                 "*"                             "Visible to all"                 "primary"                       "Visible only to primary rays"                 "primary|shadow"                "Visible only to primary and shadow rays"                 "-primary"                      "Invisible to primary rays (Phantom)"                 "-diffuse"                      "Invisible to diffuse rays"                 "-diffuse&-reflect&-refract"    "Invisible to secondary rays"                 ""                              "Invisible (Unrenderable)"             }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "rendervisibility" }             parmtag { "spare_category" "Render" }         }         parm {             name    "vm_rendersubd"             label   "Render Polygons As Subdivision (Mantra)"             type    toggle             default { "0" }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "rendersubd" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_subdstyle"             label   "Subdivision Style"             type    string             default { "mantra_catclark" }             hidewhen "{ vm_rendersubd == 0 }"             menu {                 "mantra_catclark"   "Mantra Catmull-Clark"                 "osd_catclark"      "OpenSubdiv Catmull-Clark"             }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "subdstyle" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_subdgroup"             label   "Subdivision Group"             type    string             default { "" }             hidewhen "{ vm_rendersubd == 0 }"             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "subdgroup" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_osd_quality"             label   "Open Subdiv Quality"             type    float             default { "1" }             hidewhen "{ vm_rendersubd == 0 vm_subdstyle != osd_catclark }"             range   { 0 10 }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "osd_quality" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_osd_vtxinterp"             label   "OSD Vtx Interp"             type    integer             default { "2" }             hidewhen "{ vm_rendersubd == 0 vm_subdstyle != osd_catclark }"             menu {                 "0" "No vertex interpolation"                 "1" "Edges only"                 "2" "Edges and Corners"             }             range   { 0 10 }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "osd_vtxinterp" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_osd_fvarinterp"             label   "OSD FVar Interp"             type    integer             default { "4" }             hidewhen "{ vm_rendersubd == 0 vm_subdstyle != osd_catclark }"             menu {                 "0" "Smooth everywhere"                 "1" "Sharpen corners only"                 "2" "Sharpen edges and corners"                 "3" "Sharpen edges and propagated corners"                 "4" "Sharpen all boundaries"                 "5" "Bilinear interpolation"             }             range   { 0 10 }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "osd_fvarinterp" }             parmtag { "spare_category" "Geometry" }         }         group {             name    "folder0"             label   "Shading"              parm {                 name    "categories"                 label   "Categories"                 type    string                 default { "" }                 help    "A list of tags which can be used to select the object"                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "reflectmask"                 label   "Reflection Mask"                 type    oplist                 default { "*" }                 help    "Objects that will be reflected on this object."                 parmtag { "opexpand" "1" }                 parmtag { "opfilter" "!!OBJ/GEOMETRY!!" }                 parmtag { "oprelative" "/obj" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "refractmask"                 label   "Refraction Mask"                 type    oplist                 default { "*" }                 help    "Objects that will be refracted on this object."                 parmtag { "opexpand" "1" }                 parmtag { "opfilter" "!!OBJ/GEOMETRY!!" }                 parmtag { "oprelative" "/obj" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "lightmask"                 label   "Light Mask"                 type    oplist                 default { "*" }                 help    "Lights that illuminate this object."                 parmtag { "opexpand" "1" }                 parmtag { "opfilter" "!!OBJ/LIGHT!!" }                 parmtag { "oprelative" "/obj" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "lightcategories"                 label   "Light Selection"                 type    string                 default { "*" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "vm_volumefilter"                 label   "Volume Filter"                 type    string                 default { "box" }                 menu {                     "box"       "Box Filter"                     "gaussian"  "Gaussian"                     "bartlett"  "Bartlett (triangle)"                     "catrom"    "Catmull-Rom"                     "hanning"   "Hanning"                     "blackman"  "Blackman"                     "sinc"      "Sinc (sharpening)"                 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "filter" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "vm_volumefilterwidth"                 label   "Volume Filter Width"                 type    float                 default { "1" }                 range   { 0.001 5 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "filterwidth" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "vm_matte"                 label   "Matte shading"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "matte" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "vm_rayshade"                 label   "Raytrace Shading"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "rayshade" }                 parmtag { "spare_category" "Shading" }             }         }          group {             name    "folder0_1"             label   "Sampling"              parm {                 name    "geo_velocityblur"                 label   "Geometry Velocity Blur"                 type    toggle                 default { "0" }                 disablewhen "{ allowmotionblur == 0 }"                 parmtag { "spare_category" "Sampling" }             }         }          group {             name    "folder0_2"             label   "Dicing"              parm {                 name    "vm_shadingquality"                 label   "Shading Quality"                 type    float                 default { "1" }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "shadingquality" }                 parmtag { "spare_category" "Dicing" }             }             parm {                 name    "vm_flatness"                 label   "Dicing Flatness"                 type    float                 default { "0.05" }                 range   { 0 1 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "flatness" }                 parmtag { "spare_category" "Dicing" }             }             parm {                 name    "vm_raypredice"                 label   "Ray Predicing"                 type    integer                 default { "0" }                 menu {                     "0" "Disable Predicing"                     "1" "Full Predicing"                     "2" "Precompute Bounds"                 }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "raypredice" }                 parmtag { "spare_category" "Dicing" }             }             parm {                 name    "vm_curvesurface"                 label   "Shade Curves As Surfaces"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "curvesurface" }                 parmtag { "spare_category" "Dicing" }             }         }          group {             name    "folder0_3"             label   "Geometry"              parm {                 name    "vm_rmbackface"                 label   "Backface Removal"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "rmbackface" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "shop_geometrypath"                 label   "Procedural Shader"                 type    oppath                 default { "" }                 parmtag { "opfilter" "!!SHOP/GEOMETRY!!" }                 parmtag { "oprelative" "." }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_forcegeometry"                 label   "Force Procedural Geometry Output"                 type    toggle                 default { "1" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_rendersubdcurves"                 label   "Render Polygon Curves As Subdivision (Mantra)"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "rendersubdcurves" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_renderpoints"                 label   "Render As Points (Mantra)"                 type    integer                 default { "2" }                 menu {                     "0" "No Point Rendering"                     "1" "Render Only Points"                     "2" "Render Unconnected Points"                 }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "renderpoints" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_renderpointsas"                 label   "Render Points As (Mantra)"                 type    integer                 default { "0" }                 disablewhen "{ vm_renderpoints == 0 }"                 menu {                     "0" "Spheres"                     "1" "Circles"                 }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "renderpointsas" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_usenforpoints"                 label   "Use N For Point Rendering"                 type    toggle                 default { "0" }                 disablewhen "{ vm_renderpoints == 0 }"                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "usenforpoints" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_pointscale"                 label   "Point Scale"                 type    float                 default { "1" }                 disablewhen "{ vm_renderpoints == 0 }"                 range   { 0! 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "pointscale" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_pscalediameter"                 label   "Treat Point Scale as Diameter Instead of Radius"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "pscalediameter" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_metavolume"                 label   "Metaballs as Volume"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "metavolume" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_coving"                 label   "Coving"                 type    integer                 default { "1" }                 menu {                     "0" "Disable Coving"                     "1" "Coving for displacement/sub-d"                     "2" "Coving for all primitives"                 }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "coving" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_materialoverride"                 label   "Material Override"                 type    string                 default { "compact" }                 menu {                     "none"      "Disabled"                     "full"      "Evaluate for Each Primitve/Point"                     "compact"   "Evaluate Once"                 }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_overridedetail"                 label   "Ignore Geometry Attribute Shaders"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "overridedetail" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_procuseroottransform"                 label   "Proc Use Root Transform"                 type    toggle                 default { "1" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "procuseroottransform" }                 parmtag { "spare_category" "Geometry" }             }         }      }      group {         name    "stdswitcher4_2"         label   "Misc"          parm {             name    "use_dcolor"             baseparm             label   "Set Wireframe Color"             export  none         }         parm {             name    "dcolor"             baseparm             label   "Wireframe Color"             export  none         }         parm {             name    "picking"             baseparm             label   "Viewport Selecting Enabled"             export  none         }         parm {             name    "pickscript"             baseparm             label   "Select Script"             export  none         }         parm {             name    "caching"             baseparm             label   "Cache Object Transform"             export  none         }         parm {             name    "vport_shadeopen"             baseparm             label   "Shade Open Curves In Viewport"             export  none         }         parm {             name    "vport_displayassubdiv"             baseparm             label   "Display as Subdivision in Viewport"             invisible             export  none         }         parm {             name    "vport_onionskin"             baseparm             label   "Onion Skinning"             export  none         }     }  ' $_obj_grid1
-opset -S on $_obj_grid1
-chautoscope $_obj_grid1 +tx +ty +tz +rx +ry +rz +sx +sy +sz
-opset -d on -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -x off $_obj_grid1
-opexprlanguage -s hscript $_obj_grid1
-opcf $_obj_grid1
+# Node $_obj_cloth_sample (Object/subnet)
+set _obj_cloth_sample = `run("opadd -e -n -v subnet cloth_sample")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_cloth_sample
+opset -S on $_obj_cloth_sample
+chautoscope $_obj_cloth_sample +tx +ty +tz +rx +ry +rz +sx +sy +sz
+opset -d on -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -x off $_obj_cloth_sample
+opexprlanguage -s hscript $_obj_cloth_sample
+opcf $_obj_cloth_sample
 
-# Node $_obj_grid1_attribwrangle1 (Sop/attribwrangle)
-set _obj_grid1_attribwrangle1 = `run("opadd -e -n -v attribwrangle attribwrangle1")`
-oplocate -x `$arg2 + 2.6326925093112852` -y `$arg3 + -6.1066792020142611` $_obj_grid1_attribwrangle1
-opspareds '    group {         name    "folder1"         label   "Code"          parm {             name    "group"             baseparm             label   "Group"             export  none             bindselector points "Modify Points"                 "Select the points to affect and press Enter to complete."                 0 1 0xffffffff 0 grouptype 0         }         parm {             name    "grouptype"             baseparm             label   "Group Type"             export  none         }         parm {             name    "class"             baseparm             label   "Run Over"             export  none         }         parm {             name    "vex_numcount"             baseparm             label   "Number Count"             export  none         }         parm {             name    "vex_threadjobsize"             baseparm             label   "Thread Job Size"             export  none         }         parm {             name    "snippet"             baseparm             label   "VEXpression"             export  all         }         parm {             name    "exportlist"             baseparm             label   "Attributes to Create"             export  none         }         parm {             name    "vex_strict"             baseparm             label   "Enforce Prototypes"             export  none         }     }      group {         name    "folder1_1"         label   "Bindings"          parm {             name    "autobind"             baseparm             label   "Autobind by Name"             export  none         }         multiparm {             name    "bindings"             label    "Number of Bindings"             baseparm             default 0             parmtag { "autoscope" "0000000000000000" }             parmtag { "multistartoffset" "1" }              parm {                 name    "bindname#"                 baseparm                 label   "Attribute Name"                 export  none             }             parm {                 name    "bindparm#"                 baseparm                 label   "VEX Parameter"                 export  none             }         }          parm {             name    "groupautobind"             baseparm             label   "Autobind Groups by Name"             export  none         }         multiparm {             name    "groupbindings"             label    "Group Bindings"             baseparm             default 0             parmtag { "autoscope" "0000000000000000" }             parmtag { "multistartoffset" "1" }              parm {                 name    "bindgroupname#"                 baseparm                 label   "Group Name"                 export  none             }             parm {                 name    "bindgroupparm#"                 baseparm                 label   "VEX Parameter"                 export  none             }         }          parm {             name    "vex_cwdpath"             baseparm             label   "Evaluation Node Path"             export  none         }         parm {             name    "vex_outputmask"             baseparm             label   "Export Parameters"             export  none         }         parm {             name    "vex_updatenmls"             baseparm             label   "Update Normals If Displaced"             export  none         }         parm {             name    "vex_matchattrib"             baseparm             label   "Attribute to Match"             export  none         }         parm {             name    "vex_inplace"             baseparm             label   "Compute Results In Place"             export  none         }         parm {             name    "vex_selectiongroup"             baseparm             label   "Output Selection Group"             export  none         }     }      parm {         name    "seed"         label   "Seed"         type    float         default { "0" }         range   { 0 1 }     }     multiparm {         name    "folder2"         label    "sizes"         default 0          parm {             name    "size#"             label   "size"             type    float             default { "0" }             range   { 0 10 }         }         parm {             name    "probability#"             label   "probability"             type    float             default { "0" }             range   { 0 1 }         }     }  ' $_obj_grid1_attribwrangle1
-opparm $_obj_grid1_attribwrangle1  bindings ( 0 ) groupbindings ( 0 ) folder2 ( 1 )
-opparm $_obj_grid1_attribwrangle1 class ( primitive ) snippet ( 'float size = primintrinsic(0, "measuredarea", @primnum);\n\nvector min,max;\ngetbbox(0,min,max);\nvector bound = abs(max-min);\n\nfloat rand = rand((@primnum + ch("seed")+0.21) + (ch("seed")));\nif(rand <= ch("probability1"))\n{\n    if(bound.x>ch("size1") && bound.y>ch("size1"))\n    {\n        rand = rand((@primnum + ch("seed")+1.21) + (ch("seed") *2.3));\n        \n    }\n}\n\n' ) folder2 ( 1 ) size1 ( 12 ) probability1 ( 1 )
-opcolor -c 1 0.80000001192092896 0 $_obj_grid1_attribwrangle1
-opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_grid1_attribwrangle1
-opexprlanguage -s hscript $_obj_grid1_attribwrangle1
-opuserdata -n '___Version___' -v '' $_obj_grid1_attribwrangle1
-opcf ..
-opcf $_obj_grid1
+# Node $_obj_cloth_sample_grid1 (Object/geo)
+set _obj_cloth_sample_grid1 = `run("opadd -e -n -v geo grid1")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 5.2176` $_obj_cloth_sample_grid1
+opspareds '    group {         name    "stdswitcher4"         label   "Transform"          parm {             name    "xOrd"             baseparm             label   "Transform Order"             joinnext             export  none         }         parm {             name    "rOrd"             baseparm             label   "Rotate Order"             nolabel             export  none         }         parm {             name    "t"             baseparm             label   "Translate"             export  all         }         parm {             name    "r"             baseparm             label   "Rotate"             export  all         }         parm {             name    "s"             baseparm             label   "Scale"             export  none         }         parm {             name    "p"             baseparm             label   "Pivot Translate"             export  none         }         parm {             name    "pr"             baseparm             label   "Pivot Rotate"             export  none         }         parm {             name    "scale"             baseparm             label   "Uniform Scale"             export  none         }         parm {             name    "pre_xform"             baseparm             label   "Modify Pre-Transform"             export  none         }         parm {             name    "keeppos"             baseparm             label   "Keep Position When Parenting"             export  none         }         parm {             name    "childcomp"             baseparm             label   "Child Compensation"             export  none         }         parm {             name    "constraints_on"             baseparm             label   "Enable Constraints"             export  none         }         parm {             name    "constraints_path"             baseparm             label   "Constraints"             export  none         }         parm {             name    "lookatpath"             baseparm             label   "Look At"             invisible             export  none         }         parm {             name    "lookupobjpath"             baseparm             label   "Look Up Object"             invisible             export  none         }         parm {             name    "lookup"             baseparm             label   "Look At Up Vector"             invisible             export  none         }         parm {             name    "pathobjpath"             baseparm             label   "Path Object"             invisible             export  none         }         parm {             name    "roll"             baseparm             label   "Roll"             invisible             export  none         }         parm {             name    "pos"             baseparm             label   "Position"             invisible             export  none         }         parm {             name    "uparmtype"             baseparm             label   "Parameterization"             invisible             export  none         }         parm {             name    "pathorient"             baseparm             label   "Orient Along Path"             invisible             export  none         }         parm {             name    "up"             baseparm             label   "Orient Up Vector"             invisible             export  none         }         parm {             name    "bank"             baseparm             label   "Auto-Bank factor"             invisible             export  none         }     }      group {         name    "stdswitcher4_1"         label   "Render"          parm {             name    "shop_materialpath"             baseparm             label   "Material"             export  none         }         parm {             name    "shop_materialopts"             baseparm             label   "Options"             invisible             export  none         }         parm {             name    "tdisplay"             baseparm             label   "Display"             joinnext             export  none         }         parm {             name    "display"             baseparm             label   "Display"             export  none         }         parm {             name    "viewportlod"             label   "Display As"             type    ordinal             default { "full" }             help    "Choose how the object\'s geometry should be rendered in the viewport"             menu {                 "full"      "Full Geometry"                 "points"    "Point Cloud"                 "box"       "Bounding Box"                 "centroid"  "Centroid"                 "hidden"    "Hidden"                 "subd"      "Subdivision Surface / Curves"             }             parmtag { "spare_category" "Render" }         }         parm {             name    "vm_rendervisibility"             label   "Render Visibility"             type    string             default { "*" }             menureplace {                 "*"                             "Visible to all"                 "primary"                       "Visible only to primary rays"                 "primary|shadow"                "Visible only to primary and shadow rays"                 "-primary"                      "Invisible to primary rays (Phantom)"                 "-diffuse"                      "Invisible to diffuse rays"                 "-diffuse&-reflect&-refract"    "Invisible to secondary rays"                 ""                              "Invisible (Unrenderable)"             }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "rendervisibility" }             parmtag { "spare_category" "Render" }         }         parm {             name    "vm_rendersubd"             label   "Render Polygons As Subdivision (Mantra)"             type    toggle             default { "0" }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "rendersubd" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_subdstyle"             label   "Subdivision Style"             type    string             default { "mantra_catclark" }             hidewhen "{ vm_rendersubd == 0 }"             menu {                 "mantra_catclark"   "Mantra Catmull-Clark"                 "osd_catclark"      "OpenSubdiv Catmull-Clark"             }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "subdstyle" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_subdgroup"             label   "Subdivision Group"             type    string             default { "" }             hidewhen "{ vm_rendersubd == 0 }"             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "subdgroup" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_osd_quality"             label   "Open Subdiv Quality"             type    float             default { "1" }             hidewhen "{ vm_rendersubd == 0 vm_subdstyle != osd_catclark }"             range   { 0 10 }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "osd_quality" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_osd_vtxinterp"             label   "OSD Vtx Interp"             type    integer             default { "2" }             hidewhen "{ vm_rendersubd == 0 vm_subdstyle != osd_catclark }"             menu {                 "0" "No vertex interpolation"                 "1" "Edges only"                 "2" "Edges and Corners"             }             range   { 0 10 }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "osd_vtxinterp" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_osd_fvarinterp"             label   "OSD FVar Interp"             type    integer             default { "4" }             hidewhen "{ vm_rendersubd == 0 vm_subdstyle != osd_catclark }"             menu {                 "0" "Smooth everywhere"                 "1" "Sharpen corners only"                 "2" "Sharpen edges and corners"                 "3" "Sharpen edges and propagated corners"                 "4" "Sharpen all boundaries"                 "5" "Bilinear interpolation"             }             range   { 0 10 }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "osd_fvarinterp" }             parmtag { "spare_category" "Geometry" }         }         group {             name    "folder0"             label   "Shading"              parm {                 name    "categories"                 label   "Categories"                 type    string                 default { "" }                 help    "A list of tags which can be used to select the object"                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "reflectmask"                 label   "Reflection Mask"                 type    oplist                 default { "*" }                 help    "Objects that will be reflected on this object."                 parmtag { "opexpand" "1" }                 parmtag { "opfilter" "!!OBJ/GEOMETRY!!" }                 parmtag { "oprelative" "/obj" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "refractmask"                 label   "Refraction Mask"                 type    oplist                 default { "*" }                 help    "Objects that will be refracted on this object."                 parmtag { "opexpand" "1" }                 parmtag { "opfilter" "!!OBJ/GEOMETRY!!" }                 parmtag { "oprelative" "/obj" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "lightmask"                 label   "Light Mask"                 type    oplist                 default { "*" }                 help    "Lights that illuminate this object."                 parmtag { "opexpand" "1" }                 parmtag { "opfilter" "!!OBJ/LIGHT!!" }                 parmtag { "oprelative" "/obj" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "lightcategories"                 label   "Light Selection"                 type    string                 default { "*" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "vm_volumefilter"                 label   "Volume Filter"                 type    string                 default { "box" }                 menu {                     "box"       "Box Filter"                     "gaussian"  "Gaussian"                     "bartlett"  "Bartlett (triangle)"                     "catrom"    "Catmull-Rom"                     "hanning"   "Hanning"                     "blackman"  "Blackman"                     "sinc"      "Sinc (sharpening)"                 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "filter" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "vm_volumefilterwidth"                 label   "Volume Filter Width"                 type    float                 default { "1" }                 range   { 0.001 5 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "filterwidth" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "vm_matte"                 label   "Matte shading"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "matte" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "vm_rayshade"                 label   "Raytrace Shading"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "rayshade" }                 parmtag { "spare_category" "Shading" }             }         }          group {             name    "folder0_1"             label   "Sampling"              parm {                 name    "geo_velocityblur"                 label   "Geometry Velocity Blur"                 type    toggle                 default { "0" }                 disablewhen "{ allowmotionblur == 0 }"                 parmtag { "spare_category" "Sampling" }             }         }          group {             name    "folder0_2"             label   "Dicing"              parm {                 name    "vm_shadingquality"                 label   "Shading Quality"                 type    float                 default { "1" }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "shadingquality" }                 parmtag { "spare_category" "Dicing" }             }             parm {                 name    "vm_flatness"                 label   "Dicing Flatness"                 type    float                 default { "0.05" }                 range   { 0 1 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "flatness" }                 parmtag { "spare_category" "Dicing" }             }             parm {                 name    "vm_raypredice"                 label   "Ray Predicing"                 type    integer                 default { "0" }                 menu {                     "0" "Disable Predicing"                     "1" "Full Predicing"                     "2" "Precompute Bounds"                 }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "raypredice" }                 parmtag { "spare_category" "Dicing" }             }             parm {                 name    "vm_curvesurface"                 label   "Shade Curves As Surfaces"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "curvesurface" }                 parmtag { "spare_category" "Dicing" }             }         }          group {             name    "folder0_3"             label   "Geometry"              parm {                 name    "vm_rmbackface"                 label   "Backface Removal"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "rmbackface" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "shop_geometrypath"                 label   "Procedural Shader"                 type    oppath                 default { "" }                 parmtag { "opfilter" "!!SHOP/GEOMETRY!!" }                 parmtag { "oprelative" "." }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_forcegeometry"                 label   "Force Procedural Geometry Output"                 type    toggle                 default { "1" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_rendersubdcurves"                 label   "Render Polygon Curves As Subdivision (Mantra)"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "rendersubdcurves" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_renderpoints"                 label   "Render As Points (Mantra)"                 type    integer                 default { "2" }                 menu {                     "0" "No Point Rendering"                     "1" "Render Only Points"                     "2" "Render Unconnected Points"                 }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "renderpoints" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_renderpointsas"                 label   "Render Points As (Mantra)"                 type    integer                 default { "0" }                 disablewhen "{ vm_renderpoints == 0 }"                 menu {                     "0" "Spheres"                     "1" "Circles"                 }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "renderpointsas" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_usenforpoints"                 label   "Use N For Point Rendering"                 type    toggle                 default { "0" }                 disablewhen "{ vm_renderpoints == 0 }"                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "usenforpoints" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_pointscale"                 label   "Point Scale"                 type    float                 default { "1" }                 disablewhen "{ vm_renderpoints == 0 }"                 range   { 0! 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "pointscale" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_pscalediameter"                 label   "Treat Point Scale as Diameter Instead of Radius"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "pscalediameter" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_metavolume"                 label   "Metaballs as Volume"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "metavolume" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_coving"                 label   "Coving"                 type    integer                 default { "1" }                 menu {                     "0" "Disable Coving"                     "1" "Coving for displacement/sub-d"                     "2" "Coving for all primitives"                 }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "coving" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_materialoverride"                 label   "Material Override"                 type    string                 default { "compact" }                 menu {                     "none"      "Disabled"                     "full"      "Evaluate for Each Primitve/Point"                     "compact"   "Evaluate Once"                 }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_overridedetail"                 label   "Ignore Geometry Attribute Shaders"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "overridedetail" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_procuseroottransform"                 label   "Proc Use Root Transform"                 type    toggle                 default { "1" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "procuseroottransform" }                 parmtag { "spare_category" "Geometry" }             }         }      }      group {         name    "stdswitcher4_2"         label   "Misc"          parm {             name    "use_dcolor"             baseparm             label   "Set Wireframe Color"             export  none         }         parm {             name    "dcolor"             baseparm             label   "Wireframe Color"             export  none         }         parm {             name    "picking"             baseparm             label   "Viewport Selecting Enabled"             export  none         }         parm {             name    "pickscript"             baseparm             label   "Select Script"             export  none         }         parm {             name    "caching"             baseparm             label   "Cache Object Transform"             export  none         }         parm {             name    "vport_shadeopen"             baseparm             label   "Shade Open Curves In Viewport"             export  none         }         parm {             name    "vport_displayassubdiv"             baseparm             label   "Display as Subdivision in Viewport"             invisible             export  none         }         parm {             name    "vport_onionskin"             baseparm             label   "Onion Skinning"             export  none         }     }  ' $_obj_cloth_sample_grid1
+opset -S on $_obj_cloth_sample_grid1
+chautoscope $_obj_cloth_sample_grid1 +tx +ty +tz +rx +ry +rz +sx +sy +sz
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -x off $_obj_cloth_sample_grid1
+opexprlanguage -s hscript $_obj_cloth_sample_grid1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1
+opcf $_obj_cloth_sample_grid1
 
-# Node $_obj_grid1_grid1 (Sop/grid)
-set _obj_grid1_grid1 = `run("opadd -e -n -v grid grid1")`
-oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_grid1_grid1
-opparm -V 16.5.268 $_obj_grid1_grid1 orient ( xy ) size ( 18 13 ) rows ( 2 ) cols ( 2 )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_grid1_grid1
-opexprlanguage -s hscript $_obj_grid1_grid1
-
-# Node $_obj_grid1_clip1 (Sop/clip)
-set _obj_grid1_clip1 = `run("opadd -e -n -v clip clip1")`
-oplocate -x `$arg2 + -1.5265566588595902e-16` -y `$arg3 + -2.2203463083138733` $_obj_grid1_clip1
+# Node $_obj_cloth_sample_grid1_grainsource1 (Sop/grainsource)
+set _obj_cloth_sample_grid1_grainsource1 = `run("opadd -e -n -v grainsource grainsource1")`
+oplocate -x `$arg2 + -1.6943999999999999` -y `$arg3 + 5.9804599999999999` $_obj_cloth_sample_grid1_grainsource1
 chblockbegin
-chadd -t 0 0 $_obj_grid1_clip1 originx
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'bbox(opinputpath(".",0),D_XMAX)-12' $_obj_grid1_clip1/originx
+chadd -t 0 0 $_obj_cloth_sample_grid1_grainsource1 particlesep
+chkey -t 0 -v 0 -V 0 -m 0 -M 0 -a 0 -A 0 -F 'ch("../../AutoDopNetwork/grain_update/particlesep")' $_obj_cloth_sample_grid1_grainsource1/particlesep
+chadd -t 0 0 $_obj_cloth_sample_grid1_grainsource1 uniformradius
+chkey -t 0 -v 0 -V 0 -m 0 -M 0 -a 0 -A 0 -F 'ch("../../AutoDopNetwork/grain_update/uniformradius")' $_obj_cloth_sample_grid1_grainsource1/uniformradius
 chblockend
-opparm -V 16.5.268 $_obj_grid1_clip1 clipop ( both ) origin ( originx 0 0 ) dir ( 1 0 0 ) newg ( on )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_grid1_clip1
-opexprlanguage -s hscript $_obj_grid1_clip1
-opuserdata -n '___Version___' -v '16.5.268' $_obj_grid1_clip1
+opparm -V 3 $_obj_cloth_sample_grid1_grainsource1 mode ( sheet ) particlesep ( particlesep ) packingdensity ( 2 ) sourceoffset ( 0 ) uniformradius ( uniformradius ) createconstraints ( on )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grid1_grainsource1
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_grainsource1
+opuserdata -n '___Version___' -v '3' $_obj_cloth_sample_grid1_grainsource1
+opuserdata -n '___toolcount___' -v '2' $_obj_cloth_sample_grid1_grainsource1
+opuserdata -n '___toolid___' -v 'dynamics_popgrains' $_obj_cloth_sample_grid1_grainsource1
 
-# Node $_obj_grid1_clip2 (Sop/clip)
-set _obj_grid1_clip2 = `run("opadd -e -n -v clip clip2")`
-oplocate -x `$arg2 + -8.3266726846886741e-17` -y `$arg3 + -3.5909610192133536` $_obj_grid1_clip2
+# Node $_obj_cloth_sample_grid1_pointdeform1 (Sop/pointdeform)
+set _obj_cloth_sample_grid1_pointdeform1 = `run("opadd -e -n -v pointdeform pointdeform1")`
+oplocate -x `$arg2 + 2.3121100000000001` -y `$arg3 + -6.2070699999999999` $_obj_cloth_sample_grid1_pointdeform1
 chblockbegin
-chadd -t 0 0 $_obj_grid1_clip2 originy
-chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'bbox(opinputpath(".",0),D_YMAX)-12' $_obj_grid1_clip2/originy
+chadd -t 0 0 $_obj_cloth_sample_grid1_pointdeform1 radius
+chkey -t 0 -v 0 -V 0 -m 0 -M 0 -a 0 -A 0 -F '3 * ch("/obj/cloth_sample/grid1/grainsource1/particlesep")' $_obj_cloth_sample_grid1_pointdeform1/radius
 chblockend
-opparm -V 16.5.268 $_obj_grid1_clip2 group ( above_plane ) clipop ( both ) origin ( 0 originy 0 ) newg ( on )
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_grid1_clip2
-opexprlanguage -s hscript $_obj_grid1_clip2
-opuserdata -n '___Version___' -v '16.5.268' $_obj_grid1_clip2
+opparm $_obj_cloth_sample_grid1_pointdeform1 radius ( radius ) maxpt ( 25 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grid1_pointdeform1
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_pointdeform1
+opuserdata -n '___Version___' -v '' $_obj_cloth_sample_grid1_pointdeform1
+opuserdata -n '___toolcount___' -v '1' $_obj_cloth_sample_grid1_pointdeform1
+opuserdata -n '___toolid___' -v 'dynamics_popgrainsheet' $_obj_cloth_sample_grid1_pointdeform1
 
-# Node $_obj_grid1_repeat_end1 (Sop/block_end)
-set _obj_grid1_repeat_end1 = `run("opadd -e -n -v block_end repeat_end1")`
-oplocate -x `$arg2 + 2.6372925193668681` -y `$arg3 + -9.6430048798061367` $_obj_grid1_repeat_end1
-opparm -V 16.5.268 $_obj_grid1_repeat_end1 itermethod ( count ) blockpath ( ../repeat_begin1 )
-opcolor -c 0.75 0.40000000596046448 0 $_obj_grid1_repeat_end1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_grid1_repeat_end1
-opexprlanguage -s hscript $_obj_grid1_repeat_end1
+# Node $_obj_cloth_sample_grid1_attribwrangle1 (Sop/attribwrangle)
+set _obj_cloth_sample_grid1_attribwrangle1 = `run("opadd -e -n -v attribwrangle attribwrangle1")`
+oplocate -x `$arg2 + -1.6974` -y `$arg3 + -4.8888699999999998` $_obj_cloth_sample_grid1_attribwrangle1
+opparm $_obj_cloth_sample_grid1_attribwrangle1  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_cloth_sample_grid1_attribwrangle1 snippet ( 'if(@group_in == 1) v@targetP= @P;\nelse v@targetP = v@rest;' )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grid1_attribwrangle1
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_attribwrangle1
+opuserdata -n '___Version___' -v '' $_obj_cloth_sample_grid1_attribwrangle1
 
-# Node $_obj_grid1_repeat_begin1 (Sop/block_begin)
-set _obj_grid1_repeat_begin1 = `run("opadd -e -n -v block_begin repeat_begin1")`
-oplocate -x `$arg2 + 2.6372925193668681` -y `$arg3 + -2.2231963006785183` $_obj_grid1_repeat_begin1
-opparm -V 16.5.268 $_obj_grid1_repeat_begin1 blockpath ( ../repeat_end1 )
-opcolor -c 0.75 0.40000000596046448 0 $_obj_grid1_repeat_begin1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_grid1_repeat_begin1
-opexprlanguage -s hscript $_obj_grid1_repeat_begin1
+# Node $_obj_cloth_sample_grid1_noise (Sop/attribvop)
+set _obj_cloth_sample_grid1_noise = `run("opadd -e -n -v attribvop noise")`
+oplocate -x `$arg2 + -0.65977399999999997` -y `$arg3 + -1.0563` $_obj_cloth_sample_grid1_noise
+opspareds '    parm {         name    "bindgroup"         baseparm         label   "Group"         export  none         bindselector uvselect "Modify Points"             "Select the points to affect and press Enter to complete."             0 1 0xffffffff 0 bindgrouptype 0     }     parm {         name    "bindgrouptype"         baseparm         label   "Group Type"         export  none     }     parm {         name    "bindclass"         baseparm         label   "Run Over"         export  none     }     parm {         name    "vex_numcount"         baseparm         label   "Number Count"         export  none     }     parm {         name    "vex_threadjobsize"         baseparm         label   "Thread Job Size"         export  none     }     group {         name    "stdswitcher3"         label   "Vex Setup"          parm {             name    "vexsrc"             baseparm             label   "Vex Source"             export  all         }         parm {             name    "shoppath"             baseparm             label   "Shop Path"             export  all         }         parm {             name    "script"             baseparm             label   "Script"             export  all         }         parm {             name    "clear"             baseparm             label   "Re-load VEX Functions"             export  all         }         parm {             name    "vop_compiler"             baseparm             label   "Compiler"             export  none         }         parm {             name    "vop_forcecompile"             baseparm             label   "Force Compile"             export  none         }         parm {             name    "vex_cwdpath"             baseparm             label   "Evaluation Node Path"             export  none         }         parm {             name    "vex_outputmask"             baseparm             label   "Export Parameters"             export  none         }         parm {             name    "vex_multithread"             baseparm             label   "Enable Multithreading"             export  none         }     }      group {         name    "stdswitcher3_1"         label   "Attribute Bindings"          parm {             name    "autobind"             baseparm             label   "Autobind by Name"             export  none         }         multiparm {             name    "bindings"             label    "Number of Bindings"             baseparm             default 0             parmtag { "multistartoffset" "1" }              parm {                 name    "bindname#"                 baseparm                 label   "Attribute Name"                 export  none             }             parm {                 name    "bindparm#"                 baseparm                 label   "VEX Parameter"                 export  none             }         }          parm {             name    "groupautobind"             baseparm             label   "Autobind Groups by Name"             export  none         }         multiparm {             name    "groupbindings"             label    "Group Bindings"             baseparm             default 0             parmtag { "multistartoffset" "1" }              parm {                 name    "bindgroupname#"                 baseparm                 label   "Group Name"                 export  none             }             parm {                 name    "bindgroupparm#"                 baseparm                 label   "VEX Parameter"                 export  none             }         }          parm {             name    "vex_updatenmls"             baseparm             label   "Update Normals If Displaced"             export  none         }         parm {             name    "vex_matchattrib"             baseparm             label   "Attribute to Match"             export  none         }     }      parm {         name    "ptnum"         label   "Point Number"         type    integer         invisible         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "vtxnum"         label   "Vertex Number"         type    integer         invisible         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "primnum"         label   "Primitive Number"         type    integer         invisible         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "id"         label   "Id"         type    integer         invisible         default { "-1" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "numpt"         label   "Number of Points"         type    integer         invisible         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "numvtx"         label   "Number of Vertices"         type    integer         invisible         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "numprim"         label   "Number of Prims"         type    integer         invisible         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "Time"         label   "Time"         type    float         invisible         default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "TimeInc"         label   "Time Inc"         type    float         invisible         default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "Frame"         label   "Frame"         type    float         invisible         default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "life"         label   "Life"         type    float         invisible         default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "age"         label   "Age"         type    float         invisible         default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "OpInput2"         label   "Second Input"         type    string         invisible         default { "" }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "OpInput3"         label   "Third Input"         type    string         invisible         default { "" }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "OpInput4"         label   "Fourth Input"         type    string         invisible         default { "" }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "OpInput1"         label   "First Input"         type    string         invisible         default { "" }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "uv"         label   "UV"         type    float         invisible         size    3         default { "0" "0" "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "P"         label   "P"         type    float         invisible         size    3         default { "0" "0" "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "v"         label   "Velocity"         type    float         invisible         size    3         default { "0" "0" "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "force"         label   "Force"         type    float         invisible         size    3         default { "0" "0" "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "Cd"         label   "Cd"         type    float         invisible         size    3         default { "1" "1" "1" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "N"         label   "N"         type    float         invisible         size    3         default { "0" "0" "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "freq"         label   "Frequency"         type    float         size    4         default { "1" "1" "1" "1" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "offset"         label   "Offset"         type    float         size    4         default { "0" "0" "0" "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "amp"         label   "Amplitude"         type    float         default { "1" }         range   { -1 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "rough"         label   "Roughness"         type    float         default { "0.5" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "vex_inplace"         baseparm         label   "Compute Results In Place"         export  none     }     parm {         name    "vex_selectiongroup"         baseparm         label   "Output Selection Group"         export  none     } ' $_obj_cloth_sample_grid1_noise
+opparm $_obj_cloth_sample_grid1_noise  bindings ( 0 ) groupbindings ( 0 )
+chblockbegin
+chadd -t 0 0 $_obj_cloth_sample_grid1_noise freq2
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("freq1")' $_obj_cloth_sample_grid1_noise/freq2
+chadd -t 0 0 $_obj_cloth_sample_grid1_noise freq3
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("freq1")' $_obj_cloth_sample_grid1_noise/freq3
+chblockend
+opparm -V 16.5.268 $_obj_cloth_sample_grid1_noise freq ( 1 freq2 freq3 1 ) offset ( 8.0999999999999996 0 0 0 ) amp ( 22.399999999999999 )
+opcolor -c 1 1 0.60000002384185791 $_obj_cloth_sample_grid1_noise
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_cloth_sample_grid1_noise
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_noise
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_noise
+opcf $_obj_cloth_sample_grid1_noise
 
-# Node $_obj_grid1_foreach_end1 (Sop/block_end)
-set _obj_grid1_foreach_end1 = `run("opadd -e -n -v block_end foreach_end1")`
-oplocate -x `$arg2 + 2.6372925193668681` -y `$arg3 + -7.9276604953083663` $_obj_grid1_foreach_end1
-opparm -V 16.5.268 $_obj_grid1_foreach_end1 itermethod ( pieces ) method ( merge ) class ( primitive ) useattrib ( off ) attrib ( name ) blockpath ( ../foreach_begin1 ) templatepath ( ../foreach_begin1 )
-opcolor -c 0.76499998569488525 1 0.57599997520446777 $_obj_grid1_foreach_end1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_grid1_foreach_end1
-opexprlanguage -s hscript $_obj_grid1_foreach_end1
+# Node $_obj_cloth_sample_grid1_noise_geometryvopglobal1 (Vop/geometryvopglobal::2.0)
+set _obj_cloth_sample_grid1_noise_geometryvopglobal1 = `run("opadd -e -n -v geometryvopglobal::2.0 geometryvopglobal1")`
+oplocate -x `$arg2 + 1.3749899999999999` -y `$arg3 + 1.1844600000000001` $_obj_cloth_sample_grid1_noise_geometryvopglobal1
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c off -e on -b off -L off -M off -H on -E off $_obj_cloth_sample_grid1_noise_geometryvopglobal1
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_noise_geometryvopglobal1
+opuserdata -n '___Version___' -v '' $_obj_cloth_sample_grid1_noise_geometryvopglobal1
 
-# Node $_obj_grid1_foreach_begin1 (Sop/block_begin)
-set _obj_grid1_foreach_begin1 = `run("opadd -e -n -v block_begin foreach_begin1")`
-oplocate -x `$arg2 + 2.6372925193668681` -y `$arg3 + -4.1659371045161526` $_obj_grid1_foreach_begin1
-opparm -V 16.5.268 $_obj_grid1_foreach_begin1 method ( piece ) blockpath ( ../foreach_end1 )
-opcolor -c 0.76499998569488525 1 0.57599997520446777 $_obj_grid1_foreach_begin1
-opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_grid1_foreach_begin1
-opexprlanguage -s hscript $_obj_grid1_foreach_begin1
-oporder -e grid1 clip1 clip2 repeat_end1 repeat_begin1 foreach_end1 foreach_begin1 attribwrangle1 
+# Node $_obj_cloth_sample_grid1_noise_geometryvopoutput1 (Vop/geometryvopoutput)
+set _obj_cloth_sample_grid1_noise_geometryvopoutput1 = `run("opadd -e -n -v geometryvopoutput geometryvopoutput1")`
+oplocate -x `$arg2 + 13.8995` -y `$arg3 + 2.7661099999999998` $_obj_cloth_sample_grid1_noise_geometryvopoutput1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c off -e on -b off -L off -M off -H on -E off $_obj_cloth_sample_grid1_noise_geometryvopoutput1
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_noise_geometryvopoutput1
+opuserdata -n '___Version___' -v '' $_obj_cloth_sample_grid1_noise_geometryvopoutput1
+
+# Node $_obj_cloth_sample_grid1_noise_aaflownoise1 (Vop/aaflownoise)
+set _obj_cloth_sample_grid1_noise_aaflownoise1 = `run("opadd -e -n -v aaflownoise aaflownoise1")`
+oplocate -x `$arg2 + 5.2008799999999997` -y `$arg3 + 1.7777099999999999` $_obj_cloth_sample_grid1_noise_aaflownoise1
+opparm $_obj_cloth_sample_grid1_noise_aaflownoise1 signature ( vp )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c off -e on -b off -L off -M off -H on -E off $_obj_cloth_sample_grid1_noise_aaflownoise1
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_noise_aaflownoise1
+opuserdata -n '___Version___' -v '' $_obj_cloth_sample_grid1_noise_aaflownoise1
+
+# Node $_obj_cloth_sample_grid1_noise_vectohvec1 (Vop/vectohvec)
+set _obj_cloth_sample_grid1_noise_vectohvec1 = `run("opadd -e -n -v vectohvec vectohvec1")`
+oplocate -x `$arg2 + 3.2614200000000002` -y `$arg3 + 2.7661099999999998` $_obj_cloth_sample_grid1_noise_vectohvec1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c off -e on -b off -L off -M off -H on -E off $_obj_cloth_sample_grid1_noise_vectohvec1
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_noise_vectohvec1
+opuserdata -n '___Version___' -v '' $_obj_cloth_sample_grid1_noise_vectohvec1
+
+# Node $_obj_cloth_sample_grid1_noise_add1 (Vop/add)
+set _obj_cloth_sample_grid1_noise_add1 = `run("opadd -e -n -v add add1")`
+oplocate -x `$arg2 + 11.200900000000001` -y `$arg3 + 3.8989199999999999` $_obj_cloth_sample_grid1_noise_add1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c off -e on -b off -L off -M off -H on -E off $_obj_cloth_sample_grid1_noise_add1
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_noise_add1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_noise_add1
+
+# Node $_obj_cloth_sample_grid1_noise_freq (Vop/parameter)
+set _obj_cloth_sample_grid1_noise_freq = `run("opadd -e -n -v parameter freq")`
+oplocate -x `$arg2 + 2.50088` -y `$arg3 + 3.1777099999999998` $_obj_cloth_sample_grid1_noise_freq
+opparm -V 16.5.268 $_obj_cloth_sample_grid1_noise_freq parmname ( freq ) parmlabel ( Frequency ) parmtype ( float4 ) float4def ( 1 1 1 1 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_cloth_sample_grid1_noise_freq
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e off -b off -L off -M off -H on -E off $_obj_cloth_sample_grid1_noise_freq
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_noise_freq
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_noise_freq
+
+# Node $_obj_cloth_sample_grid1_noise_offset (Vop/parameter)
+set _obj_cloth_sample_grid1_noise_offset = `run("opadd -e -n -v parameter offset")`
+oplocate -x `$arg2 + 2.6008800000000001` -y `$arg3 + 2.9777100000000001` $_obj_cloth_sample_grid1_noise_offset
+opparm -V 16.5.268 $_obj_cloth_sample_grid1_noise_offset parmname ( offset ) parmlabel ( Offset ) parmtype ( float4 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_cloth_sample_grid1_noise_offset
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e off -b off -L off -M off -H on -E off $_obj_cloth_sample_grid1_noise_offset
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_noise_offset
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_noise_offset
+
+# Node $_obj_cloth_sample_grid1_noise_amp (Vop/parameter)
+set _obj_cloth_sample_grid1_noise_amp = `run("opadd -e -n -v parameter amp")`
+oplocate -x `$arg2 + 2.7008800000000002` -y `$arg3 + 2.7777099999999999` $_obj_cloth_sample_grid1_noise_amp
+opparm -V 16.5.268 $_obj_cloth_sample_grid1_noise_amp parmname ( amp ) parmlabel ( Amplitude ) floatdef ( 1 ) rangeflt ( -1 1 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_cloth_sample_grid1_noise_amp
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e off -b off -L off -M off -H on -E off $_obj_cloth_sample_grid1_noise_amp
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_noise_amp
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_noise_amp
+
+# Node $_obj_cloth_sample_grid1_noise_rough (Vop/parameter)
+set _obj_cloth_sample_grid1_noise_rough = `run("opadd -e -n -v parameter rough")`
+oplocate -x `$arg2 + 2.8008799999999998` -y `$arg3 + 2.5777100000000002` $_obj_cloth_sample_grid1_noise_rough
+opparm -V 16.5.268 $_obj_cloth_sample_grid1_noise_rough parmname ( rough ) parmlabel ( Roughness ) floatdef ( 0.5 ) exportcontext ( cvex )
+opcolor -c 1 1 0.40000000596046448 $_obj_cloth_sample_grid1_noise_rough
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e off -b off -L off -M off -H on -E off $_obj_cloth_sample_grid1_noise_rough
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_noise_rough
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_noise_rough
+
+# Node $_obj_cloth_sample_grid1_noise_snippet1 (Vop/snippet)
+set _obj_cloth_sample_grid1_noise_snippet1 = `run("opadd -e -n -v snippet snippet1")`
+oplocate -x `$arg2 + 8.2008799999999997` -y `$arg3 + 2.1314000000000002` $_obj_cloth_sample_grid1_noise_snippet1
+opparm $_obj_cloth_sample_grid1_noise_snippet1  namenum ( 1 )
+opparm -V 16.5.268 $_obj_cloth_sample_grid1_noise_snippet1 code ( 'noise.y=0;' ) namenum ( 1 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_cloth_sample_grid1_noise_snippet1
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_noise_snippet1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_noise_snippet1
 opcf ..
-opset -p on $_obj_grid1
+
+# Node $_obj_cloth_sample_grid1_attribwrangle2 (Sop/attribwrangle)
+set _obj_cloth_sample_grid1_attribwrangle2 = `run("opadd -e -n -v attribwrangle attribwrangle2")`
+oplocate -x `$arg2 + 1.25495` -y `$arg3 + -7.9300199999999998` $_obj_cloth_sample_grid1_attribwrangle2
+opparm $_obj_cloth_sample_grid1_attribwrangle2  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_cloth_sample_grid1_attribwrangle2 snippet ( 'v@disp=v@opinput1_P-@P;\n\n@P += v@disp/2;' )
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grid1_attribwrangle2
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_attribwrangle2
+opuserdata -n '___Version___' -v '' $_obj_cloth_sample_grid1_attribwrangle2
+opcf ..
+
+# Node $_obj_cloth_sample_AutoDopNetwork (Object/dopnet)
+set _obj_cloth_sample_AutoDopNetwork = `run("opadd -e -n -v dopnet AutoDopNetwork")`
+oplocate -x `$arg2 + 1.6943999999999999` -y `$arg3 + 4.3233999999999995` $_obj_cloth_sample_AutoDopNetwork
+chblockbegin
+chadd -t 0 0 $_obj_cloth_sample_AutoDopNetwork timestep
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("timescale")/(ch("substep")*$FPS)' $_obj_cloth_sample_AutoDopNetwork/timestep
+chadd -t 0 0 $_obj_cloth_sample_AutoDopNetwork timeoffset
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '(ch("startframe")-1)/$FPS' $_obj_cloth_sample_AutoDopNetwork/timeoffset
+chblockend
+opset -S on $_obj_cloth_sample_AutoDopNetwork
+opparm -V 16.5.268 $_obj_cloth_sample_AutoDopNetwork
+chautoscope $_obj_cloth_sample_AutoDopNetwork +tx +ty +tz +rx +ry +rz +sx +sy +sz
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -x off $_obj_cloth_sample_AutoDopNetwork
+opexprlanguage -s hscript $_obj_cloth_sample_AutoDopNetwork
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_AutoDopNetwork
+opuserdata -n '___toolcount___' -v '1' $_obj_cloth_sample_AutoDopNetwork
+opuserdata -n '___toolid___' -v 'dynamics_popgrainsheet' $_obj_cloth_sample_AutoDopNetwork
+opcf $_obj_cloth_sample_AutoDopNetwork
+
+# Node $_obj_cloth_sample_AutoDopNetwork_popsolver1 (Dop/popsolver::2.0)
+set _obj_cloth_sample_AutoDopNetwork_popsolver1 = `run("opadd -e -n -v popsolver::2.0 popsolver1")`
+oplocate -x `$arg2 + -1.6943999999999999` -y `$arg3 + 3.3885000000000001` $_obj_cloth_sample_AutoDopNetwork_popsolver1
+chblockbegin
+chadd -t 0 0 $_obj_cloth_sample_AutoDopNetwork_popsolver1 substeps
+chkey -t 0 -v 0 -V 0 -m 0 -M 0 -a 0 -A 0 -F 'ch("./minimumsubsteps")' $_obj_cloth_sample_AutoDopNetwork_popsolver1/substeps
+chblockend
+opparm $_obj_cloth_sample_AutoDopNetwork_popsolver1 minimumsubsteps ( 10 ) substeps ( substeps )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_AutoDopNetwork_popsolver1
+opexprlanguage -s hscript $_obj_cloth_sample_AutoDopNetwork_popsolver1
+opuserdata -n '___Version___' -v '' $_obj_cloth_sample_AutoDopNetwork_popsolver1
+opuserdata -n '___toolcount___' -v '1' $_obj_cloth_sample_AutoDopNetwork_popsolver1
+opuserdata -n '___toolid___' -v 'dynamics_poplocation' $_obj_cloth_sample_AutoDopNetwork_popsolver1
+
+# Node $_obj_cloth_sample_AutoDopNetwork_grain_update (Dop/popgrains)
+set _obj_cloth_sample_AutoDopNetwork_grain_update = `run("opadd -e -n -v popgrains grain_update")`
+oplocate -x `$arg2 + 1.5761499999999999` -y `$arg3 + 9.5141799999999996` $_obj_cloth_sample_AutoDopNetwork_grain_update
+chblockbegin
+chadd -t 0 0 $_obj_cloth_sample_AutoDopNetwork_grain_update activate
+chkey -t 0 -v 0 -V 0 -m 0 -M 0 -a 0 -A 0 -F '$ST > 0' $_obj_cloth_sample_AutoDopNetwork_grain_update/activate
+chadd -t 0 0 $_obj_cloth_sample_AutoDopNetwork_grain_update particlesep
+chkey -t 0 -v 1.2 -m 0 -a 0 -A 0 -T a  -F 1.2/1.5 $_obj_cloth_sample_AutoDopNetwork_grain_update/particlesep
+chblockend
+opparm $_obj_cloth_sample_AutoDopNetwork_grain_update activate ( activate ) particlesep ( particlesep ) massshockorigin ( -9.5367431640625e-07 0 -9.5367431640625e-07 ) constraintweight ( 1 ) constraintstiffness ( 5 ) targetstiffness ( 10000 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_AutoDopNetwork_grain_update
+opexprlanguage -s hscript $_obj_cloth_sample_AutoDopNetwork_grain_update
+opuserdata -n '___Version___' -v '' $_obj_cloth_sample_AutoDopNetwork_grain_update
+opuserdata -n '___toolcount___' -v '2' $_obj_cloth_sample_AutoDopNetwork_grain_update
+opuserdata -n '___toolid___' -v 'dynamics_popgrains' $_obj_cloth_sample_AutoDopNetwork_grain_update
+
+# Node $_obj_cloth_sample_AutoDopNetwork_grain_sprite (Dop/popsprite)
+set _obj_cloth_sample_AutoDopNetwork_grain_sprite = `run("opadd -e -n -v popsprite grain_sprite")`
+oplocate -x `$arg2 + 1.5795999999999999` -y `$arg3 + 6.7745100000000003` $_obj_cloth_sample_AutoDopNetwork_grain_sprite
+opparm $_obj_cloth_sample_AutoDopNetwork_grain_sprite  alpharamp ( 2 )
+opparm $_obj_cloth_sample_AutoDopNetwork_grain_sprite spritemap ( sphere_matte.pic ) dospritescale ( off ) alpharamp2pos ( 1 ) alpharamp2value ( 1 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_cloth_sample_AutoDopNetwork_grain_sprite
+opexprlanguage -s hscript $_obj_cloth_sample_AutoDopNetwork_grain_sprite
+opuserdata -n '___Version___' -v '' $_obj_cloth_sample_AutoDopNetwork_grain_sprite
+opuserdata -n '___toolcount___' -v '2' $_obj_cloth_sample_AutoDopNetwork_grain_sprite
+opuserdata -n '___toolid___' -v 'dynamics_popsprite' $_obj_cloth_sample_AutoDopNetwork_grain_sprite
+
+# Node $_obj_cloth_sample_AutoDopNetwork_grain_color (Dop/popcolor)
+set _obj_cloth_sample_AutoDopNetwork_grain_color = `run("opadd -e -n -v popcolor grain_color")`
+oplocate -x `$arg2 + 1.5795999999999999` -y `$arg3 + 5.6450100000000001` $_obj_cloth_sample_AutoDopNetwork_grain_color
+opparm $_obj_cloth_sample_AutoDopNetwork_grain_color  ramp ( 3 ) blendramp ( 2 ) alpharamp ( 2 )
+opparm $_obj_cloth_sample_AutoDopNetwork_grain_color colortype ( ramp ) ramp ( 3 ) localramp ( 'ramp = rand(@id);' ) ramp1c ( 0.40000000000000002 0.32000000000000001 0.20000000000000001 ) ramp1interp ( catmull-rom ) ramp2pos ( 0.90000000000000002 ) ramp2c ( 0.71999999999999997 0.70599999999999996 0.40500000000000003 ) ramp2interp ( catmull-rom ) blendramp2pos ( 1 ) blendramp2value ( 1 ) alpharamp2pos ( 1 ) alpharamp2value ( 1 ) ramp3pos ( 1 ) ramp3c ( 1 1 1 ) ramp3interp ( catmull-rom )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_cloth_sample_AutoDopNetwork_grain_color
+opexprlanguage -s hscript $_obj_cloth_sample_AutoDopNetwork_grain_color
+opuserdata -n '___Version___' -v '' $_obj_cloth_sample_AutoDopNetwork_grain_color
+opuserdata -n '___toolcount___' -v '2' $_obj_cloth_sample_AutoDopNetwork_grain_color
+opuserdata -n '___toolid___' -v 'dynamics_popcolor' $_obj_cloth_sample_AutoDopNetwork_grain_color
+
+# Node $_obj_cloth_sample_AutoDopNetwork_grid1_grain (Dop/popsource::2.0)
+set _obj_cloth_sample_AutoDopNetwork_grid1_grain = `run("opadd -e -n -v popsource::2.0 grid1_grain")`
+oplocate -x `$arg2 + 1.5761499999999999` -y `$arg3 + 10.643700000000001` $_obj_cloth_sample_AutoDopNetwork_grid1_grain
+chblockbegin
+chadd -t 0 0 $_obj_cloth_sample_AutoDopNetwork_grid1_grain impulseactiveate
+chkey -t 0 -v 0 -V 0 -m 0 -M 0 -a 0 -A 0 -F '$SF==1' $_obj_cloth_sample_AutoDopNetwork_grid1_grain/impulseactiveate
+chblockend
+opparm $_obj_cloth_sample_AutoDopNetwork_grid1_grain showguide ( off ) emittype ( allgeo ) soppath ( /obj/cloth_sample/grid1/OUT ) impulseactiveate ( impulseactiveate )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_AutoDopNetwork_grid1_grain
+opexprlanguage -s hscript $_obj_cloth_sample_AutoDopNetwork_grid1_grain
+opuserdata -n '___Version___' -v '' $_obj_cloth_sample_AutoDopNetwork_grid1_grain
+opuserdata -n '___toolcount___' -v '2' $_obj_cloth_sample_AutoDopNetwork_grid1_grain
+opuserdata -n '___toolid___' -v 'dynamics_popsource' $_obj_cloth_sample_AutoDopNetwork_grid1_grain
+
+# Node $_obj_cloth_sample_AutoDopNetwork_groundplane1 (Dop/groundplane)
+set _obj_cloth_sample_AutoDopNetwork_groundplane1 = `run("opadd -e -n -v groundplane groundplane1")`
+oplocate -x `$arg2 + -5.87941` -y `$arg3 + 2.5839099999999999` $_obj_cloth_sample_AutoDopNetwork_groundplane1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_AutoDopNetwork_groundplane1
+opexprlanguage -s hscript $_obj_cloth_sample_AutoDopNetwork_groundplane1
+opuserdata -n '___Version___' -v '' $_obj_cloth_sample_AutoDopNetwork_groundplane1
+opuserdata -n '___toolcount___' -v '1' $_obj_cloth_sample_AutoDopNetwork_groundplane1
+opuserdata -n '___toolid___' -v 'dop_groundplane' $_obj_cloth_sample_AutoDopNetwork_groundplane1
+
+# Node $_obj_cloth_sample_AutoDopNetwork_popwrangle1 (Dop/popwrangle)
+set _obj_cloth_sample_AutoDopNetwork_popwrangle1 = `run("opadd -e -n -v popwrangle popwrangle1")`
+oplocate -x `$arg2 + 4.2057599999999997` -y `$arg3 + 5.5354599999999996` $_obj_cloth_sample_AutoDopNetwork_popwrangle1
+opparm $_obj_cloth_sample_AutoDopNetwork_popwrangle1  bindings ( 0 ) bindfield_num ( 0 ) groupbindings ( 0 )
+opparm $_obj_cloth_sample_AutoDopNetwork_popwrangle1 usegroup ( on ) partgroup ( in ) snippet ( '@P = v@targetP;' )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_AutoDopNetwork_popwrangle1
+opexprlanguage -s hscript $_obj_cloth_sample_AutoDopNetwork_popwrangle1
+opuserdata -n '___Version___' -v '' $_obj_cloth_sample_AutoDopNetwork_popwrangle1
+opcf ..
+opcf ..
+opcf $_obj_cloth_sample
+opcf $_obj_cloth_sample_grid1
+
+# Node $_obj_cloth_sample_grid1_grid1 (Sop/grid)
+set _obj_cloth_sample_grid1_grid1 = `run("opadd -e -n -v grid grid1")`
+oplocate -x `$arg2 + 1.8429199999999999` -y `$arg3 + 7.1643499999999998` $_obj_cloth_sample_grid1_grid1
+opparm -V 16.5.268 $_obj_cloth_sample_grid1_grid1 size ( 50 50 ) rows ( 30 ) cols ( 30 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grid1_grid1
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_grid1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_grid1
+
+# Node $_obj_cloth_sample_grid1_rest1 (Sop/rest)
+set _obj_cloth_sample_grid1_rest1 = `run("opadd -e -n -v rest rest1")`
+oplocate -x `$arg2 + -1.6943999999999999` -y `$arg3 + 4.4916200000000002` $_obj_cloth_sample_grid1_rest1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grid1_rest1
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_rest1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_rest1
+opuserdata -n '___toolcount___' -v '1' $_obj_cloth_sample_grid1_rest1
+opuserdata -n '___toolid___' -v 'dynamics_popgrainsheet' $_obj_cloth_sample_grid1_rest1
+
+# Node $_obj_cloth_sample_grid1_OUT (Sop/null)
+set _obj_cloth_sample_grid1_OUT = `run("opadd -e -n -v null OUT")`
+oplocate -x `$arg2 + -1.6974` -y `$arg3 + -6.0294699999999999` $_obj_cloth_sample_grid1_OUT
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grid1_OUT
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_OUT
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_OUT
+opuserdata -n '___toolcount___' -v '1' $_obj_cloth_sample_grid1_OUT
+opuserdata -n '___toolid___' -v 'dynamics_popgrainsheet' $_obj_cloth_sample_grid1_OUT
+
+# Node $_obj_cloth_sample_grid1_simulatedmesh (Sop/object_merge)
+set _obj_cloth_sample_grid1_simulatedmesh = `run("opadd -e -n -v object_merge simulatedmesh")`
+oplocate -x `$arg2 + 3.44171` -y `$arg3 + -2.7574800000000002` $_obj_cloth_sample_grid1_simulatedmesh
+opparm $_obj_cloth_sample_grid1_simulatedmesh  numobj ( 1 )
+opparm -V 16.5.268 $_obj_cloth_sample_grid1_simulatedmesh xformtype ( local ) objpath1 ( /obj/cloth_sample/grain_particles/import_grain )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grid1_simulatedmesh
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_simulatedmesh
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_simulatedmesh
+opuserdata -n '___toolcount___' -v '1' $_obj_cloth_sample_grid1_simulatedmesh
+opuserdata -n '___toolid___' -v 'dynamics_popgrainsheet' $_obj_cloth_sample_grid1_simulatedmesh
+
+# Node $_obj_cloth_sample_grid1_isolate (Sop/blast)
+set _obj_cloth_sample_grid1_isolate = `run("opadd -e -n -v blast isolate")`
+oplocate -x `$arg2 + 3.44171` -y `$arg3 + -3.6516799999999998` $_obj_cloth_sample_grid1_isolate
+opparm -V 16.5.268 $_obj_cloth_sample_grid1_isolate group ( 'stream_`chs("/obj/cloth_sample/AutoDopNetwork/grid1_grain/streamname")`' ) grouptype ( points ) negate ( on )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grid1_isolate
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_isolate
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_isolate
+opuserdata -n '___toolcount___' -v '1' $_obj_cloth_sample_grid1_isolate
+opuserdata -n '___toolid___' -v 'dynamics_popgrainsheet' $_obj_cloth_sample_grid1_isolate
+
+# Node $_obj_cloth_sample_grid1_transform1 (Sop/xform)
+set _obj_cloth_sample_grid1_transform1 = `run("opadd -e -n -v xform transform1")`
+oplocate -x `$arg2 + -1.6943999999999999` -y `$arg3 + 3.4298600000000001` $_obj_cloth_sample_grid1_transform1
+opparm -V 16.5.268 $_obj_cloth_sample_grid1_transform1 s ( 0.5 1 0.5 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grid1_transform1
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_transform1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_transform1
+
+# Node $_obj_cloth_sample_grid1_bound1 (Sop/bound)
+set _obj_cloth_sample_grid1_bound1 = `run("opadd -e -n -v bound bound1")`
+oplocate -x `$arg2 + -0.65632400000000002` -y `$arg3 + 2.7156899999999999` $_obj_cloth_sample_grid1_bound1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grid1_bound1
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_bound1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_bound1
+
+# Node $_obj_cloth_sample_grid1_copytopoints1 (Sop/copytopoints)
+set _obj_cloth_sample_grid1_copytopoints1 = `run("opadd -e -n -v copytopoints copytopoints1")`
+oplocate -x `$arg2 + 0.77196799999999999` -y `$arg3 + -1.99726` $_obj_cloth_sample_grid1_copytopoints1
+opset -d off -r off -h off -f off -y off -t on -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grid1_copytopoints1
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_copytopoints1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_copytopoints1
+
+# Node $_obj_cloth_sample_grid1_sphere1 (Sop/sphere)
+set _obj_cloth_sample_grid1_sphere1 = `run("opadd -e -n -v sphere sphere1")`
+oplocate -x `$arg2 + 1.0037799999999999` -y `$arg3 + -0.107659` $_obj_cloth_sample_grid1_sphere1
+opparm -V 16.5.268 $_obj_cloth_sample_grid1_sphere1 type ( poly ) scale ( 0.5 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grid1_sphere1
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_sphere1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_sphere1
+
+# Node $_obj_cloth_sample_grid1_group1 (Sop/groupcreate)
+set _obj_cloth_sample_grid1_group1 = `run("opadd -e -n -v groupcreate group1")`
+oplocate -x `$arg2 + -1.6943999999999999` -y `$arg3 + -3.84897` $_obj_cloth_sample_grid1_group1
+opparm -V 16.5.268 $_obj_cloth_sample_grid1_group1 groupname ( in ) grouptype ( point ) groupbase ( off ) groupbounding ( on ) boundtype ( usebobject )
+opset -d off -r off -h on -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grid1_group1
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_group1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_group1
+
+# Node $_obj_cloth_sample_grid1_blast1 (Sop/blast)
+set _obj_cloth_sample_grid1_blast1 = `run("opadd -e -n -v blast blast1")`
+oplocate -x `$arg2 + -0.65632400000000002` -y `$arg3 + 2.0371899999999998` $_obj_cloth_sample_grid1_blast1
+opparm -V 16.5.268 $_obj_cloth_sample_grid1_blast1 group ( 5 ) negate ( on )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grid1_blast1
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_blast1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_blast1
+
+# Node $_obj_cloth_sample_grid1_transform2 (Sop/xform)
+set _obj_cloth_sample_grid1_transform2 = `run("opadd -e -n -v xform transform2")`
+oplocate -x `$arg2 + 1.8429199999999999` -y `$arg3 + 4.3150500000000003` $_obj_cloth_sample_grid1_transform2
+chblockbegin
+chadd -t 0 0 $_obj_cloth_sample_grid1_transform2 sx
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../transform1/sx")' $_obj_cloth_sample_grid1_transform2/sx
+chadd -t 0 0 $_obj_cloth_sample_grid1_transform2 sy
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../transform1/sy")' $_obj_cloth_sample_grid1_transform2/sy
+chadd -t 0 0 $_obj_cloth_sample_grid1_transform2 sz
+chkey -t 0 -v 0.5 -m 0 -a 0 -A 0 -T a  -F 'ch("../transform1/sz")' $_obj_cloth_sample_grid1_transform2/sz
+chblockend
+opparm -V 16.5.268 $_obj_cloth_sample_grid1_transform2 s ( sx sy sz )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grid1_transform2
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_transform2
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_transform2
+
+# Node $_obj_cloth_sample_grid1_subdivide1 (Sop/subdivide)
+set _obj_cloth_sample_grid1_subdivide1 = `run("opadd -e -n -v subdivide subdivide1")`
+oplocate -x `$arg2 + 1.8429199999999999` -y `$arg3 + 5.44909` $_obj_cloth_sample_grid1_subdivide1
+opparm -V 16.5.268 $_obj_cloth_sample_grid1_subdivide1 iterations ( 2 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grid1_subdivide1
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_subdivide1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_subdivide1
+
+# Node $_obj_cloth_sample_grid1_subdivide2 (Sop/subdivide)
+set _obj_cloth_sample_grid1_subdivide2 = `run("opadd -e -n -v subdivide subdivide2")`
+oplocate -x `$arg2 + -0.65632400000000002` -y `$arg3 + 0.90368800000000005` $_obj_cloth_sample_grid1_subdivide2
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grid1_subdivide2
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_subdivide2
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_subdivide2
+opcf $_obj_cloth_sample_grid1_noise
+oporder -e geometryvopglobal1 geometryvopoutput1 aaflownoise1 vectohvec1 add1 freq offset amp rough snippet1 
+opcf ..
+
+# Node $_obj_cloth_sample_grid1_transform3 (Sop/xform)
+set _obj_cloth_sample_grid1_transform3 = `run("opadd -e -n -v xform transform3")`
+oplocate -x `$arg2 + -0.65632400000000002` -y `$arg3 + -0.107659` $_obj_cloth_sample_grid1_transform3
+opparm -V 16.5.268 $_obj_cloth_sample_grid1_transform3 s ( 0.80000000000000004 0.80000000000000004 0.80000000000000004 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grid1_transform3
+opexprlanguage -s hscript $_obj_cloth_sample_grid1_transform3
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grid1_transform3
+oporder -e grid1 grainsource1 rest1 OUT simulatedmesh isolate pointdeform1 transform1 bound1 copytopoints1 sphere1 attribwrangle1 group1 blast1 transform2 subdivide1 subdivide2 noise transform3 attribwrangle2 
+opcf ..
+opcf $_obj_cloth_sample_AutoDopNetwork
+
+# Node $_obj_cloth_sample_AutoDopNetwork_output (Dop/output)
+set _obj_cloth_sample_AutoDopNetwork_output = `run("opadd -e -n -v output output")`
+oplocate -x `$arg2 + -1.6943999999999999` -y `$arg3 + -2.5497800000000002` $_obj_cloth_sample_AutoDopNetwork_output
+chblockbegin
+chadd -t 0 0 $_obj_cloth_sample_AutoDopNetwork_output f1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_cloth_sample_AutoDopNetwork_output/f1
+chadd -t 0 0 $_obj_cloth_sample_AutoDopNetwork_output f2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_cloth_sample_AutoDopNetwork_output/f2
+chblockend
+opset -d on -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_AutoDopNetwork_output
+opexprlanguage -s hscript $_obj_cloth_sample_AutoDopNetwork_output
+opuserdata -n '___Version___' -v '' $_obj_cloth_sample_AutoDopNetwork_output
+opuserdata -n '___toolcount___' -v '1' $_obj_cloth_sample_AutoDopNetwork_output
+opuserdata -n '___toolid___' -v 'dynamics_popgrainsheet' $_obj_cloth_sample_AutoDopNetwork_output
+
+# Node $_obj_cloth_sample_AutoDopNetwork_gravity1 (Dop/gravity)
+set _obj_cloth_sample_AutoDopNetwork_gravity1 = `run("opadd -e -n -v gravity gravity1")`
+oplocate -x `$arg2 + -1.6955499999999999` -y `$arg3 + -0.74156100000000003` $_obj_cloth_sample_AutoDopNetwork_gravity1
+chblockbegin
+chadd -t 0 0 $_obj_cloth_sample_AutoDopNetwork_gravity1 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_cloth_sample_AutoDopNetwork_gravity1/activation
+chblockend
+opparm -V 16.5.268 $_obj_cloth_sample_AutoDopNetwork_gravity1 uniquedataname ( off )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_AutoDopNetwork_gravity1
+opexprlanguage -s hscript $_obj_cloth_sample_AutoDopNetwork_gravity1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_AutoDopNetwork_gravity1
+opuserdata -n '___toolcount___' -v '1' $_obj_cloth_sample_AutoDopNetwork_gravity1
+opuserdata -n '___toolid___' -v 'dynamics_popgrainsheet' $_obj_cloth_sample_AutoDopNetwork_gravity1
+
+# Node $_obj_cloth_sample_AutoDopNetwork_merge1 (Dop/merge)
+set _obj_cloth_sample_AutoDopNetwork_merge1 = `run("opadd -e -n -v merge merge1")`
+oplocate -x `$arg2 + -1.6955499999999999` -y `$arg3 + 0.38793899999999998` $_obj_cloth_sample_AutoDopNetwork_merge1
+chblockbegin
+chadd -t 0 0 $_obj_cloth_sample_AutoDopNetwork_merge1 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_cloth_sample_AutoDopNetwork_merge1/activation
+chblockend
+opparm -V 16.5.268 $_obj_cloth_sample_AutoDopNetwork_merge1 affectortype ( mutual )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_AutoDopNetwork_merge1
+opexprlanguage -s hscript $_obj_cloth_sample_AutoDopNetwork_merge1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_AutoDopNetwork_merge1
+opuserdata -n '___toolcount___' -v '1' $_obj_cloth_sample_AutoDopNetwork_merge1
+opuserdata -n '___toolid___' -v 'dynamics_popgrainsheet' $_obj_cloth_sample_AutoDopNetwork_merge1
+
+# Node $_obj_cloth_sample_AutoDopNetwork_popobject1 (Dop/popobject)
+set _obj_cloth_sample_AutoDopNetwork_popobject1 = `run("opadd -e -n -v popobject popobject1")`
+oplocate -x `$arg2 + -1.6943999999999999` -y `$arg3 + 7.2005999999999997` $_obj_cloth_sample_AutoDopNetwork_popobject1
+chblockbegin
+chadd -t 0 0 $_obj_cloth_sample_AutoDopNetwork_popobject1 createframe
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch(opcreator(".")+"/startframe")' $_obj_cloth_sample_AutoDopNetwork_popobject1/createframe
+chblockend
+opparm $_obj_cloth_sample_AutoDopNetwork_popobject1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_AutoDopNetwork_popobject1
+opexprlanguage -s hscript $_obj_cloth_sample_AutoDopNetwork_popobject1
+opuserdata -n '___Version___' -v '' $_obj_cloth_sample_AutoDopNetwork_popobject1
+opuserdata -n '___toolcount___' -v '2' $_obj_cloth_sample_AutoDopNetwork_popobject1
+opuserdata -n '___toolid___' -v 'dynamics_poplocation' $_obj_cloth_sample_AutoDopNetwork_popobject1
+
+# Node $_obj_cloth_sample_AutoDopNetwork_merge2 (Dop/merge)
+set _obj_cloth_sample_AutoDopNetwork_merge2 = `run("opadd -e -n -v merge merge2")`
+oplocate -x `$arg2 + 1.5795999999999999` -y `$arg3 + 4.5155099999999999` $_obj_cloth_sample_AutoDopNetwork_merge2
+chblockbegin
+chadd -t 0 0 $_obj_cloth_sample_AutoDopNetwork_merge2 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_cloth_sample_AutoDopNetwork_merge2/activation
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_AutoDopNetwork_merge2
+opexprlanguage -s hscript $_obj_cloth_sample_AutoDopNetwork_merge2
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_AutoDopNetwork_merge2
+opuserdata -n '___toolcount___' -v '1' $_obj_cloth_sample_AutoDopNetwork_merge2
+opuserdata -n '___toolid___' -v 'dynamics_popgrainsheet' $_obj_cloth_sample_AutoDopNetwork_merge2
+
+# Node $_obj_cloth_sample_AutoDopNetwork_staticsolver1 (Dop/staticsolver)
+set _obj_cloth_sample_AutoDopNetwork_staticsolver1 = `run("opadd -e -n -v staticsolver staticsolver1")`
+oplocate -x `$arg2 + -5.8781499999999998` -y `$arg3 + 1.6300399999999999` $_obj_cloth_sample_AutoDopNetwork_staticsolver1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_AutoDopNetwork_staticsolver1
+opexprlanguage -s hscript $_obj_cloth_sample_AutoDopNetwork_staticsolver1
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_AutoDopNetwork_staticsolver1
+oporder -e output gravity1 merge1 popsolver1 popobject1 merge2 grain_update grain_sprite grain_color grid1_grain groundplane1 staticsolver1 popwrangle1 
+opcf ..
+
+# Node $_obj_cloth_sample_grain_particles (Object/geo)
+set _obj_cloth_sample_grain_particles = `run("opadd -e -n -v geo grain_particles")`
+oplocate -x `$arg2 + 3.3888050000000001` -y `$arg3 + 3.429198` $_obj_cloth_sample_grain_particles
+opspareds '    group {         name    "stdswitcher4"         label   "Transform"          parm {             name    "xOrd"             baseparm             label   "Transform Order"             joinnext             export  none         }         parm {             name    "rOrd"             baseparm             label   "Rotate Order"             nolabel             export  none         }         parm {             name    "t"             baseparm             label   "Translate"             export  all         }         parm {             name    "r"             baseparm             label   "Rotate"             export  all         }         parm {             name    "s"             baseparm             label   "Scale"             export  none         }         parm {             name    "p"             baseparm             label   "Pivot Translate"             export  none         }         parm {             name    "pr"             baseparm             label   "Pivot Rotate"             export  none         }         parm {             name    "scale"             baseparm             label   "Uniform Scale"             export  none         }         parm {             name    "pre_xform"             baseparm             label   "Modify Pre-Transform"             export  none         }         parm {             name    "keeppos"             baseparm             label   "Keep Position When Parenting"             export  none         }         parm {             name    "childcomp"             baseparm             label   "Child Compensation"             export  none         }         parm {             name    "constraints_on"             baseparm             label   "Enable Constraints"             export  none         }         parm {             name    "constraints_path"             baseparm             label   "Constraints"             export  none         }         parm {             name    "lookatpath"             baseparm             label   "Look At"             invisible             export  none         }         parm {             name    "lookupobjpath"             baseparm             label   "Look Up Object"             invisible             export  none         }         parm {             name    "lookup"             baseparm             label   "Look At Up Vector"             invisible             export  none         }         parm {             name    "pathobjpath"             baseparm             label   "Path Object"             invisible             export  none         }         parm {             name    "roll"             baseparm             label   "Roll"             invisible             export  none         }         parm {             name    "pos"             baseparm             label   "Position"             invisible             export  none         }         parm {             name    "uparmtype"             baseparm             label   "Parameterization"             invisible             export  none         }         parm {             name    "pathorient"             baseparm             label   "Orient Along Path"             invisible             export  none         }         parm {             name    "up"             baseparm             label   "Orient Up Vector"             invisible             export  none         }         parm {             name    "bank"             baseparm             label   "Auto-Bank factor"             invisible             export  none         }     }      group {         name    "stdswitcher4_1"         label   "Render"          parm {             name    "shop_materialpath"             baseparm             label   "Material"             export  none         }         parm {             name    "shop_materialopts"             baseparm             label   "Options"             invisible             export  none         }         parm {             name    "tdisplay"             baseparm             label   "Display"             joinnext             export  none         }         parm {             name    "display"             baseparm             label   "Display"             export  none         }         parm {             name    "viewportlod"             label   "Display As"             type    ordinal             default { "full" }             help    "Choose how the object\'s geometry should be rendered in the viewport"             menu {                 "full"      "Full Geometry"                 "points"    "Point Cloud"                 "box"       "Bounding Box"                 "centroid"  "Centroid"                 "hidden"    "Hidden"                 "subd"      "Subdivision Surface / Curves"             }             parmtag { "spare_category" "Render" }         }         parm {             name    "vm_rendervisibility"             label   "Render Visibility"             type    string             default { "*" }             menureplace {                 "*"                             "Visible to all"                 "primary"                       "Visible only to primary rays"                 "primary|shadow"                "Visible only to primary and shadow rays"                 "-primary"                      "Invisible to primary rays (Phantom)"                 "-diffuse"                      "Invisible to diffuse rays"                 "-diffuse&-reflect&-refract"    "Invisible to secondary rays"                 ""                              "Invisible (Unrenderable)"             }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "rendervisibility" }             parmtag { "spare_category" "Render" }         }         parm {             name    "vm_rendersubd"             label   "Render Polygons As Subdivision (Mantra)"             type    toggle             default { "0" }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "rendersubd" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_subdstyle"             label   "Subdivision Style"             type    string             default { "mantra_catclark" }             hidewhen "{ vm_rendersubd == 0 }"             menu {                 "mantra_catclark"   "Mantra Catmull-Clark"                 "osd_catclark"      "OpenSubdiv Catmull-Clark"             }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "subdstyle" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_subdgroup"             label   "Subdivision Group"             type    string             default { "" }             hidewhen "{ vm_rendersubd == 0 }"             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "subdgroup" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_osd_quality"             label   "Open Subdiv Quality"             type    float             default { "1" }             hidewhen "{ vm_rendersubd == 0 vm_subdstyle != osd_catclark }"             range   { 0 10 }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "osd_quality" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_osd_vtxinterp"             label   "OSD Vtx Interp"             type    integer             default { "2" }             hidewhen "{ vm_rendersubd == 0 vm_subdstyle != osd_catclark }"             menu {                 "0" "No vertex interpolation"                 "1" "Edges only"                 "2" "Edges and Corners"             }             range   { 0 10 }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "osd_vtxinterp" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_osd_fvarinterp"             label   "OSD FVar Interp"             type    integer             default { "4" }             hidewhen "{ vm_rendersubd == 0 vm_subdstyle != osd_catclark }"             menu {                 "0" "Smooth everywhere"                 "1" "Sharpen corners only"                 "2" "Sharpen edges and corners"                 "3" "Sharpen edges and propagated corners"                 "4" "Sharpen all boundaries"                 "5" "Bilinear interpolation"             }             range   { 0 10 }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "osd_fvarinterp" }             parmtag { "spare_category" "Geometry" }         }         group {             name    "folder0"             label   "Shading"              parm {                 name    "categories"                 label   "Categories"                 type    string                 default { "" }                 help    "A list of tags which can be used to select the object"                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "reflectmask"                 label   "Reflection Mask"                 type    oplist                 default { "*" }                 help    "Objects that will be reflected on this object."                 parmtag { "opexpand" "1" }                 parmtag { "opfilter" "!!OBJ/GEOMETRY!!" }                 parmtag { "oprelative" "/obj" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "refractmask"                 label   "Refraction Mask"                 type    oplist                 default { "*" }                 help    "Objects that will be refracted on this object."                 parmtag { "opexpand" "1" }                 parmtag { "opfilter" "!!OBJ/GEOMETRY!!" }                 parmtag { "oprelative" "/obj" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "lightmask"                 label   "Light Mask"                 type    oplist                 default { "*" }                 help    "Lights that illuminate this object."                 parmtag { "opexpand" "1" }                 parmtag { "opfilter" "!!OBJ/LIGHT!!" }                 parmtag { "oprelative" "/obj" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "lightcategories"                 label   "Light Selection"                 type    string                 default { "*" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "vm_volumefilter"                 label   "Volume Filter"                 type    string                 default { "box" }                 menu {                     "box"       "Box Filter"                     "gaussian"  "Gaussian"                     "bartlett"  "Bartlett (triangle)"                     "catrom"    "Catmull-Rom"                     "hanning"   "Hanning"                     "blackman"  "Blackman"                     "sinc"      "Sinc (sharpening)"                 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "filter" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "vm_volumefilterwidth"                 label   "Volume Filter Width"                 type    float                 default { "1" }                 range   { 0.001 5 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "filterwidth" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "vm_matte"                 label   "Matte shading"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "matte" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "vm_rayshade"                 label   "Raytrace Shading"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "rayshade" }                 parmtag { "spare_category" "Shading" }             }         }          group {             name    "folder0_1"             label   "Sampling"              parm {                 name    "geo_velocityblur"                 label   "Geometry Velocity Blur"                 type    toggle                 default { "0" }                 disablewhen "{ allowmotionblur == 0 }"                 parmtag { "spare_category" "Sampling" }             }         }          group {             name    "folder0_2"             label   "Dicing"              parm {                 name    "vm_shadingquality"                 label   "Shading Quality"                 type    float                 default { "1" }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "shadingquality" }                 parmtag { "spare_category" "Dicing" }             }             parm {                 name    "vm_flatness"                 label   "Dicing Flatness"                 type    float                 default { "0.05" }                 range   { 0 1 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "flatness" }                 parmtag { "spare_category" "Dicing" }             }             parm {                 name    "vm_raypredice"                 label   "Ray Predicing"                 type    integer                 default { "0" }                 menu {                     "0" "Disable Predicing"                     "1" "Full Predicing"                     "2" "Precompute Bounds"                 }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "raypredice" }                 parmtag { "spare_category" "Dicing" }             }             parm {                 name    "vm_curvesurface"                 label   "Shade Curves As Surfaces"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "curvesurface" }                 parmtag { "spare_category" "Dicing" }             }         }          group {             name    "folder0_3"             label   "Geometry"              parm {                 name    "vm_rmbackface"                 label   "Backface Removal"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "rmbackface" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "shop_geometrypath"                 label   "Procedural Shader"                 type    oppath                 default { "" }                 parmtag { "opfilter" "!!SHOP/GEOMETRY!!" }                 parmtag { "oprelative" "." }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_forcegeometry"                 label   "Force Procedural Geometry Output"                 type    toggle                 default { "1" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_rendersubdcurves"                 label   "Render Polygon Curves As Subdivision (Mantra)"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "rendersubdcurves" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_renderpoints"                 label   "Render As Points (Mantra)"                 type    integer                 default { "2" }                 menu {                     "0" "No Point Rendering"                     "1" "Render Only Points"                     "2" "Render Unconnected Points"                 }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "renderpoints" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_renderpointsas"                 label   "Render Points As (Mantra)"                 type    integer                 default { "0" }                 disablewhen "{ vm_renderpoints == 0 }"                 menu {                     "0" "Spheres"                     "1" "Circles"                 }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "renderpointsas" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_usenforpoints"                 label   "Use N For Point Rendering"                 type    toggle                 default { "0" }                 disablewhen "{ vm_renderpoints == 0 }"                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "usenforpoints" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_pointscale"                 label   "Point Scale"                 type    float                 default { "1" }                 disablewhen "{ vm_renderpoints == 0 }"                 range   { 0! 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "pointscale" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_pscalediameter"                 label   "Treat Point Scale as Diameter Instead of Radius"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "pscalediameter" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_metavolume"                 label   "Metaballs as Volume"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "metavolume" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_coving"                 label   "Coving"                 type    integer                 default { "1" }                 menu {                     "0" "Disable Coving"                     "1" "Coving for displacement/sub-d"                     "2" "Coving for all primitives"                 }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "coving" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_materialoverride"                 label   "Material Override"                 type    string                 default { "compact" }                 menu {                     "none"      "Disabled"                     "full"      "Evaluate for Each Primitve/Point"                     "compact"   "Evaluate Once"                 }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_overridedetail"                 label   "Ignore Geometry Attribute Shaders"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "overridedetail" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_procuseroottransform"                 label   "Proc Use Root Transform"                 type    toggle                 default { "1" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "procuseroottransform" }                 parmtag { "spare_category" "Geometry" }             }         }      }      group {         name    "stdswitcher4_2"         label   "Misc"          parm {             name    "use_dcolor"             baseparm             label   "Set Wireframe Color"             export  none         }         parm {             name    "dcolor"             baseparm             label   "Wireframe Color"             export  none         }         parm {             name    "picking"             baseparm             label   "Viewport Selecting Enabled"             export  none         }         parm {             name    "pickscript"             baseparm             label   "Select Script"             export  none         }         parm {             name    "caching"             baseparm             label   "Cache Object Transform"             export  none         }         parm {             name    "vport_shadeopen"             baseparm             label   "Shade Open Curves In Viewport"             export  none         }         parm {             name    "vport_displayassubdiv"             baseparm             label   "Display as Subdivision in Viewport"             invisible             export  none         }         parm {             name    "vport_onionskin"             baseparm             label   "Onion Skinning"             export  none         }     }  ' $_obj_cloth_sample_grain_particles
+opset -S on $_obj_cloth_sample_grain_particles
+opparm -V 16.5.268 $_obj_cloth_sample_grain_particles vm_renderpoints ( 1 )
+chautoscope $_obj_cloth_sample_grain_particles +tx +ty +tz +rx +ry +rz +sx +sy +sz
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -x off $_obj_cloth_sample_grain_particles
+opexprlanguage -s hscript $_obj_cloth_sample_grain_particles
+opuserdata -n '___Version___' -v '16.5.268' $_obj_cloth_sample_grain_particles
+opuserdata -n '___toolcount___' -v '1' $_obj_cloth_sample_grain_particles
+opuserdata -n '___toolid___' -v 'dynamics_popgrainsheet' $_obj_cloth_sample_grain_particles
+opcf $_obj_cloth_sample_grain_particles
+
+# Node $_obj_cloth_sample_grain_particles_import_grain (Sop/dopio)
+set _obj_cloth_sample_grain_particles_import_grain = `run("opadd -e -n -v dopio import_grain")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_cloth_sample_grain_particles_import_grain
+opparm $_obj_cloth_sample_grain_particles_import_grain  fields ( 1 ) attribute_numcasts ( 0 ) compression ( 0 )
+chblockbegin
+chadd -t 0 0 $_obj_cloth_sample_grain_particles_import_grain f1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_cloth_sample_grain_particles_import_grain/f1
+chadd -t 0 0 $_obj_cloth_sample_grain_particles_import_grain f2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_cloth_sample_grain_particles_import_grain/f2
+chblockend
+opparm -V 1 $_obj_cloth_sample_grain_particles_import_grain doppath ( /obj/cloth_sample/AutoDopNetwork ) dopnode ( /obj/cloth_sample/AutoDopNetwork/popobject1 ) importsimsettings ( off ) fields ( 1 ) visible1 ( nochange ) fieldname1 ( Geometry )
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_cloth_sample_grain_particles_import_grain
+opexprlanguage -s hscript $_obj_cloth_sample_grain_particles_import_grain
+opuserdata -n '___Version___' -v '1' $_obj_cloth_sample_grain_particles_import_grain
+opuserdata -n '___toolcount___' -v '2' $_obj_cloth_sample_grain_particles_import_grain
+opuserdata -n '___toolid___' -v 'pyro_burn' $_obj_cloth_sample_grain_particles_import_grain
+opcf ..
+oporder -e grid1 AutoDopNetwork grain_particles 
+opcf ..
+opset -p on $_obj_cloth_sample
 
 opcf $arg1
-opcf $_obj_grid1
-opwire -n $_obj_grid1_grid1 -0 $_obj_grid1_clip1
-opwire -n $_obj_grid1_clip1 -0 $_obj_grid1_clip2
-opwire -n $_obj_grid1_foreach_end1 -0 $_obj_grid1_repeat_end1
-opwire -n $_obj_grid1_grid1 -0 $_obj_grid1_repeat_begin1
-opwire -n $_obj_grid1_attribwrangle1 -0 $_obj_grid1_foreach_end1
-opwire -n $_obj_grid1_repeat_begin1 -0 $_obj_grid1_foreach_begin1
-opwire -n $_obj_grid1_foreach_begin1 -0 $_obj_grid1_attribwrangle1
+opcf $_obj_cloth_sample
+opcf $_obj_cloth_sample_grid1
+opwire -n $_obj_cloth_sample_grid1_grid1 -0 $_obj_cloth_sample_grid1_grainsource1
+opwire -n $_obj_cloth_sample_grid1_grainsource1 -0 $_obj_cloth_sample_grid1_rest1
+opwire -n $_obj_cloth_sample_grid1_attribwrangle1 -0 $_obj_cloth_sample_grid1_OUT
+opwire -n $_obj_cloth_sample_grid1_simulatedmesh -0 $_obj_cloth_sample_grid1_isolate
+opwire -n $_obj_cloth_sample_grid1_transform2 -0 $_obj_cloth_sample_grid1_pointdeform1
+opwire -n $_obj_cloth_sample_grid1_OUT -1 $_obj_cloth_sample_grid1_pointdeform1
+opwire -n $_obj_cloth_sample_grid1_isolate -2 $_obj_cloth_sample_grid1_pointdeform1
+opwire -n $_obj_cloth_sample_grid1_rest1 -0 $_obj_cloth_sample_grid1_transform1
+opwire -n $_obj_cloth_sample_grid1_transform1 -0 $_obj_cloth_sample_grid1_bound1
+opwire -n $_obj_cloth_sample_grid1_sphere1 -0 $_obj_cloth_sample_grid1_copytopoints1
+opwire -n $_obj_cloth_sample_grid1_noise -1 $_obj_cloth_sample_grid1_copytopoints1
+opwire -n $_obj_cloth_sample_grid1_group1 -0 $_obj_cloth_sample_grid1_attribwrangle1
+opwire -n $_obj_cloth_sample_grid1_transform1 -0 $_obj_cloth_sample_grid1_group1
+opwire -n $_obj_cloth_sample_grid1_copytopoints1 -1 $_obj_cloth_sample_grid1_group1
+opwire -n $_obj_cloth_sample_grid1_bound1 -0 $_obj_cloth_sample_grid1_blast1
+opwire -n $_obj_cloth_sample_grid1_subdivide1 -0 $_obj_cloth_sample_grid1_transform2
+opwire -n $_obj_cloth_sample_grid1_grid1 -0 $_obj_cloth_sample_grid1_subdivide1
+opwire -n $_obj_cloth_sample_grid1_blast1 -0 $_obj_cloth_sample_grid1_subdivide2
+opwire -n $_obj_cloth_sample_grid1_transform3 -0 $_obj_cloth_sample_grid1_noise
+opcf $_obj_cloth_sample_grid1_noise
+opwire -n $_obj_cloth_sample_grid1_noise_add1 -0 $_obj_cloth_sample_grid1_noise_geometryvopoutput1
+opwire -n $_obj_cloth_sample_grid1_noise_vectohvec1 -0 $_obj_cloth_sample_grid1_noise_aaflownoise1
+opwire -n $_obj_cloth_sample_grid1_noise_freq -1 $_obj_cloth_sample_grid1_noise_aaflownoise1
+opwire -n $_obj_cloth_sample_grid1_noise_offset -2 $_obj_cloth_sample_grid1_noise_aaflownoise1
+opwire -n $_obj_cloth_sample_grid1_noise_amp -3 $_obj_cloth_sample_grid1_noise_aaflownoise1
+opwire -n $_obj_cloth_sample_grid1_noise_rough -4 $_obj_cloth_sample_grid1_noise_aaflownoise1
+opwire -n $_obj_cloth_sample_grid1_noise_geometryvopglobal1 -0 $_obj_cloth_sample_grid1_noise_vectohvec1
+opwire -n $_obj_cloth_sample_grid1_noise_geometryvopglobal1 -0 $_obj_cloth_sample_grid1_noise_add1
+opwire -n $_obj_cloth_sample_grid1_noise_snippet1 -1 $_obj_cloth_sample_grid1_noise_add1
+opwire -n $_obj_cloth_sample_grid1_noise_aaflownoise1 -0 $_obj_cloth_sample_grid1_noise_snippet1
+opcf ..
+opwire -n $_obj_cloth_sample_grid1_subdivide2 -0 $_obj_cloth_sample_grid1_transform3
+opwire -n $_obj_cloth_sample_grid1_transform2 -0 $_obj_cloth_sample_grid1_attribwrangle2
+opwire -n $_obj_cloth_sample_grid1_pointdeform1 -1 $_obj_cloth_sample_grid1_attribwrangle2
+opcf ..
+opcf $_obj_cloth_sample_AutoDopNetwork
+opwire -n $_obj_cloth_sample_AutoDopNetwork_gravity1 -0 $_obj_cloth_sample_AutoDopNetwork_output
+opwire -n $_obj_cloth_sample_AutoDopNetwork_merge1 -0 $_obj_cloth_sample_AutoDopNetwork_gravity1
+opwire -n $_obj_cloth_sample_AutoDopNetwork_staticsolver1 -0 $_obj_cloth_sample_AutoDopNetwork_merge1
+opwire -n $_obj_cloth_sample_AutoDopNetwork_popsolver1 -1 $_obj_cloth_sample_AutoDopNetwork_merge1
+opwire -n $_obj_cloth_sample_AutoDopNetwork_popobject1 -0 $_obj_cloth_sample_AutoDopNetwork_popsolver1
+opwire -n $_obj_cloth_sample_AutoDopNetwork_merge2 -2 $_obj_cloth_sample_AutoDopNetwork_popsolver1
+opwire -n $_obj_cloth_sample_AutoDopNetwork_grain_color -0 $_obj_cloth_sample_AutoDopNetwork_merge2
+opwire -n $_obj_cloth_sample_AutoDopNetwork_popwrangle1 -1 $_obj_cloth_sample_AutoDopNetwork_merge2
+opwire -n $_obj_cloth_sample_AutoDopNetwork_grid1_grain -0 $_obj_cloth_sample_AutoDopNetwork_grain_update
+opwire -n $_obj_cloth_sample_AutoDopNetwork_grain_update -0 $_obj_cloth_sample_AutoDopNetwork_grain_sprite
+opwire -n $_obj_cloth_sample_AutoDopNetwork_grain_sprite -0 $_obj_cloth_sample_AutoDopNetwork_grain_color
+opwire -n $_obj_cloth_sample_AutoDopNetwork_groundplane1 -0 $_obj_cloth_sample_AutoDopNetwork_staticsolver1
+opcf ..
+opcf $_obj_cloth_sample_grain_particles
+opcf ..
 opcf ..
 
 set oidx = 0
@@ -2672,11 +3156,11 @@ if ($argc >= 9 && "$arg9" != "") then
 endif
 
 if ($argc >= 5 && "$arg4" != "") then
-    set output = $_obj_grid1
+    set output = $_obj_cloth_sample
     opwire -n $output -$arg5 $arg4
 endif
 if ($argc >= 6 && "$arg6" != "") then
-    set input = $_obj_grid1
+    set input = $_obj_cloth_sample
     if ($arg8) then
         opwire -n -i $arg6 -0 $input
     else
