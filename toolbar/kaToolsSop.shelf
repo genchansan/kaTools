@@ -16,6 +16,8 @@
     <memberTool name="CALC_size"/>
     <memberTool name="timeblend_vol"/>
     <memberTool name="timeblend_vol_with_advection"/>
+    <memberTool name="instancePackedAlembic"/>
+    <memberTool name="instancPackedPrims"/>
   </toolshelf>
 
   <tool name="remesh_for_deforming_geo" label="Remesh For Deforming Geo" icon="SOP_subnet">
@@ -2176,6 +2178,369 @@ if ($argc >= 5 && "$arg4" != "") then
 endif
 if ($argc >= 6 && "$arg6" != "") then
     set input = $_obj_geo1_timeblend_vol
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="instancePackedAlembic" label="Instance Packed Alembic" icon="SOP_instance">
+    <helpURL>operator:Sop/subnet</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/subnet</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('subnet'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_packed_abc_instance_packed_abc (Sop/subnet)
+set _obj_packed_abc_instance_packed_abc = `run("opadd -e -n -v subnet instance_packed_abc")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_packed_abc_instance_packed_abc
+opspareds '    parm {         name    "label1"         baseparm         label   "Input #1 Label"         invisible         export  all     }     parm {         name    "label2"         baseparm         label   "Input #2 Label"         invisible         export  all     }     parm {         name    "label3"         baseparm         label   "Input #3 Label"         invisible         export  all     }     parm {         name    "label4"         baseparm         label   "Input #4 Label"         invisible         export  all     }     parm {         name    "abcFileAtr"         label   "Alembic FIle Path Attribute"         type    string         default { "instancepath" }     }     parm {         name    "specifyAtr"         label   "Specify Attribute Name To Store Object Pths"         type    toggle         default { "0" }     }     parm {         name    "abcObjPathAtr"         label   "Alembic Object Paths Attribute"         type    string         default { "objpath" }         disablewhen "{ specifyAtr == 0 }"     }     parm {         name    "frame"         label   "Frame"         type    float         default { "$FF" }         range   { 0 10 }     }     parm {         name    "viewportlod"         label   "Display As"         type    ordinal         default { "2" }         menu {             "full"      "Full Geometry"             "points"    "Point Cloud"             "box"       "Bounding Box"             "centroid"  "Centroid"             "hidden"    "Hidden"         }     }     parm {         name    "pivot"         label   "Pivot Location"         type    ordinal         default { "0" }         menu {             "origin"    "Origin"             "centroid"  "Centroid"         }     }     parm {         name    "loadPolyMesh"         label   "Load Poly Mesh"         type    toggle         default { "1" }     }     parm {         name    "loadSubdmesh"         label   "Load Subdmesh"         type    toggle         default { "1" }     }     parm {         name    "laodCxform"         label   "Load Cxform"         type    toggle         default { "0" }     }     parm {         name    "loadXform"         label   "Load Xform"         type    toggle         default { "0" }     }     parm {         name    "loadCamera"         label   "Load Camera"         type    toggle         default { "0" }     }     parm {         name    "loadFaceset"         label   "Load Faceset"         type    toggle         default { "0" }     }     parm {         name    "loadCurves"         label   "Load Curves"         type    toggle         default { "0" }     }     parm {         name    "loadPoints"         label   "Load Points"         type    toggle         default { "0" }     }     parm {         name    "loadNupatch"         label   "Load Nupatch"         type    toggle         default { "0" }     } ' $_obj_packed_abc_instance_packed_abc
+chblockbegin
+chadd -t 0 0 $_obj_packed_abc_instance_packed_abc frame
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FF' $_obj_packed_abc_instance_packed_abc/frame
+chblockend
+opparm -V 16.5.439 $_obj_packed_abc_instance_packed_abc
+opcolor -c 0.86699998378753662 0 0 $_obj_packed_abc_instance_packed_abc
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_packed_abc_instance_packed_abc
+opexprlanguage -s hscript $_obj_packed_abc_instance_packed_abc
+opuserdata -n '___Version___' -v '16.5.439' $_obj_packed_abc_instance_packed_abc
+opuserdata -n 'nodeshape' -v 'gurgle' $_obj_packed_abc_instance_packed_abc
+opcf $_obj_packed_abc_instance_packed_abc
+
+# Node $_obj_packed_abc_instance_packed_abc_crt_packed_alembic (Sop/attribwrangle)
+set _obj_packed_abc_instance_packed_abc_crt_packed_alembic = `run("opadd -e -n -v attribwrangle crt_packed_alembic")`
+oplocate -x `$arg2 + -0.00300001` -y `$arg3 + 3.2307899999999998` $_obj_packed_abc_instance_packed_abc_crt_packed_alembic
+opparm $_obj_packed_abc_instance_packed_abc_crt_packed_alembic  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_packed_abc_instance_packed_abc_crt_packed_alembic vex_threadjobsize ( 126 ) snippet ( 'string meshPaths = s@`chs("../abcObjPathAtr")`;\nstring valList[] = split(meshPaths, ",");\nint len = len(valList);\nfor(int i =0;i<len;i++)\n{   \n    int ptnum=0;\n    if(i!=0)ptnum = addpoint(geoself(), @ptnum);\n    else ptnum=@ptnum;\n    int primnum = addprim(geoself(), "AlembicRef", ptnum);\n    \n    setprimintrinsic(geoself(), "viewportlod", primnum, chs("../viewportlod"), "set");\n\n    setprimintrinsic(geoself(), "abcfilename", primnum, s@`chs("../abcFileAtr")`, "set");\n    setprimintrinsic(geoself(), "abcframe", primnum, ch("../frame")*@TimeInc, "set");\n    setprimintrinsic(geoself(), "abcobjectpath", primnum, valList[i], "set");\n    \n    string atrs[] = detailintrinsic(geoself(), "pointattributes");\n    int find[] = find(atrs, "orient");\n    if(len(find) >0)\n    {\n        matrix3 mat = qconvert(vector4(point(0,"orient", @ptnum)));\n        setprimintrinsic(geoself(), "transform", primnum, mat, "set");\n    }\n}' )
+opcolor -c 1 0.80000001192092896 0 $_obj_packed_abc_instance_packed_abc_crt_packed_alembic
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_packed_abc_instance_packed_abc_crt_packed_alembic
+opexprlanguage -s hscript $_obj_packed_abc_instance_packed_abc_crt_packed_alembic
+opuserdata -n '___Version___' -v '' $_obj_packed_abc_instance_packed_abc_crt_packed_alembic
+
+# Node $_obj_packed_abc_instance_packed_abc_pivot (Sop/attribwrangle)
+set _obj_packed_abc_instance_packed_abc_pivot = `run("opadd -e -n -v attribwrangle pivot")`
+oplocate -x `$arg2 + 2.3269799999999998` -y `$arg3 + 1.88334` $_obj_packed_abc_instance_packed_abc_pivot
+opparm $_obj_packed_abc_instance_packed_abc_pivot  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_packed_abc_instance_packed_abc_pivot snippet ( 'float bound[] = primintrinsic(geoself(), "packedbounds", @primnum);\nvector centroid = avg(set(bound[0], bound[2], bound[4]),set(bound[1], bound[3], bound[5]));\n\n\nmatrix3 mat = primintrinsic(geoself(), "transform", @primnum);\nvector4 ori = quaternion(mat);\n\n\n\nsetprimintrinsic(geoself(), "pivot", @primnum, centroid, "set");\n\ncentroid = qrotate(ori, centroid);\n@P += centroid;' )
+opcolor -c 1 0.80000001192092896 0 $_obj_packed_abc_instance_packed_abc_pivot
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_packed_abc_instance_packed_abc_pivot
+opexprlanguage -s hscript $_obj_packed_abc_instance_packed_abc_pivot
+opuserdata -n '___Version___' -v '' $_obj_packed_abc_instance_packed_abc_pivot
+opcf ..
+opcf $_obj_packed_abc_instance_packed_abc
+
+# Node $_obj_packed_abc_instance_packed_abc_get_obj_paths (Sop/python)
+set _obj_packed_abc_instance_packed_abc_get_obj_paths = `run("opadd -e -n -v python get_obj_paths")`
+oplocate -x `$arg2 + -1.11759e-08` -y `$arg3 + 4.3448099999999998` $_obj_packed_abc_instance_packed_abc_get_obj_paths
+opparm -V 16.5.439 $_obj_packed_abc_instance_packed_abc_get_obj_paths python ( 'node = hou.pwd()\ngeo = node.geometry()\n\nparent = node.parent()\n\nabcFileAtr = parent.parm("abcFileAtr").eval()\nobjPathAtr = parent.parm("abcObjPathAtr").eval()\n\nloadType=[]\n\nif parent.parm(\'loadPolyMesh\').eval() == 1:\n    loadType.append(\'polymesh\')\nif parent.parm(\'loadSubdmesh\').eval() == 1:\n    loadType.append(\'subdmesh\')\nif parent.parm(\'laodCxform\').eval() == 1:\n    loadType.append(\'cxform\')\nif parent.parm(\'loadXform\').eval() == 1:\n    loadType.append(\'xform\')\nif parent.parm(\'loadCamera\').eval() == 1:\n    loadType.append(\'camera\')\nif parent.parm(\'loadFaceset\').eval() == 1:\n    loadType.append(\'faceset\')\nif parent.parm(\'loadCurves\').eval() == 1:\n    loadType.append(\'curves\')\nif parent.parm(\'loadPoints\').eval() == 1:\n    loadType.append(\'points\')\nif parent.parm(\'loadNupatch\').eval() == 1:\n    loadType.append(\'nupatch\')\n\n#print loadType\n\n\ngeo.addAttrib(hou.attribType.Point, objPathAtr,"")\n\nimport _alembic_hom_extensions as abc\n\nfor pt in geo.points():\n    \n\n    abcPath = pt.stringAttribValue(abcFileAtr)\n\n    paths = abc.alembicGetObjectPathListForMenu(abcPath)\n\n    meshPath = ""\n    \n    for i in range(0,len(paths),2):\n        path = paths[i]\n        hie = abc.alembicGetSceneHierarchy(abcPath, path)\n        if hie[1] in loadType:\n            if meshPath != "":\n                meshPath += ","\n    \n            meshPath += path\n            \n    pt.setAttribValue(objPathAtr, meshPath)\n        \n        \n        \n' )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_packed_abc_instance_packed_abc_get_obj_paths
+opexprlanguage -s hscript $_obj_packed_abc_instance_packed_abc_get_obj_paths
+opuserdata -n '___Version___' -v '16.5.439' $_obj_packed_abc_instance_packed_abc_get_obj_paths
+
+# Node $_obj_packed_abc_instance_packed_abc_output1 (Sop/output)
+set _obj_packed_abc_instance_packed_abc_output1 = `run("opadd -e -n -v output output1")`
+oplocate -x `$arg2 + -1.34664e-08` -y `$arg3 + -1.70817` $_obj_packed_abc_instance_packed_abc_output1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_packed_abc_instance_packed_abc_output1
+opexprlanguage -s hscript $_obj_packed_abc_instance_packed_abc_output1
+opuserdata -n '___Version___' -v '16.5.439' $_obj_packed_abc_instance_packed_abc_output1
+
+# Node $_obj_packed_abc_instance_packed_abc_switch1 (Sop/switch)
+set _obj_packed_abc_instance_packed_abc_switch1 = `run("opadd -e -n -v switch switch1")`
+oplocate -x `$arg2 + -2.2779600000000001e-08` -y `$arg3 + 0.48916999999999999` $_obj_packed_abc_instance_packed_abc_switch1
+chblockbegin
+chadd -t 0 0 $_obj_packed_abc_instance_packed_abc_switch1 input
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../pivot")==1' $_obj_packed_abc_instance_packed_abc_switch1/input
+chblockend
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_packed_abc_instance_packed_abc_switch1
+opexprlanguage -s hscript $_obj_packed_abc_instance_packed_abc_switch1
+opuserdata -n '___Version___' -v '16.5.439' $_obj_packed_abc_instance_packed_abc_switch1
+oporder -e crt_packed_alembic get_obj_paths output1 pivot switch1 
+opcf ..
+opset -p on $_obj_packed_abc_instance_packed_abc
+
+opcf $arg1
+opwire -n $_obj_packed_abc_attribwrangle1 -0 $_obj_packed_abc_instance_packed_abc
+opcf $_obj_packed_abc_instance_packed_abc
+opwire -n $_obj_packed_abc_instance_packed_abc_get_obj_paths -0 $_obj_packed_abc_instance_packed_abc_crt_packed_alembic
+opwire -n -i 0 -0 $_obj_packed_abc_instance_packed_abc_get_obj_paths
+opwire -n $_obj_packed_abc_instance_packed_abc_switch1 -0 $_obj_packed_abc_instance_packed_abc_output1
+opwire -n $_obj_packed_abc_instance_packed_abc_crt_packed_alembic -0 $_obj_packed_abc_instance_packed_abc_pivot
+opwire -n $_obj_packed_abc_instance_packed_abc_crt_packed_alembic -0 $_obj_packed_abc_instance_packed_abc_switch1
+opwire -n $_obj_packed_abc_instance_packed_abc_pivot -1 $_obj_packed_abc_instance_packed_abc_switch1
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_packed_abc_instance_packed_abc
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_packed_abc_instance_packed_abc
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="instancPackedPrims" label="Instance Packed Primitives" icon="SOP_instance">
+    <helpURL>operator:Sop/attribwrangle</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/attribwrangle</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('attribwrangle'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_packed_disk_instance_packed_prims (Sop/attribwrangle)
+set _obj_packed_disk_instance_packed_prims = `run("opadd -e -n -v attribwrangle instance_packed_prims")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_packed_disk_instance_packed_prims
+opspareds '    group {         name    "folder1"         label   "Code"          parm {             name    "group"             baseparm             label   "Group"             export  none             bindselector points "Modify Points"                 "Select the points to affect and press Enter to complete."                 0 1 0xffffffff 0 grouptype 0         }         parm {             name    "grouptype"             baseparm             label   "Group Type"             export  none         }         parm {             name    "class"             baseparm             label   "Run Over"             export  none         }         parm {             name    "vex_numcount"             baseparm             label   "Number Count"             export  none         }         parm {             name    "vex_threadjobsize"             baseparm             label   "Thread Job Size"             export  none         }         parm {             name    "snippet"             baseparm             label   "VEXpression"             export  all         }         parm {             name    "exportlist"             baseparm             label   "Attributes to Create"             export  none         }         parm {             name    "vex_strict"             baseparm             label   "Enforce Prototypes"             export  none         }     }      group {         name    "folder1_1"         label   "Bindings"          parm {             name    "autobind"             baseparm             label   "Autobind by Name"             export  none         }         multiparm {             name    "bindings"             label    "Number of Bindings"             baseparm             default 0             parmtag { "autoscope" "0000000000000000" }             parmtag { "multistartoffset" "1" }              parm {                 name    "bindname#"                 baseparm                 label   "Attribute Name"                 export  none             }             parm {                 name    "bindparm#"                 baseparm                 label   "VEX Parameter"                 export  none             }         }          parm {             name    "groupautobind"             baseparm             label   "Autobind Groups by Name"             export  none         }         multiparm {             name    "groupbindings"             label    "Group Bindings"             baseparm             default 0             parmtag { "autoscope" "0000000000000000" }             parmtag { "multistartoffset" "1" }              parm {                 name    "bindgroupname#"                 baseparm                 label   "Group Name"                 export  none             }             parm {                 name    "bindgroupparm#"                 baseparm                 label   "VEX Parameter"                 export  none             }         }          parm {             name    "vex_cwdpath"             baseparm             label   "Evaluation Node Path"             export  none         }         parm {             name    "vex_outputmask"             baseparm             label   "Export Parameters"             export  none         }         parm {             name    "vex_updatenmls"             baseparm             label   "Update Normals If Displaced"             export  none         }         parm {             name    "vex_matchattrib"             baseparm             label   "Attribute to Match"             export  none         }         parm {             name    "vex_inplace"             baseparm             label   "Compute Results In Place"             export  none         }         parm {             name    "vex_selectiongroup"             baseparm             label   "Output Selection Group"             export  none         }     }      parm {         name    "pathAtr"         label   "Pathatr"         type    string         default { "" }     }     parm {         name    "viewportlod"         label   "Display As"         type    ordinal         default { "2" }         menu {             "full"      "Full Geometry"             "points"    "Point Cloud"             "box"       "Bounding Box"             "centroid"  "Centroid"             "hidden"    "Hidden"         }     } ' $_obj_packed_disk_instance_packed_prims
+opparm $_obj_packed_disk_instance_packed_prims  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_packed_disk_instance_packed_prims snippet ( 'int primnum = addprim(geoself(), "PackedDisk", @ptnum);\n\nsetprimintrinsic(geoself(), "viewportlod", primnum, chs("viewportlod"), "set");\n\nsetprimintrinsic(geoself(), "unexpandedfilename", primnum, s@`chs("pathAtr")`, "set");\n\nstring atrs[] = detailintrinsic(geoself(), "pointattributes");\n    int find[] = find(atrs, "orient");\n    if(len(find) >0)\n    {\n        matrix3 mat = qconvert(vector4(point(0,"orient", @ptnum)));\n        setprimintrinsic(geoself(), "transform", primnum, mat, "set");\n    }' ) pathAtr ( instancepath )
+opcolor -c 1 0.80000001192092896 0 $_obj_packed_disk_instance_packed_prims
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_packed_disk_instance_packed_prims
+opexprlanguage -s hscript $_obj_packed_disk_instance_packed_prims
+opuserdata -n '___Version___' -v '' $_obj_packed_disk_instance_packed_prims
+opset -p on $_obj_packed_disk_instance_packed_prims
+
+opcf $arg1
+opwire -n $_obj_packed_disk_rand_orient -0 $_obj_packed_disk_instance_packed_prims
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_packed_disk_instance_packed_prims
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_packed_disk_instance_packed_prims
     if ($arg8) then
         opwire -n -i $arg6 -0 $input
     else
