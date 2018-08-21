@@ -4037,4 +4037,752 @@ opcf $saved_path
 hou.hscript(h_preamble + h_extra_args + h_cmd)
 ]]></script>
   </tool>
+
+  <tool name="clastic" label="Clastic" icon="OBJ_geo">
+    <helpURL>operator:Object/geo</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Object/geo</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('geo'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_clastic (Object/geo)
+set _obj_clastic = `run("opadd -e -n -v geo clastic")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_clastic
+opspareds '    group {         name    "stdswitcher4"         label   "Transform"          parm {             name    "xOrd"             baseparm             label   "Transform Order"             joinnext             export  none         }         parm {             name    "rOrd"             baseparm             label   "Rotate Order"             nolabel             export  none         }         parm {             name    "t"             baseparm             label   "Translate"             export  all         }         parm {             name    "r"             baseparm             label   "Rotate"             export  all         }         parm {             name    "s"             baseparm             label   "Scale"             export  none         }         parm {             name    "p"             baseparm             label   "Pivot Translate"             export  none         }         parm {             name    "pr"             baseparm             label   "Pivot Rotate"             export  none         }         parm {             name    "scale"             baseparm             label   "Uniform Scale"             export  none         }         parm {             name    "pre_xform"             baseparm             label   "Modify Pre-Transform"             export  none         }         parm {             name    "keeppos"             baseparm             label   "Keep Position When Parenting"             export  none         }         parm {             name    "childcomp"             baseparm             label   "Child Compensation"             export  none         }         parm {             name    "constraints_on"             baseparm             label   "Enable Constraints"             export  none         }         parm {             name    "constraints_path"             baseparm             label   "Constraints"             export  none         }         parm {             name    "lookatpath"             baseparm             label   "Look At"             invisible             export  none         }         parm {             name    "lookupobjpath"             baseparm             label   "Look Up Object"             invisible             export  none         }         parm {             name    "lookup"             baseparm             label   "Look At Up Vector"             invisible             export  none         }         parm {             name    "pathobjpath"             baseparm             label   "Path Object"             invisible             export  none         }         parm {             name    "roll"             baseparm             label   "Roll"             invisible             export  none         }         parm {             name    "pos"             baseparm             label   "Position"             invisible             export  none         }         parm {             name    "uparmtype"             baseparm             label   "Parameterization"             invisible             export  none         }         parm {             name    "pathorient"             baseparm             label   "Orient Along Path"             invisible             export  none         }         parm {             name    "up"             baseparm             label   "Orient Up Vector"             invisible             export  none         }         parm {             name    "bank"             baseparm             label   "Auto-Bank factor"             invisible             export  none         }     }      group {         name    "stdswitcher4_1"         label   "Render"          parm {             name    "shop_materialpath"             baseparm             label   "Material"             export  none         }         parm {             name    "shop_materialopts"             baseparm             label   "Options"             invisible             export  none         }         parm {             name    "tdisplay"             baseparm             label   "Display"             joinnext             export  none         }         parm {             name    "display"             baseparm             label   "Display"             export  none         }         parm {             name    "viewportlod"             label   "Display As"             type    ordinal             default { "full" }             help    "Choose how the object\'s geometry should be rendered in the viewport"             menu {                 "full"      "Full Geometry"                 "points"    "Point Cloud"                 "box"       "Bounding Box"                 "centroid"  "Centroid"                 "hidden"    "Hidden"                 "subd"      "Subdivision Surface / Curves"             }             parmtag { "spare_category" "Render" }         }         parm {             name    "vm_rendervisibility"             label   "Render Visibility"             type    string             default { "*" }             menureplace {                 "*"                             "Visible to all"                 "primary"                       "Visible only to primary rays"                 "primary|shadow"                "Visible only to primary and shadow rays"                 "-primary"                      "Invisible to primary rays (Phantom)"                 "-diffuse"                      "Invisible to diffuse rays"                 "-diffuse&-reflect&-refract"    "Invisible to secondary rays"                 ""                              "Invisible (Unrenderable)"             }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "rendervisibility" }             parmtag { "spare_category" "Render" }         }         parm {             name    "vm_rendersubd"             label   "Render Polygons As Subdivision (Mantra)"             type    toggle             default { "0" }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "rendersubd" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_subdstyle"             label   "Subdivision Style"             type    string             default { "mantra_catclark" }             hidewhen "{ vm_rendersubd == 0 }"             menu {                 "mantra_catclark"   "Mantra Catmull-Clark"                 "osd_catclark"      "OpenSubdiv Catmull-Clark"             }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "subdstyle" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_subdgroup"             label   "Subdivision Group"             type    string             default { "" }             hidewhen "{ vm_rendersubd == 0 }"             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "subdgroup" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_osd_quality"             label   "Open Subdiv Quality"             type    float             default { "1" }             hidewhen "{ vm_rendersubd == 0 vm_subdstyle != osd_catclark }"             range   { 0 10 }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "osd_quality" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_osd_vtxinterp"             label   "OSD Vtx Interp"             type    integer             default { "2" }             hidewhen "{ vm_rendersubd == 0 vm_subdstyle != osd_catclark }"             menu {                 "0" "No vertex interpolation"                 "1" "Edges only"                 "2" "Edges and Corners"             }             range   { 0 10 }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "osd_vtxinterp" }             parmtag { "spare_category" "Geometry" }         }         parm {             name    "vm_osd_fvarinterp"             label   "OSD FVar Interp"             type    integer             default { "4" }             hidewhen "{ vm_rendersubd == 0 vm_subdstyle != osd_catclark }"             menu {                 "0" "Smooth everywhere"                 "1" "Sharpen corners only"                 "2" "Sharpen edges and corners"                 "3" "Sharpen edges and propagated corners"                 "4" "Sharpen all boundaries"                 "5" "Bilinear interpolation"             }             range   { 0 10 }             parmtag { "mantra_class" "object" }             parmtag { "mantra_name" "osd_fvarinterp" }             parmtag { "spare_category" "Geometry" }         }         group {             name    "folder0"             label   "Shading"              parm {                 name    "categories"                 label   "Categories"                 type    string                 default { "" }                 help    "A list of tags which can be used to select the object"                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "reflectmask"                 label   "Reflection Mask"                 type    oplist                 default { "*" }                 help    "Objects that will be reflected on this object."                 parmtag { "opexpand" "1" }                 parmtag { "opfilter" "!!OBJ/GEOMETRY!!" }                 parmtag { "oprelative" "/obj" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "refractmask"                 label   "Refraction Mask"                 type    oplist                 default { "*" }                 help    "Objects that will be refracted on this object."                 parmtag { "opexpand" "1" }                 parmtag { "opfilter" "!!OBJ/GEOMETRY!!" }                 parmtag { "oprelative" "/obj" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "lightmask"                 label   "Light Mask"                 type    oplist                 default { "*" }                 help    "Lights that illuminate this object."                 parmtag { "opexpand" "1" }                 parmtag { "opfilter" "!!OBJ/LIGHT!!" }                 parmtag { "oprelative" "/obj" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "lightcategories"                 label   "Light Selection"                 type    string                 default { "*" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "vm_volumefilter"                 label   "Volume Filter"                 type    string                 default { "box" }                 menu {                     "box"       "Box Filter"                     "gaussian"  "Gaussian"                     "bartlett"  "Bartlett (triangle)"                     "catrom"    "Catmull-Rom"                     "hanning"   "Hanning"                     "blackman"  "Blackman"                     "sinc"      "Sinc (sharpening)"                 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "filter" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "vm_volumefilterwidth"                 label   "Volume Filter Width"                 type    float                 default { "1" }                 range   { 0.001 5 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "filterwidth" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "vm_matte"                 label   "Matte shading"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "matte" }                 parmtag { "spare_category" "Shading" }             }             parm {                 name    "vm_rayshade"                 label   "Raytrace Shading"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "rayshade" }                 parmtag { "spare_category" "Shading" }             }         }          group {             name    "folder0_1"             label   "Sampling"              parm {                 name    "geo_velocityblur"                 label   "Geometry Velocity Blur"                 type    toggle                 default { "0" }                 disablewhen "{ allowmotionblur == 0 }"                 parmtag { "spare_category" "Sampling" }             }         }          group {             name    "folder0_2"             label   "Dicing"              parm {                 name    "vm_shadingquality"                 label   "Shading Quality"                 type    float                 default { "1" }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "shadingquality" }                 parmtag { "spare_category" "Dicing" }             }             parm {                 name    "vm_flatness"                 label   "Dicing Flatness"                 type    float                 default { "0.05" }                 range   { 0 1 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "flatness" }                 parmtag { "spare_category" "Dicing" }             }             parm {                 name    "vm_raypredice"                 label   "Ray Predicing"                 type    integer                 default { "0" }                 menu {                     "0" "Disable Predicing"                     "1" "Full Predicing"                     "2" "Precompute Bounds"                 }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "raypredice" }                 parmtag { "spare_category" "Dicing" }             }             parm {                 name    "vm_curvesurface"                 label   "Shade Curves As Surfaces"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "curvesurface" }                 parmtag { "spare_category" "Dicing" }             }         }          group {             name    "folder0_3"             label   "Geometry"              parm {                 name    "vm_rmbackface"                 label   "Backface Removal"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "rmbackface" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "shop_geometrypath"                 label   "Procedural Shader"                 type    oppath                 default { "" }                 parmtag { "opfilter" "!!SHOP/GEOMETRY!!" }                 parmtag { "oprelative" "." }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_forcegeometry"                 label   "Force Procedural Geometry Output"                 type    toggle                 default { "1" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_rendersubdcurves"                 label   "Render Polygon Curves As Subdivision (Mantra)"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "rendersubdcurves" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_renderpoints"                 label   "Render As Points (Mantra)"                 type    integer                 default { "2" }                 menu {                     "0" "No Point Rendering"                     "1" "Render Only Points"                     "2" "Render Unconnected Points"                 }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "renderpoints" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_renderpointsas"                 label   "Render Points As (Mantra)"                 type    integer                 default { "0" }                 disablewhen "{ vm_renderpoints == 0 }"                 menu {                     "0" "Spheres"                     "1" "Circles"                 }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "renderpointsas" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_usenforpoints"                 label   "Use N For Point Rendering"                 type    toggle                 default { "0" }                 disablewhen "{ vm_renderpoints == 0 }"                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "usenforpoints" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_pointscale"                 label   "Point Scale"                 type    float                 default { "1" }                 disablewhen "{ vm_renderpoints == 0 }"                 range   { 0! 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "pointscale" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_pscalediameter"                 label   "Treat Point Scale as Diameter Instead of Radius"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "pscalediameter" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_metavolume"                 label   "Metaballs as Volume"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "metavolume" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_coving"                 label   "Coving"                 type    integer                 default { "1" }                 menu {                     "0" "Disable Coving"                     "1" "Coving for displacement/sub-d"                     "2" "Coving for all primitives"                 }                 range   { 0 10 }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "coving" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_materialoverride"                 label   "Material Override"                 type    string                 default { "compact" }                 menu {                     "none"      "Disabled"                     "full"      "Evaluate for Each Primitve/Point"                     "compact"   "Evaluate Once"                 }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_overridedetail"                 label   "Ignore Geometry Attribute Shaders"                 type    toggle                 default { "0" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "overridedetail" }                 parmtag { "spare_category" "Geometry" }             }             parm {                 name    "vm_procuseroottransform"                 label   "Proc Use Root Transform"                 type    toggle                 default { "1" }                 parmtag { "mantra_class" "object" }                 parmtag { "mantra_name" "procuseroottransform" }                 parmtag { "spare_category" "Geometry" }             }         }      }      group {         name    "stdswitcher4_2"         label   "Misc"          parm {             name    "use_dcolor"             baseparm             label   "Set Wireframe Color"             export  none         }         parm {             name    "dcolor"             baseparm             label   "Wireframe Color"             export  none         }         parm {             name    "picking"             baseparm             label   "Viewport Selecting Enabled"             export  none         }         parm {             name    "pickscript"             baseparm             label   "Select Script"             export  none         }         parm {             name    "caching"             baseparm             label   "Cache Object Transform"             export  none         }         parm {             name    "vport_shadeopen"             baseparm             label   "Shade Open Curves In Viewport"             export  none         }         parm {             name    "vport_displayassubdiv"             baseparm             label   "Display as Subdivision in Viewport"             invisible             export  none         }         parm {             name    "vport_onionskin"             baseparm             label   "Onion Skinning"             export  none         }     }  ' $_obj_clastic
+opset -S on $_obj_clastic
+chautoscope $_obj_clastic +tx +ty +tz +rx +ry +rz +sx +sy +sz
+opset -d on -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -x off $_obj_clastic
+opexprlanguage -s hscript $_obj_clastic
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic
+opcf $_obj_clastic
+
+# Node $_obj_clastic_DOP_flexible_div_smoke (Sop/dopnet)
+set _obj_clastic_DOP_flexible_div_smoke = `run("opadd -e -n -v dopnet DOP_flexible_div_smoke")`
+oplocate -x `$arg2 + -1.2697735348277608` -y `$arg3 + -4.9319194851351655` $_obj_clastic_DOP_flexible_div_smoke
+opparm $_obj_clastic_DOP_flexible_div_smoke  numobj ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke timestep
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("timescale")/(ch("substep")*$FPS)' $_obj_clastic_DOP_flexible_div_smoke/timestep
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke timeoffset
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '(ch("startframe")-1)/$FPS' $_obj_clastic_DOP_flexible_div_smoke/timeoffset
+chblockend
+opparm -V 16.5.473 $_obj_clastic_DOP_flexible_div_smoke stdswitcher ( 1 1 1 ) objname1 ( * )
+opcolor -c 0.80000001192092896 0.40000000596046448 0.40000000596046448 $_obj_clastic_DOP_flexible_div_smoke
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c off -e on -b off $_obj_clastic_DOP_flexible_div_smoke
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke
+opuserdata -n '___toolcount___' -v '1' $_obj_clastic_DOP_flexible_div_smoke
+opuserdata -n '___toolid___' -v 'simple_upres' $_obj_clastic_DOP_flexible_div_smoke
+opcf $_obj_clastic_DOP_flexible_div_smoke
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_pyrosolver1 (Dop/pyrosolver::2.0)
+set _obj_clastic_DOP_flexible_div_smoke_pyrosolver1 = `run("opadd -e -n -v pyrosolver::2.0 pyrosolver1")`
+oplocate -x `$arg2 + -1.5930904485530577` -y `$arg3 + -12.722727172784815` $_obj_clastic_DOP_flexible_div_smoke_pyrosolver1
+opparm $_obj_clastic_DOP_flexible_div_smoke_pyrosolver1  remap_cooldown_time ( 2 ) remap_dissipation_field ( 4 ) dist_control_field_ramp ( 2 ) control_field_ramp ( 2 ) turb_control_ramp ( 2 ) conf_control_field_ramp2 ( 2 )
+opparm $_obj_clastic_DOP_flexible_div_smoke_pyrosolver1 temp_diffusion ( 0.02 ) cooling_rate ( 0.84999999999999998 ) lift ( 2 ) enable_combustion ( off ) evap ( 0.01 ) enable_disturbance ( on ) dist_scale ( 0.29999999999999999 ) enable_shredding ( on ) shred_scale ( 0.20000000000000001 ) enable_turbulence ( on ) turbulence_scale ( 0.69999999999999996 ) enable_confinement ( on ) wind_2 ( 1 1 1 1 1 1 ) dist_density_cutoff ( 0.20000000000000001 ) dist_block_size ( 1 ) control_settings2 ( 1 1 ) dist_thresh_field ( temperature ) turb_swirl_size ( 10 ) turb_rough ( 0.20000000000000001 ) turb_pulse_length ( 0.69999999999999996 ) control_settings ( 1 1 1 ) std_switcher_0_6 ( 2 2 2 2 ) enable_collision_relationship ( off ) remap_cooldown_time1value ( 1 ) remap_cooldown_time2pos ( 1 ) remap_cooldown_time2value ( 0.10000000149011612 ) remap_dissipation_field1value ( 1 ) remap_dissipation_field1interp ( catmull-rom ) remap_dissipation_field2pos ( 0.17888999999999999 ) remap_dissipation_field2value ( 0.875 ) remap_dissipation_field2interp ( catmull-rom ) remap_dissipation_field3pos ( 0.36799999999999999 ) remap_dissipation_field3value ( 0.27000000000000002 ) remap_dissipation_field3interp ( catmull-rom ) remap_dissipation_field4pos ( 1 ) remap_dissipation_field4interp ( catmull-rom ) dist_control_field_ramp2pos ( 1 ) dist_control_field_ramp2value ( 1 ) control_field_ramp2pos ( 1 ) control_field_ramp2value ( 1 ) turb_control_ramp2pos ( 1 ) turb_control_ramp2value ( 1 ) conf_control_field_ramp2_2pos ( 1 ) conf_control_field_ramp2_2value ( 1 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c off -e on -b off $_obj_clastic_DOP_flexible_div_smoke_pyrosolver1
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_pyrosolver1
+opuserdata -n '___Version___' -v '' $_obj_clastic_DOP_flexible_div_smoke_pyrosolver1
+opuserdata -n '___toolcount___' -v '2' $_obj_clastic_DOP_flexible_div_smoke_pyrosolver1
+opuserdata -n '___toolid___' -v 'dynamics_pyrobox' $_obj_clastic_DOP_flexible_div_smoke_pyrosolver1
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_gasresizefluiddynamic1 (Dop/gasresizefluiddynamic)
+set _obj_clastic_DOP_flexible_div_smoke_gasresizefluiddynamic1 = `run("opadd -e -n -v gasresizefluiddynamic gasresizefluiddynamic1")`
+oplocate -x `$arg2 + -1.5920504585737034` -y `$arg3 + -7.2295645230575163` $_obj_clastic_DOP_flexible_div_smoke_gasresizefluiddynamic1
+opparm $_obj_clastic_DOP_flexible_div_smoke_gasresizefluiddynamic1 bound_padding ( 5 ) bound_subtract ( 5 ) field ( 1 1 ) reference_field ( 'density hiDensity' ) use_tracking_objects ( on ) tracking_path ( '`chsop("../sourcevolume1/source_path")`' ) use_max_bounds ( off )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c off -e on -b off $_obj_clastic_DOP_flexible_div_smoke_gasresizefluiddynamic1
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_gasresizefluiddynamic1
+opuserdata -n '___Version___' -v '' $_obj_clastic_DOP_flexible_div_smoke_gasresizefluiddynamic1
+opuserdata -n '___toolcount___' -v '1' $_obj_clastic_DOP_flexible_div_smoke_gasresizefluiddynamic1
+opuserdata -n '___toolid___' -v 'dynamics_smokebox' $_obj_clastic_DOP_flexible_div_smoke_gasresizefluiddynamic1
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_sourcevolume1 (Dop/sourcevolume)
+set _obj_clastic_DOP_flexible_div_smoke_sourcevolume1 = `run("opadd -e -n -v sourcevolume sourcevolume1")`
+oplocate -x `$arg2 + 6.8275953098505457` -y `$arg3 + -7.7626265233296676` $_obj_clastic_DOP_flexible_div_smoke_sourcevolume1
+opparm $_obj_clastic_DOP_flexible_div_smoke_sourcevolume1 source_path ( '`opinputpath("..",0)`' ) operation ( 4 4 4 4 4 4 ) velocity_merge ( add ) vel_mask ( density )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c off -e on -b off $_obj_clastic_DOP_flexible_div_smoke_sourcevolume1
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_sourcevolume1
+opuserdata -n '___Version___' -v '' $_obj_clastic_DOP_flexible_div_smoke_sourcevolume1
+opuserdata -n '___toolcount___' -v '3' $_obj_clastic_DOP_flexible_div_smoke_sourcevolume1
+opuserdata -n '___toolid___' -v 'dynamics_burnsource' $_obj_clastic_DOP_flexible_div_smoke_sourcevolume1
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_smokeobject1 (Dop/smokeobject)
+set _obj_clastic_DOP_flexible_div_smoke_smokeobject1 = `run("opadd -e -n -v smokeobject smokeobject1")`
+oplocate -x `$arg2 + -7.2701839610738475` -y `$arg3 + -7.6625355089017804` $_obj_clastic_DOP_flexible_div_smoke_smokeobject1
+opparm $_obj_clastic_DOP_flexible_div_smoke_smokeobject1  multifield_densityramp ( 2 ) multifield_cdramp ( 2 ) multifield_emitramp ( 2 ) multifield_emitcdramp ( 4 )
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_smokeobject1 sizex
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'bbox(chsop("../sourcevolume1/source_path"), D_XSIZE)' $_obj_clastic_DOP_flexible_div_smoke_smokeobject1/sizex
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_smokeobject1 sizey
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'bbox(chsop("../sourcevolume1/source_path"), D_YSIZE)' $_obj_clastic_DOP_flexible_div_smoke_smokeobject1/sizey
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_smokeobject1 sizez
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'bbox(chsop("../sourcevolume1/source_path"), D_ZSIZE)' $_obj_clastic_DOP_flexible_div_smoke_smokeobject1/sizez
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_smokeobject1 tx
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'centroid(chsop("../sourcevolume1/source_path"), D_X)' $_obj_clastic_DOP_flexible_div_smoke_smokeobject1/tx
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_smokeobject1 ty
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'centroid(chsop("../sourcevolume1/source_path"), D_Y)' $_obj_clastic_DOP_flexible_div_smoke_smokeobject1/ty
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_smokeobject1 tz
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'centroid(chsop("../sourcevolume1/source_path"), D_Z)' $_obj_clastic_DOP_flexible_div_smoke_smokeobject1/tz
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_smokeobject1 createframe
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch(opcreator(".")+"/startframe")' $_obj_clastic_DOP_flexible_div_smoke_smokeobject1/createframe
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_smokeobject1 size_unit_compx
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("./divsize")- ((ch("./sizex")+ch("./tx"))%ch("./divsize"))' $_obj_clastic_DOP_flexible_div_smoke_smokeobject1/size_unit_compx
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_smokeobject1 size_unit_compy
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("./divsize")- ((ch("./sizey")+ch("./ty"))%ch("./divsize"))' $_obj_clastic_DOP_flexible_div_smoke_smokeobject1/size_unit_compy
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_smokeobject1 size_unit_compz
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("./divsize")- ((ch("./sizez")+ch("./tz"))%ch("./divsize"))' $_obj_clastic_DOP_flexible_div_smoke_smokeobject1/size_unit_compz
+chblockend
+opparm $_obj_clastic_DOP_flexible_div_smoke_smokeobject1 divsize ( 1 ) div ( 1 1 1 ) size ( sizex sizey sizez ) t ( tx ty tz ) multifield_densityramp2pos ( 1 ) multifield_densityramp2value ( 1 ) multifield_cdramp2pos ( 1 ) multifield_cdramp2c ( 1 1 1 ) multifield_emitramp2pos ( 1 ) multifield_emitramp2value ( 1 ) multifield_emitcdramp2pos ( 0.54000002145767212 ) multifield_emitcdramp2c ( 1 0.43200001120567322 0 ) multifield_emitcdramp2interp ( catmull-rom ) multifield_emitcdramp3pos ( 0.89300000667572021 ) multifield_emitcdramp3c ( 1 0.88330000638961792 0 ) multifield_emitcdramp3interp ( catmull-rom ) multifield_emitcdramp4pos ( 1 ) multifield_emitcdramp4c ( 1 1 1 ) multifield_emitcdramp4interp ( catmull-rom )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_smokeobject1
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_smokeobject1
+opuserdata -n '___Version___' -v '' $_obj_clastic_DOP_flexible_div_smoke_smokeobject1
+opuserdata -n '___toolcount___' -v '2' $_obj_clastic_DOP_flexible_div_smoke_smokeobject1
+opuserdata -n '___toolid___' -v 'dynamics_smokebox' $_obj_clastic_DOP_flexible_div_smoke_smokeobject1
+opcf ..
+
+# Node $_obj_clastic_fluidsource1 (Sop/fluidsource)
+set _obj_clastic_fluidsource1 = `run("opadd -e -n -v fluidsource fluidsource1")`
+oplocate -x `$arg2 + -1.2697735348277608` -y `$arg3 + -2.2673148376362278` $_obj_clastic_fluidsource1
+opparm $_obj_clastic_fluidsource1  number_of_volumes ( 2 ) feather_in_ramp ( 2 ) feather_out_ramp ( 2 ) vel_number_of_volumes ( 1 ) vel_vortexramp ( 3 )
+chblockbegin
+chadd -t 0 0 $_obj_clastic_fluidsource1 divsize
+chkey -t 0 -v 0.10000000000000001 -m 0 -a 0 -A 0 -T a  -F 'ch("../DOP_flexible_div_smoke/smokeobject1/divsize")' $_obj_clastic_fluidsource1/divsize
+chadd -t 0 0 $_obj_clastic_fluidsource1 vel_divsize
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch(\'./divsize\')' $_obj_clastic_fluidsource1/vel_divsize
+chadd -t 0 0 $_obj_clastic_fluidsource1 vel_pointextrapdist
+chkey -t 0 -v 0.20000000000000001 -m 0 -a 0 -A 0 -T a  -F 'ch("vel_divsize")*3' $_obj_clastic_fluidsource1/vel_pointextrapdist
+chadd -t 0 0 $_obj_clastic_fluidsource1 vel_objframe
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FF-0.5' $_obj_clastic_fluidsource1/vel_objframe
+chblockend
+opparm -V 1 $_obj_clastic_fluidsource1 method ( 2 ) make_sdf ( on ) number_of_volumes ( 2 ) settings ( 4 4 4 4 4 4 4 ) divsize ( divsize ) minimum_distance ( off ) eloc ( 0.38700000000000001 ) use_noise ( on ) pulse_duration ( 0.69999999999999996 ) sharpness ( 0.76500000000000001 ) element_size ( 5 ) vel_settings ( 2 2 2 2 2 2 ) vel_pointextrapdist ( vel_pointextrapdist ) feather_in_ramp2pos ( 1 ) feather_in_ramp2value ( 1 ) feather_out_ramp2pos ( 1 ) feather_out_ramp2value ( 1 ) vel_vortexramp2pos ( 0.5 ) vel_vortexramp2value ( 1 ) vel_vortexramp3pos ( 1 ) volvis2 ( slice ) name2 ( temperature )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_fluidsource1
+opexprlanguage -s hscript $_obj_clastic_fluidsource1
+opuserdata -n '___Version___' -v '1' $_obj_clastic_fluidsource1
+opuserdata -n '___toolcount___' -v '3' $_obj_clastic_fluidsource1
+opuserdata -n '___toolid___' -v 'dynamics_burnsource' $_obj_clastic_fluidsource1
+
+# Node $_obj_clastic_attribwrangle1 (Sop/attribwrangle)
+set _obj_clastic_attribwrangle1 = `run("opadd -e -n -v attribwrangle attribwrangle1")`
+oplocate -x `$arg2 + -0.32652940829832344` -y `$arg3 + 0.92274706468862677` $_obj_clastic_attribwrangle1
+opspareds '    group {         name    "folder1"         label   "Code"          parm {             name    "group"             baseparm             label   "Group"             export  none             bindselector points "Modify Points"                 "Select the points to affect and press Enter to complete."                 0 1 0xffffffff 0 grouptype 0         }         parm {             name    "grouptype"             baseparm             label   "Group Type"             export  none         }         parm {             name    "class"             baseparm             label   "Run Over"             export  none         }         parm {             name    "vex_numcount"             baseparm             label   "Number Count"             export  none         }         parm {             name    "vex_threadjobsize"             baseparm             label   "Thread Job Size"             export  none         }         parm {             name    "snippet"             baseparm             label   "VEXpression"             export  all         }         parm {             name    "exportlist"             baseparm             label   "Attributes to Create"             export  none         }         parm {             name    "vex_strict"             baseparm             label   "Enforce Prototypes"             export  none         }     }      group {         name    "folder1_1"         label   "Bindings"          parm {             name    "autobind"             baseparm             label   "Autobind by Name"             export  none         }         multiparm {             name    "bindings"             label    "Number of Bindings"             baseparm             default 0             parmtag { "autoscope" "0000000000000000" }             parmtag { "multistartoffset" "1" }              parm {                 name    "bindname#"                 baseparm                 label   "Attribute Name"                 export  none             }             parm {                 name    "bindparm#"                 baseparm                 label   "VEX Parameter"                 export  none             }         }          parm {             name    "groupautobind"             baseparm             label   "Autobind Groups by Name"             export  none         }         multiparm {             name    "groupbindings"             label    "Group Bindings"             baseparm             default 0             parmtag { "autoscope" "0000000000000000" }             parmtag { "multistartoffset" "1" }              parm {                 name    "bindgroupname#"                 baseparm                 label   "Group Name"                 export  none             }             parm {                 name    "bindgroupparm#"                 baseparm                 label   "VEX Parameter"                 export  none             }         }          parm {             name    "vex_cwdpath"             baseparm             label   "Evaluation Node Path"             export  none         }         parm {             name    "vex_outputmask"             baseparm             label   "Export Parameters"             export  none         }         parm {             name    "vex_updatenmls"             baseparm             label   "Update Normals If Displaced"             export  none         }         parm {             name    "vex_matchattrib"             baseparm             label   "Attribute to Match"             export  none         }         parm {             name    "vex_inplace"             baseparm             label   "Compute Results In Place"             export  none         }         parm {             name    "vex_selectiongroup"             baseparm             label   "Output Selection Group"             export  none         }     }      parm {         name    "init"         label   "Init"         type    vector         size    3         default { "0" "0" "0" }         range   { 0 1 }     } ' $_obj_clastic_attribwrangle1
+opparm $_obj_clastic_attribwrangle1  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_clastic_attribwrangle1 snippet ( '@v = chv("init");' ) init ( 0 -0.10000000000000001 0.20000000000000001 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_attribwrangle1
+opexprlanguage -s hscript $_obj_clastic_attribwrangle1
+opuserdata -n '___Version___' -v '' $_obj_clastic_attribwrangle1
+
+# Node $_obj_clastic_pointsfromvolume1 (Sop/pointsfromvolume)
+set _obj_clastic_pointsfromvolume1 = `run("opadd -e -n -v pointsfromvolume pointsfromvolume1")`
+oplocate -x `$arg2 + -1.2697735348277608` -y `$arg3 + -8.8376539657988875` $_obj_clastic_pointsfromvolume1
+opparm -V 2 $_obj_clastic_pointsfromvolume1 source ( fog ) particlesep ( 1 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_pointsfromvolume1
+opexprlanguage -s hscript $_obj_clastic_pointsfromvolume1
+opuserdata -n '___Version___' -v '2' $_obj_clastic_pointsfromvolume1
+opuserdata -n '___toolcount___' -v '1' $_obj_clastic_pointsfromvolume1
+opuserdata -n '___toolid___' -v 'dynamics_flipbox' $_obj_clastic_pointsfromvolume1
+
+# Node $_obj_clastic_attribwrangle2 (Sop/attribwrangle)
+set _obj_clastic_attribwrangle2 = `run("opadd -e -n -v attribwrangle attribwrangle2")`
+oplocate -x `$arg2 + -1.1638911818865842` -y `$arg3 + -10.256850031355656` $_obj_clastic_attribwrangle2
+opparm $_obj_clastic_attribwrangle2  bindings ( 0 ) groupbindings ( 0 )
+opparm $_obj_clastic_attribwrangle2 snippet ( 'if(abs(@P.x)>4)removepoint(geoself(),@ptnum);' )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_attribwrangle2
+opexprlanguage -s hscript $_obj_clastic_attribwrangle2
+opuserdata -n '___Version___' -v '' $_obj_clastic_attribwrangle2
+opcf ..
+opcf $_obj_clastic
+
+# Node $_obj_clastic_sphere1 (Sop/sphere)
+set _obj_clastic_sphere1 = `run("opadd -e -n -v sphere sphere1")`
+oplocate -x `$arg2 + -0.32352941176470607` -y `$arg3 + 1.9626470516709724` $_obj_clastic_sphere1
+opparm -V 16.5.473 $_obj_clastic_sphere1 type ( poly ) rad ( 10 10 10 ) freq ( 6 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_sphere1
+opexprlanguage -s hscript $_obj_clastic_sphere1
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_sphere1
+opcf $_obj_clastic_DOP_flexible_div_smoke
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_output (Dop/output)
+set _obj_clastic_DOP_flexible_div_smoke_output = `run("opadd -e -n -v output output")`
+oplocate -x `$arg2 + -1.5930904485530577` -y `$arg3 + -17.332027172784812` $_obj_clastic_DOP_flexible_div_smoke_output
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_output f1
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FSTART' $_obj_clastic_DOP_flexible_div_smoke_output/f1
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_output f2
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$FEND' $_obj_clastic_DOP_flexible_div_smoke_output/f2
+chblockend
+opparm $_obj_clastic_DOP_flexible_div_smoke_output
+opset -d on -r off -h off -f off -y off -t off -l off -s off -u off -F on -c off -e on -b off $_obj_clastic_DOP_flexible_div_smoke_output
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_output
+opuserdata -n '___Version___' -v '' $_obj_clastic_DOP_flexible_div_smoke_output
+opuserdata -n '___toolcount___' -v '1' $_obj_clastic_DOP_flexible_div_smoke_output
+opuserdata -n '___toolid___' -v 'simple_upres' $_obj_clastic_DOP_flexible_div_smoke_output
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_gravity1 (Dop/gravity)
+set _obj_clastic_DOP_flexible_div_smoke_gravity1 = `run("opadd -e -n -v gravity gravity1")`
+oplocate -x `$arg2 + -1.5896404485530577` -y `$arg3 + -14.261427172784815` $_obj_clastic_DOP_flexible_div_smoke_gravity1
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_gravity1 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_clastic_DOP_flexible_div_smoke_gravity1/activation
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c off -e on -b on $_obj_clastic_DOP_flexible_div_smoke_gravity1
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_gravity1
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_gravity1
+opuserdata -n '___toolcount___' -v '1' $_obj_clastic_DOP_flexible_div_smoke_gravity1
+opuserdata -n '___toolid___' -v 'simple_upres' $_obj_clastic_DOP_flexible_div_smoke_gravity1
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_merge1 (Dop/merge)
+set _obj_clastic_DOP_flexible_div_smoke_merge1 = `run("opadd -e -n -v merge merge1")`
+oplocate -x `$arg2 + 6.8275953098505457` -y `$arg3 + -10.487636523329668` $_obj_clastic_DOP_flexible_div_smoke_merge1
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_merge1 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_clastic_DOP_flexible_div_smoke_merge1/activation
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c off -e on -b off $_obj_clastic_DOP_flexible_div_smoke_merge1
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_merge1
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_merge1
+opuserdata -n '___toolcount___' -v '1' $_obj_clastic_DOP_flexible_div_smoke_merge1
+opuserdata -n '___toolid___' -v 'simple_upres' $_obj_clastic_DOP_flexible_div_smoke_merge1
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size (Dop/subnet)
+set _obj_clastic_DOP_flexible_div_smoke_over_ride_div_size = `run("opadd -e -n -v subnet over_ride_div_size")`
+oplocate -x `$arg2 + -7.268933932463618` -y `$arg3 + -9.2774516111453806` $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size
+opspareds '    parm {         name    "override_density"         label   "override_density  "         type    toggle         joinnext         default { "0" }     }     parm {         name    "divsize_density"         label   "divsize_density  "         type    float         default { "0.2" }         disablewhen "{ override_density == 0 }"         range   { 0 10 }         parmtag { "autoscope" "0000000000000000" }     }     parm {         name    "override_vel"         label   "override_vel            "         type    toggle         joinnext         default { "0" }     }     parm {         name    "divsize_vel"         label   "divsize_vel           "         type    float         default { "0.2" }         disablewhen "{ override_vel == 0 }"         range   { 0 10 }         parmtag { "autoscope" "0000000000000000" }     }     parm {         name    "override_collision"         label   "override_collision"         type    toggle         joinnext         default { "0" }     }     parm {         name    "divsize_collision"         label   "divsize_collision"         type    float         default { "0.2" }         disablewhen "{ override_collision == 0 }"         range   { 0 10 }         parmtag { "autoscope" "0000000000000000" }     }     parm {         name    "description"         label   "Description"         type    string         default { "" }         parmtag { "editor" "1" }         parmtag { "editorlines" "5-10" }     } ' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size
+opparm -V 16.5.473 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size override_density ( on ) divsize_density ( 0.050000000000000003 ) override_vel ( on ) override_collision ( on ) divsize_collision ( 0.10000000000000001 ) description ( 'When "override_collision" is on, create "Gas Build Collision Mask"\nand keep "Reference Field" empty and disable collsion on Smoke Solver.\nSmoke solver tries to make collision which has the same resolution of density.' )
+opcolor -c 0.86699998378753662 0 0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b on $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size
+opcf $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch1 (Dop/switch)
+set _obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch1 = `run("opadd -e -n -v switch switch1")`
+oplocate -x `$arg2 + -1.2628014910790999` -y `$arg3 + 0.74741734578999997` $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch1
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch1 input
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$SF==1 && ch("../override_density")==1' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch1/input
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch1
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch1
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch1
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata1 (Dop/modifydata)
+set _obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata1 = `run("opadd -e -n -v modifydata modifydata1")`
+oplocate -x `$arg2 + 0.98439852940999995` -y `$arg3 + 2.1749773457900003` $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata1
+opparm $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata1  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata1 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata1/activation
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata1 valvaluef0
+chkey -t 0 -v 0.050000000000000003 -m 0 -a 0 -A 0 -T a  -F 'ch("../divsize_density")' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata1/valvaluef0
+chblockend
+opparm -V 16.5.473 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata1 dataname ( density ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata1
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata1
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata1
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch2 (Dop/switch)
+set _obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch2 = `run("opadd -e -n -v switch switch2")`
+oplocate -x `$arg2 + -1.2628014910790999` -y `$arg3 + -3.7417826542099997` $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch2
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch2 input
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$SF==1 && ch("../override_vel")==1' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch2/input
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch2
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch2
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch2
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata2 (Dop/modifydata)
+set _obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata2 = `run("opadd -e -n -v modifydata modifydata2")`
+oplocate -x `$arg2 + 1.2693985294100001` -y `$arg3 + -0.69318765420999984` $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata2
+opparm $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata2  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata2 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata2/activation
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata2 valvaluef0
+chkey -t 0 -v 0.20000000000000001 -m 0 -a 0 -A 0 -T a  -F 'ch("../divsize_vel")' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata2/valvaluef0
+chblockend
+opparm -V 16.5.473 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata2 dataname ( vel ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata2
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata2
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata2
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata3 (Dop/modifydata)
+set _obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata3 = `run("opadd -e -n -v modifydata modifydata3")`
+oplocate -x `$arg2 + 1.2693985294100001` -y `$arg3 + -1.6817856542099998` $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata3
+opparm $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata3  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata3 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata3/activation
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata3 valvaluef0
+chkey -t 0 -v 0.050000000000000003 -m 0 -a 0 -A 0 -T a  -F 'ch("../modifydata2/valvaluef0")' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata3/valvaluef0
+chblockend
+opparm -V 16.5.473 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata3 dataname ( pressure ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata3
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata3
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata3
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata4 (Dop/modifydata)
+set _obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata4 = `run("opadd -e -n -v modifydata modifydata4")`
+oplocate -x `$arg2 + 1.2693985294100001` -y `$arg3 + -2.6133826542099996` $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata4
+opparm $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata4  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata4 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata4/activation
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata4 valvaluef0
+chkey -t 0 -v 0.050000000000000003 -m 0 -a 0 -A 0 -T a  -F 'ch("../modifydata2/valvaluef0")' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata4/valvaluef0
+chblockend
+opparm -V 16.5.473 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata4 dataname ( divergence ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata4
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata4
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata4
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch3 (Dop/switch)
+set _obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch3 = `run("opadd -e -n -v switch switch3")`
+oplocate -x `$arg2 + -1.2628014910790999` -y `$arg3 + -8.6511426542100001` $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch3
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch3 input
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '$SF==1' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch3/input
+chblockend
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch3
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch3
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch3
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata5 (Dop/modifydata)
+set _obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata5 = `run("opadd -e -n -v modifydata modifydata5")`
+oplocate -x `$arg2 + 1.2693985294100001` -y `$arg3 + -5.2208726542099999` $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata5
+opparm $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata5  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata5 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata5/activation
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata5 valvaluef0
+chkey -t 0 -v 0.050000000000000003 -m 0 -a 0 -A 0 -T a  -F 'ch("../divsize_collision")' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata5/valvaluef0
+chblockend
+opparm -V 16.5.473 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata5 dataname ( collision ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata5
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata5
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata5
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata6 (Dop/modifydata)
+set _obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata6 = `run("opadd -e -n -v modifydata modifydata6")`
+oplocate -x `$arg2 + 1.2693985294100001` -y `$arg3 + -6.5174026542100005` $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata6
+opparm $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata6  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata6 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata6/activation
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata6 valvaluef0
+chkey -t 0 -v 0.050000000000000003 -m 0 -a 0 -A 0 -T a  -F 'ch("../divsize_collision")' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata6/valvaluef0
+chblockend
+opparm -V 16.5.473 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata6 dataname ( collisionvel ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata6
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata6
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata6
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata7 (Dop/modifydata)
+set _obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata7 = `run("opadd -e -n -v modifydata modifydata7")`
+oplocate -x `$arg2 + 1.2693985294100001` -y `$arg3 + -7.4969526542100002` $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata7
+opparm $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata7  nummods ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata7 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata7/activation
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata7 valvaluef0
+chkey -t 0 -v 0.050000000000000003 -m 0 -a 0 -A 0 -T a  -F 'ch("../divsize_collision")' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata7/valvaluef0
+chblockend
+opparm -V 16.5.473 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata7 dataname ( collisionindex ) valname0 ( divsize ) valvaluef0 ( valvaluef0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata7
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata7
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata7
+oporder -e switch1 modifydata1 switch2 modifydata2 modifydata3 modifydata4 switch3 modifydata5 modifydata6 modifydata7 
+opcf ..
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_staticobject1 (Dop/staticobject)
+set _obj_clastic_DOP_flexible_div_smoke_staticobject1 = `run("opadd -e -n -v staticobject staticobject1")`
+oplocate -x `$arg2 + -12.27469797592193` -y `$arg3 + -10.378551997230462` $_obj_clastic_DOP_flexible_div_smoke_staticobject1
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_staticobject1 createframe
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch(opcreator(".")+"/startframe")' $_obj_clastic_DOP_flexible_div_smoke_staticobject1/createframe
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_staticobject1 bullet_shrink_amount
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("bullet_collision_margin")' $_obj_clastic_DOP_flexible_div_smoke_staticobject1/bullet_shrink_amount
+chblockend
+opparm -V 4 $_obj_clastic_DOP_flexible_div_smoke_staticobject1 soppath ( '`opinputpath("..",1)`' ) animategeo ( on ) letsopsinterpolate ( on ) display ( off ) std_switcher_0_2_1 ( 1 1 ) collisiondetection ( volume ) div ( 2 2 2 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_staticobject1
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_staticobject1
+opuserdata -n '___Version___' -v '4' $_obj_clastic_DOP_flexible_div_smoke_staticobject1
+opuserdata -n '___toolcount___' -v '16' $_obj_clastic_DOP_flexible_div_smoke_staticobject1
+opuserdata -n '___toolid___' -v 'dop_staticobject' $_obj_clastic_DOP_flexible_div_smoke_staticobject1
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_staticsolver1 (Dop/staticsolver)
+set _obj_clastic_DOP_flexible_div_smoke_staticsolver1 = `run("opadd -e -n -v staticsolver staticsolver1")`
+oplocate -x `$arg2 + -12.27469797592193` -y `$arg3 + -11.699151997230461` $_obj_clastic_DOP_flexible_div_smoke_staticsolver1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_staticsolver1
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_staticsolver1
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_staticsolver1
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_merge2 (Dop/merge)
+set _obj_clastic_DOP_flexible_div_smoke_merge2 = `run("opadd -e -n -v merge merge2")`
+oplocate -x `$arg2 + -1.5942404485530577` -y `$arg3 + -16.040627172784813` $_obj_clastic_DOP_flexible_div_smoke_merge2
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_merge2 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_clastic_DOP_flexible_div_smoke_merge2/activation
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_merge2
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_merge2
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_merge2
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_merge3 (Dop/merge)
+set _obj_clastic_DOP_flexible_div_smoke_merge3 = `run("opadd -e -n -v merge merge3")`
+oplocate -x `$arg2 + -1.5907904485530577` -y `$arg3 + -10.874087172784815` $_obj_clastic_DOP_flexible_div_smoke_merge3
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_merge3 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_clastic_DOP_flexible_div_smoke_merge3/activation
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_merge3
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_merge3
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_merge3
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_switch1 (Dop/switch)
+set _obj_clastic_DOP_flexible_div_smoke_switch1 = `run("opadd -e -n -v switch switch1")`
+oplocate -x `$arg2 + -12.274697985235155` -y `$arg3 + -13.856019716050682` $_obj_clastic_DOP_flexible_div_smoke_switch1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_switch1
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_switch1
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_switch1
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_null1 (Dop/null)
+set _obj_clastic_DOP_flexible_div_smoke_null1 = `run("opadd -e -n -v null null1")`
+oplocate -x `$arg2 + -9.2482626357143563` -y `$arg3 + -12.300552677398215` $_obj_clastic_DOP_flexible_div_smoke_null1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_null1
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_null1
+opuserdata -n '___Version___' -v '' $_obj_clastic_DOP_flexible_div_smoke_null1
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_solve_collision (Dop/subnet)
+set _obj_clastic_DOP_flexible_div_smoke_solve_collision = `run("opadd -e -n -v subnet solve_collision")`
+oplocate -x `$arg2 + 0.28929228580679256` -y `$arg3 + -9.2774516111453806` $_obj_clastic_DOP_flexible_div_smoke_solve_collision
+opspareds '    parm {         name    "usepointvelocity"         label   "Use Point Velocity for Collisions"         type    toggle         default { "on" }         parmtag { "autoscope" "0000000000000000" }     }     parm {         name    "usevolumevelocity"         label   "Use Volume Velocity for Collisions"         type    toggle         default { "off" }         parmtag { "autoscope" "0000000000000000" }     }     parm {         name    "allownonsdf"         label   "Collide with Non-SDF"         type    toggle         default { "off" }         parmtag { "autoscope" "0000000000000000" }     }     parm {         name    "kill_temp_inside"         label   "Kill Temperature Inside"         type    toggle         default { "0" }         range   { 0 1 }         parmtag { "autoscope" "0000000000000000" }     } ' $_obj_clastic_DOP_flexible_div_smoke_solve_collision
+opparm -V 16.5.473 $_obj_clastic_DOP_flexible_div_smoke_solve_collision kill_temp_inside ( on )
+opcolor -c 0.86699998378753662 0 0 $_obj_clastic_DOP_flexible_div_smoke_solve_collision
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_solve_collision
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_solve_collision
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_solve_collision
+opcf $_obj_clastic_DOP_flexible_div_smoke_solve_collision
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1 (Dop/gasbuildcollisionmask)
+set _obj_clastic_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1 = `run("opadd -e -n -v gasbuildcollisionmask gasbuildcollisionmask1")`
+oplocate -x `$arg2 + 0.61838689122367652` -y `$arg3 + 3.5563545798592893` $_obj_clastic_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1 usepointvelocity
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../usepointvelocity")' $_obj_clastic_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1/usepointvelocity
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1 usevolumevelocity
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../usevolumevelocity")' $_obj_clastic_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1/usevolumevelocity
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1 allownonsdf
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../allownonsdf")' $_obj_clastic_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1/allownonsdf
+chblockend
+opparm -V 16.5.473 $_obj_clastic_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1 collisionvelocity ( collisionvel ) index ( collisionindex ) usebandwidth ( on ) usepointvelocity ( usepointvelocity ) usevolumevelocity ( usevolumevelocity ) allownonsdf ( allownonsdf )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_solve_collision_collide_temp_inside (Dop/gascalculate)
+set _obj_clastic_DOP_flexible_div_smoke_solve_collision_collide_temp_inside = `run("opadd -e -n -v gascalculate collide_temp_inside")`
+oplocate -x `$arg2 + 3.1174034921267322` -y `$arg3 + 2.6537046984917882` $_obj_clastic_DOP_flexible_div_smoke_solve_collision_collide_temp_inside
+opparm -V 16.5.473 $_obj_clastic_DOP_flexible_div_smoke_solve_collision_collide_temp_inside fielddst ( temperature ) indexsrc ( collisionindex ) property ( temperature ) srcblend ( collision ) blendmethod ( netnewsdf ) srcblendpremul ( -1 ) defaultparmop ( always )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_clastic_DOP_flexible_div_smoke_solve_collision_collide_temp_inside
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_solve_collision_collide_temp_inside
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_solve_collision_collide_temp_inside
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_solve_collision_collide_temp_inside
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_solve_collision_merge4 (Dop/merge)
+set _obj_clastic_DOP_flexible_div_smoke_solve_collision_merge4 = `run("opadd -e -n -v merge merge4")`
+oplocate -x `$arg2 + 0.61723687920738035` -y `$arg3 + 0.58780470650265326` $_obj_clastic_DOP_flexible_div_smoke_solve_collision_merge4
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_solve_collision_merge4 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_clastic_DOP_flexible_div_smoke_solve_collision_merge4/activation
+chblockend
+opset -d off -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_solve_collision_merge4
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_solve_collision_merge4
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_solve_collision_merge4
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_solve_collision_merge1 (Dop/merge)
+set _obj_clastic_DOP_flexible_div_smoke_solve_collision_merge1 = `run("opadd -e -n -v merge merge1")`
+oplocate -x `$arg2 + -1.2628014817658708` -y `$arg3 + -0.56748467573985351` $_obj_clastic_DOP_flexible_div_smoke_solve_collision_merge1
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_solve_collision_merge1 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_clastic_DOP_flexible_div_smoke_solve_collision_merge1/activation
+chblockend
+opset -d on -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_solve_collision_merge1
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_solve_collision_merge1
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_solve_collision_merge1
+
+# Node $_obj_clastic_DOP_flexible_div_smoke_solve_collision_enablesolver1 (Dop/enablesolver)
+set _obj_clastic_DOP_flexible_div_smoke_solve_collision_enablesolver1 = `run("opadd -e -n -v enablesolver enablesolver1")`
+oplocate -x `$arg2 + 3.1174034921267322` -y `$arg3 + 1.5150452889651003` $_obj_clastic_DOP_flexible_div_smoke_solve_collision_enablesolver1
+chblockbegin
+chadd -t 0 0 $_obj_clastic_DOP_flexible_div_smoke_solve_collision_enablesolver1 enable
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../kill_temp_inside")' $_obj_clastic_DOP_flexible_div_smoke_solve_collision_enablesolver1/enable
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_DOP_flexible_div_smoke_solve_collision_enablesolver1
+opexprlanguage -s hscript $_obj_clastic_DOP_flexible_div_smoke_solve_collision_enablesolver1
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_DOP_flexible_div_smoke_solve_collision_enablesolver1
+oporder -e gasbuildcollisionmask1 collide_temp_inside merge4 merge1 enablesolver1 
+opcf ..
+oporder -e output pyrosolver1 gasresizefluiddynamic1 sourcevolume1 gravity1 merge1 over_ride_div_size staticobject1 staticsolver1 merge2 merge3 switch1 null1 solve_collision smokeobject1 
+opcf ..
+
+# Node $_obj_clastic_vdbfrompolygons1 (Sop/vdbfrompolygons)
+set _obj_clastic_vdbfrompolygons1 = `run("opadd -e -n -v vdbfrompolygons vdbfrompolygons1")`
+oplocate -x `$arg2 + -2.72281865606121` -y `$arg3 + 0.02099078442333295` $_obj_clastic_vdbfrompolygons1
+opparm $_obj_clastic_vdbfrompolygons1  numattrib ( 1 )
+chblockbegin
+chadd -t 0 0 $_obj_clastic_vdbfrompolygons1 voxelsize
+chkey -t 0 -v 0.10000000000000001 -m 0 -a 0 -A 0 -T a  -F 'ch("../DOP_flexible_div_smoke/smokeobject1/divsize")' $_obj_clastic_vdbfrompolygons1/voxelsize
+chblockend
+opparm -V 16.5.473 $_obj_clastic_vdbfrompolygons1 voxelsize ( voxelsize ) builddistance ( off ) buildfog ( on ) numattrib ( 1 ) attribute1 ( point.v ) attributevdbname1 ( vel )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_vdbfrompolygons1
+opexprlanguage -s hscript $_obj_clastic_vdbfrompolygons1
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_vdbfrompolygons1
+
+# Node $_obj_clastic_merge1 (Sop/merge)
+set _obj_clastic_merge1 = `run("opadd -e -n -v merge merge1")`
+oplocate -x `$arg2 + -1.2757161884886496` -y `$arg3 + -1.2397148260341839` $_obj_clastic_merge1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_merge1
+opexprlanguage -s hscript $_obj_clastic_merge1
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_merge1
+
+# Node $_obj_clastic_blast1 (Sop/blast)
+set _obj_clastic_blast1 = `run("opadd -e -n -v blast blast1")`
+oplocate -x `$arg2 + -1.2697735348277608` -y `$arg3 + -3.709832473093007` $_obj_clastic_blast1
+opparm -V 16.5.473 $_obj_clastic_blast1 group ( '@name=*' ) negate ( on )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on $_obj_clastic_blast1
+opexprlanguage -s hscript $_obj_clastic_blast1
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_blast1
+
+# Node $_obj_clastic_dopimportfield1 (Sop/dopimportfield)
+set _obj_clastic_dopimportfield1 = `run("opadd -e -n -v dopimportfield dopimportfield1")`
+oplocate -x `$arg2 + -1.2697735348277608` -y `$arg3 + -6.8040979375635944` $_obj_clastic_dopimportfield1
+opparm $_obj_clastic_dopimportfield1  fields ( 4 ) attribute_numcasts ( 0 ) compression ( 0 )
+opparm -V 1 $_obj_clastic_dopimportfield1 doppath ( /obj/clastic/DOP_flexible_div_smoke ) dopnode ( /obj/clastic/DOP_flexible_div_smoke/smokeobject1 ) fields ( 4 ) fieldname1 ( density ) visible2 ( invisible ) fieldname2 ( vel ) enable3 ( off ) visible3 ( invisible ) fieldname3 ( rest ) enable4 ( off ) visible4 ( invisible ) fieldname4 ( temperature )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_dopimportfield1
+opexprlanguage -s hscript $_obj_clastic_dopimportfield1
+opuserdata -n '___Version___' -v '1' $_obj_clastic_dopimportfield1
+
+# Node $_obj_clastic_copytopoints1 (Sop/copytopoints)
+set _obj_clastic_copytopoints1 = `run("opadd -e -n -v copytopoints copytopoints1")`
+oplocate -x `$arg2 + -1.2667735382941434` -y `$arg3 + -12.366438279524377` $_obj_clastic_copytopoints1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_copytopoints1
+opexprlanguage -s hscript $_obj_clastic_copytopoints1
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_copytopoints1
+
+# Node $_obj_clastic_box1 (Sop/box)
+set _obj_clastic_box1 = `run("opadd -e -n -v box box1")`
+oplocate -x `$arg2 + -3.5806845097225826` -y `$arg3 + -10.255850044230259` $_obj_clastic_box1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_box1
+opexprlanguage -s hscript $_obj_clastic_box1
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_box1
+
+# Node $_obj_clastic_null1 (Sop/null)
+set _obj_clastic_null1 = `run("opadd -e -n -v null null1")`
+oplocate -x `$arg2 + -1.2667735382941434` -y `$arg3 + -14.602854401528734` $_obj_clastic_null1
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_null1
+opexprlanguage -s hscript $_obj_clastic_null1
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_null1
+
+# Node $_obj_clastic_copy1 (Sop/copyxform)
+set _obj_clastic_copy1 = `run("opadd -e -n -v copyxform copy1")`
+oplocate -x `$arg2 + -1.2667735382941436` -y `$arg3 + -13.492118018086469` $_obj_clastic_copy1
+opparm -V 16.5.473 $_obj_clastic_copy1 ncy ( 4 ) r ( 0 90 0 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_copy1
+opexprlanguage -s hscript $_obj_clastic_copy1
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_copy1
+
+# Node $_obj_clastic_transform1 (Sop/xform)
+set _obj_clastic_transform1 = `run("opadd -e -n -v xform transform1")`
+oplocate -x `$arg2 + -1.2697735348277608` -y `$arg3 + -7.8746861847786409` $_obj_clastic_transform1
+opparm -V 16.5.473 $_obj_clastic_transform1 scale ( 0.5 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_clastic_transform1
+opexprlanguage -s hscript $_obj_clastic_transform1
+opuserdata -n '___Version___' -v '16.5.473' $_obj_clastic_transform1
+oporder -e sphere1 DOP_flexible_div_smoke fluidsource1 attribwrangle1 vdbfrompolygons1 merge1 blast1 dopimportfield1 pointsfromvolume1 attribwrangle2 copytopoints1 box1 null1 copy1 transform1 
+opcf ..
+opset -p on $_obj_clastic
+
+opcf $arg1
+opcf $_obj_clastic
+opwire -n $_obj_clastic_blast1 -0 $_obj_clastic_DOP_flexible_div_smoke
+opcf $_obj_clastic_DOP_flexible_div_smoke
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_merge2 -0 $_obj_clastic_DOP_flexible_div_smoke_output
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size -0 $_obj_clastic_DOP_flexible_div_smoke_pyrosolver1
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_merge3 -1 $_obj_clastic_DOP_flexible_div_smoke_pyrosolver1
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_merge1 -4 $_obj_clastic_DOP_flexible_div_smoke_pyrosolver1
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_pyrosolver1 -0 $_obj_clastic_DOP_flexible_div_smoke_gravity1
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_sourcevolume1 -0 $_obj_clastic_DOP_flexible_div_smoke_merge1
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_smokeobject1 -0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size
+opcf $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size
+opwire -n -i 0 -0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch1
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata1 -1 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch1
+opwire -n -i 0 -0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata1
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch1 -0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch2
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata4 -1 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch2
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch1 -0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata2
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata2 -0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata3
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata3 -0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata4
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch2 -0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch3
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata7 -1 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch3
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_switch2 -0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata5
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata5 -0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata6
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata6 -0 $_obj_clastic_DOP_flexible_div_smoke_over_ride_div_size_modifydata7
+opcf ..
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_staticobject1 -0 $_obj_clastic_DOP_flexible_div_smoke_staticsolver1
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_switch1 -0 $_obj_clastic_DOP_flexible_div_smoke_merge2
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_gravity1 -1 $_obj_clastic_DOP_flexible_div_smoke_merge2
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_gasresizefluiddynamic1 -0 $_obj_clastic_DOP_flexible_div_smoke_merge3
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_solve_collision -1 $_obj_clastic_DOP_flexible_div_smoke_merge3
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_null1 -0 $_obj_clastic_DOP_flexible_div_smoke_switch1
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_staticsolver1 -1 $_obj_clastic_DOP_flexible_div_smoke_switch1
+opcf $_obj_clastic_DOP_flexible_div_smoke_solve_collision
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_solve_collision_gasbuildcollisionmask1 -0 $_obj_clastic_DOP_flexible_div_smoke_solve_collision_merge4
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_solve_collision_enablesolver1 -1 $_obj_clastic_DOP_flexible_div_smoke_solve_collision_merge4
+opwire -n -i 0 -0 $_obj_clastic_DOP_flexible_div_smoke_solve_collision_merge1
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_solve_collision_merge4 -1 $_obj_clastic_DOP_flexible_div_smoke_solve_collision_merge1
+opwire -n $_obj_clastic_DOP_flexible_div_smoke_solve_collision_collide_temp_inside -0 $_obj_clastic_DOP_flexible_div_smoke_solve_collision_enablesolver1
+opcf ..
+opcf ..
+opwire -n $_obj_clastic_merge1 -0 $_obj_clastic_fluidsource1
+opwire -n $_obj_clastic_sphere1 -0 $_obj_clastic_attribwrangle1
+opwire -n $_obj_clastic_attribwrangle1 -0 $_obj_clastic_vdbfrompolygons1
+opwire -n $_obj_clastic_vdbfrompolygons1 -0 $_obj_clastic_merge1
+opwire -n $_obj_clastic_fluidsource1 -0 $_obj_clastic_blast1
+opwire -n $_obj_clastic_transform1 -0 $_obj_clastic_pointsfromvolume1
+opwire -n $_obj_clastic_pointsfromvolume1 -0 $_obj_clastic_attribwrangle2
+opwire -n $_obj_clastic_box1 -0 $_obj_clastic_copytopoints1
+opwire -n $_obj_clastic_attribwrangle2 -1 $_obj_clastic_copytopoints1
+opwire -n $_obj_clastic_copy1 -0 $_obj_clastic_null1
+opwire -n $_obj_clastic_copytopoints1 -0 $_obj_clastic_copy1
+opwire -n $_obj_clastic_dopimportfield1 -0 $_obj_clastic_transform1
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_clastic
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_clastic
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
 </shelfDocument>

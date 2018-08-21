@@ -65,6 +65,8 @@ copyRamp.execute()]]></script>
   <tool name="gotToCam" label="gotToCam" icon="OBJ_camera">
     <script scriptType="python"><![CDATA[import goToCam
 
+reload(goToCam)
+
 goToCam.executeAL()]]></script>
   </tool>
 
@@ -2604,6 +2606,7 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
     <memberTool name="override_div_size"/>
     <memberTool name="solve_collision"/>
     <memberTool name="dop_flexible_div_smoke"/>
+    <memberTool name="clastic"/>
   </toolshelf>
 
   <tool name="sc_crowd" label="sc_crowd" icon="OBJ_geo">
