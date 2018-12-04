@@ -18,6 +18,9 @@
     <memberTool name="recursiveReferenceCopy"/>
     <memberTool name="python"/>
     <memberTool name="pick_up_atr_val_is_1"/>
+    <memberTool name="basicSetup"/>
+    <memberTool name="lightRigForFactory"/>
+    <memberTool name="createObjectMergeWithPass"/>
   </toolshelf>
 
   <tool name="add_event_when_created" label="add_event_when_created" icon="PLASMA_App">
@@ -6895,6 +6898,16 @@ endif
 opcf $saved_path
 '''
 hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="createObjectMergeWithPass" label="Create Object Merge With Pass" icon="PLASMA_App">
+    <script scriptType="python"><![CDATA[import createObjMergeWithPass as s
+reload(s)
+
+
+s.execute()
+
 ]]></script>
   </tool>
 </shelfDocument>
