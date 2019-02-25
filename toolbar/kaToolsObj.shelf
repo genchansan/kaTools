@@ -13,6 +13,7 @@
     <memberTool name="pickleSample"/>
     <memberTool name="fxGeoNode"/>
     <memberTool name="renGeoNode"/>
+    <memberTool name="geo"/>
   </toolshelf>
 
   <tool name="graph" label="graph" icon="OBJ_geo">
