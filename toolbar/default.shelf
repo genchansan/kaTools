@@ -2615,6 +2615,7 @@ hou.hscript(h_preamble + h_extra_args + h_cmd)
     <memberTool name="solve_collision"/>
     <memberTool name="dop_flexible_div_smoke"/>
     <memberTool name="clastic"/>
+    <memberTool name="subnet"/>
   </toolshelf>
 
   <tool name="sc_crowd" label="sc_crowd" icon="OBJ_geo">
@@ -8575,6 +8576,461 @@ if ($argc >= 5 && "$arg4" != "") then
 endif
 if ($argc >= 6 && "$arg6" != "") then
     set input = $_obj_stone_fracture
+    if ($arg8) then
+        opwire -n -i $arg6 -0 $input
+    else
+        opwire -n -o $oidx $arg6 -0 $input
+    endif
+endif
+opcf $saved_path
+'''
+hou.hscript(h_preamble + h_extra_args + h_cmd)
+]]></script>
+  </tool>
+
+  <tool name="subnet" label="fuel_gas_release" icon="DOP_subnet">
+    <helpURL>operator:Dop/subnet</helpURL>
+    <toolMenuContext name="network">
+      <contextOpType>Dop/subnet</contextOpType>
+    </toolMenuContext>
+    <script scriptType="python"><![CDATA[
+import sys
+import toolutils
+
+outputitem = None
+inputindex = -1
+inputitem = None
+outputindex = -1
+
+num_args = 1
+h_extra_args = ''
+pane = toolutils.activePane(kwargs)
+if not isinstance(pane, hou.NetworkEditor):
+    pane = hou.ui.paneTabOfType(hou.paneTabType.NetworkEditor)
+    if pane is None:
+       hou.ui.displayMessage(
+               'Cannot create node: cannot find any network pane')
+       sys.exit(0)
+else: # We're creating this tool from the TAB menu inside a network editor
+    pane_node = pane.pwd()
+    if kwargs.has_key("outputnodename") and kwargs.has_key("inputindex"):
+        outputitem = pane_node.item(kwargs["outputnodename"])
+        inputindex = kwargs["inputindex"]
+        h_extra_args += 'set arg4 = "' + kwargs["outputnodename"] + '"\n'
+        h_extra_args += 'set arg5 = "' + str(inputindex) + '"\n'
+        num_args = 6
+    if kwargs.has_key("inputnodename") and kwargs.has_key("outputindex"):
+        inputitem = pane_node.item(kwargs["inputnodename"])
+        outputindex = kwargs["outputindex"]
+        h_extra_args += 'set arg6 = "' + kwargs["inputnodename"] + '"\n'
+        h_extra_args += 'set arg9 = "' + str(outputindex) + '"\n'
+        num_args = 9 
+    if kwargs.has_key("autoplace"):
+        autoplace = kwargs["autoplace"]
+    else:
+        autoplace = False
+    # If shift-clicked we want to auto append to the current
+    # node
+    if kwargs.has_key("shiftclick") and kwargs["shiftclick"]:
+        if inputitem is None:
+            inputitem = pane.currentNode()
+            outputindex = 0
+    if kwargs.has_key("nodepositionx") and             kwargs.has_key("nodepositiony"):
+        try:
+            pos = [ float( kwargs["nodepositionx"] ),
+                    float( kwargs["nodepositiony"] )]
+        except:
+            pos = None
+    else:
+        pos = None
+
+    if not autoplace and not pane.listMode():
+        if pos is not None:
+            pass
+        elif outputitem is None:
+            pos = pane.selectPosition(inputitem, outputindex, None, -1)
+        else:
+            pos = pane.selectPosition(inputitem, outputindex,
+                                      outputitem, inputindex)
+
+    if pos is not None:
+        if kwargs.has_key("node_bbox"):
+            size = kwargs["node_bbox"]
+            pos[0] -= size[0] / 2
+            pos[1] -= size[1] / 2
+        else:
+            pos[0] -= 0.573625
+            pos[1] -= 0.220625
+        h_extra_args += 'set arg2 = "' + str(pos[0]) + '"\n'
+        h_extra_args += 'set arg3 = "' + str(pos[1]) + '"\n'
+h_extra_args += 'set argc = "' + str(num_args) + '"\n'
+            
+pane_node = pane.pwd()
+child_type = pane_node.childTypeCategory().nodeTypes()
+
+if not child_type.has_key('subnet'):
+   hou.ui.displayMessage(
+           'Cannot create node: incompatible pane network type')
+   sys.exit(0)
+
+# First clear the node selection
+pane_node.setSelected(False, True)
+
+h_path = pane_node.path()
+h_preamble = 'set arg1 = "' + h_path + '"\n'
+h_cmd = r''' 
+if ($argc < 2 || "$arg2" == "") then
+   set arg2 = 0
+endif
+if ($argc < 3 || "$arg3" == "") then
+   set arg3 = 0
+endif
+# Automatically generated script
+# $arg1 - the path to add this node
+# $arg2 - x position of the tile
+# $arg3 - y position of the tile
+# $arg4 - input node to wire to
+# $arg5 - which input to wire to
+# $arg6 - output node to wire to
+# $arg7 - the type of this node
+# $arg8 - the node is an indirect input
+# $arg9 - index of output from $arg6
+
+\set noalias = 1
+set saved_path = `execute("oppwf")`
+opcf $arg1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release (Dop/subnet)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release = `run("opadd -e -n -v subnet fuel_gas_release")`
+oplocate -x `$arg2 + 0` -y `$arg3 + 0` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release
+opspareds '    parm {         name    "multi_burn_contribution"         label   "multi_burn_contribution"         type    float         default { "1" }         range   { 0 1 }         parmtag { "autoscope" "0000000000000000" }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "multi_diff_contribution"         label   "multi_diff_contribution"         type    float         default { "0.2" }         range   { 0 1 }         parmtag { "autoscope" "0000000000000000" }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "exp"         label   "Exponent"         type    float         default { "2" }         range   { 0 1 }         parmtag { "autoscope" "0000000000000000" }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "mult_fuel_max"         label   "mult_fuel_max"         type    float         default { "0.5" }         range   { 0 1 }         parmtag { "autoscope" "0000000000000000" }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "substeps"         label   "substeps"         type    float         default { "1" }         range   { 0 1 }         parmtag { "autoscope" "0000000000000000" }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     } ' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release substeps
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../pyrosolver1/minimumsubsteps")' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release/substeps
+chblockend
+opcolor -c 0.47499999403953552 0.81199997663497925 0.20399999618530273 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release
+opcf $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1 (Dop/gasfieldvop)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1 = `run("opadd -e -n -v gasfieldvop gasfieldvop1")`
+oplocate -x `$arg2 + 7.0321100000000003` -y `$arg3 + 3.04495` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1
+opspareds '    group {         name    "stdswitcher5"         label   "Vex Setup"          parm {             name    "vexsrc"             baseparm             label   "Vex Source"             export  all         }         parm {             name    "vexshoppath"             baseparm             label   "Shop Path"             export  all         }         parm {             name    "vexscript"             baseparm             label   "Script"             export  none         }         parm {             name    "vexclear"             baseparm             label   "Re-load VEX Functions"             export  none         }         parm {             name    "vop_compiler"             baseparm             label   "Compiler"             export  none         }         parm {             name    "vop_forcecompile"             baseparm             label   "Force Compile"             export  none         }         parm {             name    "vex_cwdpath"             baseparm             label   "Evaluation Node Path"             export  none         }         parm {             name    "vex_outputmask"             baseparm             label   "Export Parameters"             export  none         }         parm {             name    "vex_multithread"             baseparm             label   "Enable Multithreading"             export  none         }     }      group {         name    "stdswitcher5_1"         label   "Data Bindings"          parm {             name    "autobind"             baseparm             label   "Autobind by Name"             export  none         }         multiparm {             name    "bindings"             label    "Number of Bindings"             baseparm             default 0             parmtag { "multistartoffset" "1" }              parm {                 name    "binddata#"                 baseparm                 label   "DOP Data"                 export  none             }             parm {                 name    "bindparm#"                 baseparm                 label   "VEX Parameter"                 export  none             }         }      }      group {         name    "stdswitcher5_2"         label   "Inputs"          parm {             name    "bindinputmenu1"             baseparm             label   "Input 1"             export  none         }         parm {             name    "bindgeoinput1"             baseparm             label   "SOP Path"             export  none         }         parm {             name    "binddopinput1"             baseparm             label   "DOP Data"             export  none         }         parm {             name    "bindinputmenu2"             baseparm             label   "Input 2"             export  none         }         parm {             name    "bindgeoinput2"             baseparm             label   "SOP Path"             export  none         }         parm {             name    "binddopinput2"             baseparm             label   "DOP Data"             export  none         }         parm {             name    "bindinputmenu3"             baseparm             label   "Input 3"             export  none         }         parm {             name    "bindgeoinput3"             baseparm             label   "SOP Path"             export  none         }         parm {             name    "binddopinput3"             baseparm             label   "DOP Data"             export  none         }         parm {             name    "bindinputmenu4"             baseparm             label   "Input 4"             export  none         }         parm {             name    "bindgeoinput4"             baseparm             label   "SOP Path"             export  none         }         parm {             name    "binddopinput4"             baseparm             label   "DOP Data"             export  none         }     }      group {         name    "stdswitcher5_3"         label   "Solver"          parm {             name    "usetimestep"             baseparm             label   "Use Timestep"             export  none         }         parm {             name    "timescale"             baseparm             label   "Time Scale"             export  none         }         parm {             name    "addaffectors"             baseparm             label   "Make Objects Mutual Affectors"             export  none         }         parm {             name    "group"             baseparm             label   "Group"             export  none         }         parm {             name    "dataname"             baseparm             label   "Data Name"             export  none         }         parm {             name    "uniquedataname"             baseparm             label   "Unique Data Name"             export  none         }         parm {             name    "solverperobject"             baseparm             label   "Solver Per Object"             export  none         }     }      parm {         name    "P"         label   "P"         type    float         invisible         size    3         default { "0" "0" "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "ix"         label   "IX"         type    integer         invisible         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "iy"         label   "IY"         type    integer         invisible         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "iz"         label   "IZ"         type    integer         invisible         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "resx"         label   "ResX"         type    integer         invisible         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "resy"         label   "ResY"         type    integer         invisible         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "resz"         label   "ResZ"         type    integer         invisible         default { "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "dPdx"         label   "dPdx"         type    float         invisible         size    3         default { "0" "0" "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "dPdy"         label   "dPdy"         type    float         invisible         size    3         default { "0" "0" "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "dPdz"         label   "dPdz"         type    float         invisible         size    3         default { "0" "0" "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "center"         label   "Center"         type    float         invisible         size    3         default { "0" "0" "0" }         range   { 0 10 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "Time"         label   "Time"         type    float         invisible         default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "Timeinc"         label   "Timeinc"         type    float         invisible         default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "Frame"         label   "Frame"         type    float         invisible         default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "OpInput2"         label   "Second Input"         type    string         invisible         default { "" }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "OpInput3"         label   "Third Input"         type    string         invisible         default { "" }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "OpInput4"         label   "Fourth Input"         type    string         invisible         default { "" }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "OpInput1"         label   "First Input"         type    string         invisible         default { "" }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "density"         label   "Density"         type    float         invisible         default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "multi_burn_contribution"         label   "multi_burn_contribution"         type    float         default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "multi_diff_contribution"         label   "multi_diff_contribution"         type    float         default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "exp"         label   "Exponent"         type    float         default { "1.6" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "mult_fuel_max"         label   "mult_fuel_max"         type    float         default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     }     parm {         name    "substeps"         label   "substeps"         type    float         default { "0" }         range   { 0 1 }         parmtag { "parmvop" "1" }         parmtag { "shaderparmcontexts" "cvex" }     } ' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1
+opparm $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1  bindings ( 0 )
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1 multi_burn_contribution
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../multi_burn_contribution")' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1/multi_burn_contribution
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1 multi_diff_contribution
+chkey -t 0 -v 0.20000000000000001 -m 0 -a 0 -A 0 -T a  -F 'ch("../multi_diff_contribution")' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1/multi_diff_contribution
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1 exp
+chkey -t 0 -v 2 -m 0 -a 0 -A 0 -T a  -F 'ch("../exp")' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1/exp
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1 mult_fuel_max
+chkey -t 0 -v 0.5 -m 0 -a 0 -A 0 -T a  -F 'ch("../mult_fuel_max")' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1/mult_fuel_max
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1 substeps
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../substeps")' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1/substeps
+chblockend
+opparm -V 17.0.416 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1 solverperobject ( on ) multi_burn_contribution ( multi_burn_contribution ) multi_diff_contribution ( multi_diff_contribution ) exp ( exp ) mult_fuel_max ( mult_fuel_max ) substeps ( substeps )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1
+opcf $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_volumevopglobal1 (Vop/volumevopglobal)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_volumevopglobal1 = `run("opadd -e -n -v volumevopglobal volumevopglobal1")`
+oplocate -x `$arg2 + -3.6880999999999999` -y `$arg3 + -7.9684100000000004` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_volumevopglobal1
+opset -d on -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_volumevopglobal1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_volumevopglobal1
+opuserdata -n '___Version___' -v '' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_volumevopglobal1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind1 (Vop/bind)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind1 = `run("opadd -e -n -v bind bind1")`
+oplocate -x `$arg2 + 27.2714` -y `$arg3 + 0.76960799999999996` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind1
+opparm -V 17.0.416 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind1 parmname ( divergence ) overridetype ( on ) useasparmdefiner ( on ) exportparm ( whenconnected ) exportcontext ( cvex )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind1
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind2 (Vop/bind)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind2 = `run("opadd -e -n -v bind bind2")`
+oplocate -x `$arg2 + 7.2300199999999997` -y `$arg3 + 3.0547399999999998` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind2
+opparm -V 17.0.416 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind2 parmname ( divergence ) exportcontext ( cvex )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind2
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind2
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind2
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind3 (Vop/bind)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind3 = `run("opadd -e -n -v bind bind3")`
+oplocate -x `$arg2 + 8.4482999999999997` -y `$arg3 + -1.00905` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind3
+opparm -V 17.0.416 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind3 parmname ( burn ) exportcontext ( cvex )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind3
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind3
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind3
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind4 (Vop/bind)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind4 = `run("opadd -e -n -v bind bind4")`
+oplocate -x `$arg2 + 5.3595600000000001` -y `$arg3 + -2.74369` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind4
+opparm -V 17.0.416 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind4 parmname ( fuelmax ) exportcontext ( cvex )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind4
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind4
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind4
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply1 (Vop/multiply)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply1 = `run("opadd -e -n -v multiply multiply1")`
+oplocate -x `$arg2 + 18.4754` -y `$arg3 + -0.93404500000000001` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply1
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_add1 (Vop/add)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_add1 = `run("opadd -e -n -v add add1")`
+oplocate -x `$arg2 + 23.936800000000002` -y `$arg3 + 0.76960799999999996` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_add1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_add1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_add1
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_add1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multi_burn_contribution (Vop/parameter)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multi_burn_contribution = `run("opadd -e -n -v parameter multi_burn_contribution")`
+oplocate -x `$arg2 + 10.165100000000001` -y `$arg3 + -0.93404500000000001` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multi_burn_contribution
+opparm -V 17.0.416 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multi_burn_contribution parmname ( '$OS' ) exportcontext ( cvex )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e off -b off -L off -M off -H on -E off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multi_burn_contribution
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multi_burn_contribution
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multi_burn_contribution
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_pow1 (Vop/pow)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_pow1 = `run("opadd -e -n -v pow pow1")`
+oplocate -x `$arg2 + 13.882` -y `$arg3 + -2.6686899999999998` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_pow1
+opparm $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_pow1 exp ( 1.6000000000000001 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_pow1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_pow1
+opuserdata -n '___Version___' -v '' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_pow1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind5 (Vop/bind)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind5 = `run("opadd -e -n -v bind bind5")`
+oplocate -x `$arg2 + 9.3511399999999991` -y `$arg3 + -6.3084100000000003` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind5
+opparm -V 17.0.416 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind5 parmname ( tempdiv ) exportcontext ( cvex )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind5
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind5
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind5
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply2 (Vop/multiply)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply2 = `run("opadd -e -n -v multiply multiply2")`
+oplocate -x `$arg2 + 18.703099999999999` -y `$arg3 + -5.6403699999999999` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply2
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply2
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply2
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply2
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multi_diff_contribution (Vop/parameter)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multi_diff_contribution = `run("opadd -e -n -v parameter multi_diff_contribution")`
+oplocate -x `$arg2 + 12.091200000000001` -y `$arg3 + -5.7903700000000002` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multi_diff_contribution
+opparm -V 17.0.416 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multi_diff_contribution parmname ( '$OS' ) parmlabel ( '$OS' ) exportcontext ( cvex )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e off -b off -L off -M off -H on -E off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multi_diff_contribution
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multi_diff_contribution
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multi_diff_contribution
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_exp (Vop/parameter)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_exp = `run("opadd -e -n -v parameter exp")`
+oplocate -x `$arg2 + 2.2367300000000001` -y `$arg3 + -4.2073400000000003` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_exp
+opparm -V 17.0.416 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_exp parmname ( exp ) parmlabel ( Exponent ) floatdef ( 1.6000000000000001 ) exportcontext ( cvex )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_exp
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_exp
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_exp
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply3 (Vop/multiply)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply3 = `run("opadd -e -n -v multiply multiply3")`
+oplocate -x `$arg2 + 8.4482999999999997` -y `$arg3 + -2.6686899999999998` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply3
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply3
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply3
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply3
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_mult_fuel_max (Vop/parameter)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_mult_fuel_max = `run("opadd -e -n -v parameter mult_fuel_max")`
+oplocate -x `$arg2 + 7.9724899999999996` -y `$arg3 + -2.6686899999999998` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_mult_fuel_max
+opparm -V 17.0.416 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_mult_fuel_max parmname ( '$OS' ) exportcontext ( cvex )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e off -b off -L off -M off -H on -E off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_mult_fuel_max
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_mult_fuel_max
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_mult_fuel_max
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_mulconst1 (Vop/mulconst)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_mulconst1 = `run("opadd -e -n -v mulconst mulconst1")`
+oplocate -x `$arg2 + 8.05077` -y `$arg3 + -8.718` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_mulconst1
+opparm $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_mulconst1 mulconst ( 24 )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_mulconst1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_mulconst1
+opuserdata -n '___Version___' -v '' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_mulconst1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_divide1 (Vop/divide)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_divide1 = `run("opadd -e -n -v divide divide1")`
+oplocate -x `$arg2 + 4.4055999999999997` -y `$arg3 + -8.718` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_divide1
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_divide1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_divide1
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_divide1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_substeps (Vop/parameter)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_substeps = `run("opadd -e -n -v parameter substeps")`
+oplocate -x `$arg2 + 0.55416399999999999` -y `$arg3 + -6.4932400000000001` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_substeps
+opparm -V 17.0.416 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_substeps parmname ( '$OS' ) exportcontext ( cvex )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off -L off -M off -H on -E off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_substeps
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_substeps
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_substeps
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_divide2 (Vop/divide)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_divide2 = `run("opadd -e -n -v divide divide2")`
+oplocate -x `$arg2 + 8.6754899999999999` -y `$arg3 + -4.2073400000000003` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_divide2
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b on -L off -M off -H on -E off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_divide2
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_divide2
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_divide2
+opcf ..
+opcf ..
+opcf $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasreduce1 (Dop/gasreduce)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasreduce1 = `run("opadd -e -n -v gasreduce gasreduce1")`
+oplocate -x `$arg2 + 4.71075` -y `$arg3 + 3.7026699999999999` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasreduce1
+opparm -V 17.0.416 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasreduce1 fielddst ( fuelmax ) fieldsrc ( fuel ) createattrib ( off )
+opset -d off -r on -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasreduce1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasreduce1
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasreduce1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge1 (Dop/merge)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge1 = `run("opadd -e -n -v merge merge1")`
+oplocate -x `$arg2 + -0.0011500200000000001` -y `$arg3 + -1.7197100000000001` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge1
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge1 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge1/activation
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge1
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasmatchfield1 (Dop/gasmatchfield)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasmatchfield1 = `run("opadd -e -n -v gasmatchfield gasmatchfield1")`
+oplocate -x `$arg2 + 2.0973000000000002` -y `$arg3 + 4.5280300000000002` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasmatchfield1
+opparm -V 17.0.416 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasmatchfield1 field ( fuelmax ) reffield ( fuel ) matchsamples ( on )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasmatchfield1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasmatchfield1
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasmatchfield1
+opcf $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1
+oporder -e volumevopglobal1 bind1 bind2 bind3 bind4 multiply1 add1 multi_burn_contribution pow1 bind5 multiply2 multi_diff_contribution exp multiply3 mult_fuel_max mulconst1 divide1 substeps divide2 
+opcf ..
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_extract_core (Dop/gaslinearcombination)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_extract_core = `run("opadd -e -n -v gaslinearcombination extract_core")`
+oplocate -x `$arg2 + -2.2278505361029461` -y `$arg3 + 3.31794501846354` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_extract_core
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_extract_core coeffpost
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F '1/$FPS' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_extract_core/coeffpost
+chblockend
+opparm -V 17.0.416 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_extract_core fielddst ( tempdiv ) operation ( sub ) source1 ( heat ) source2 ( burn ) useconstant ( off ) coeffpost ( coeffpost ) defaultparmop ( always ) solverperobject ( on )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_extract_core
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_extract_core
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_extract_core
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_extract_core
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_create_temp_div (Dop/gasmatchfield)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_create_temp_div = `run("opadd -e -n -v gasmatchfield create_temp_div")`
+oplocate -x `$arg2 + -4.3528399999999996` -y `$arg3 + 4.35297` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_create_temp_div
+opparm -V 17.0.416 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_create_temp_div field ( tempdiv ) reffield ( heat ) solverperobject ( on )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_create_temp_div
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_create_temp_div
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_create_temp_div
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_create_temp_div
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge2 (Dop/merge)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge2 = `run("opadd -e -n -v merge merge2")`
+oplocate -x `$arg2 + -3.6506400000000001` -y `$arg3 + 2.01837` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge2
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge2 activation
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'constant()' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge2/activation
+chblockend
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge2
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge2
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge2
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_update_divergence (Dop/gaslinearcombination)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_update_divergence = `run("opadd -e -n -v gaslinearcombination update_divergence")`
+oplocate -x `$arg2 + 13.759600000000001` -y `$arg3 + 5.5038999999999998` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_update_divergence
+chblockbegin
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_update_divergence coeff2
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../gasrelease") * ch("../gas_burn_influence")' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_update_divergence/coeff2
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_update_divergence coeff3
+chkey -t 0 -v 1 -m 0 -a 0 -A 0 -T a  -F 'ch("../gasrelease") * ch("../gas_heat_influence")' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_update_divergence/coeff3
+chadd -t 0 0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_update_divergence opencl
+chkey -t 0 -v 0 -m 0 -a 0 -A 0 -T a  -F 'ch("../opencl")' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_update_divergence/opencl
+chblockend
+opparm -V 17.0.416 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_update_divergence fielddst ( '`chs("../divergence")`' ) source1 ( '`chs("../divergence")`' ) source2 ( '`chs("../burn")`' ) coeff2 ( coeff2 ) source3 ( tempdiv ) coeff3 ( coeff3 ) useconstant ( off ) opencl ( opencl ) defaultparmop ( always ) solverperobject ( on )
+opcolor -c 0.80000001192092896 0.80000001192092896 0.80000001192092896 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_update_divergence
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F off -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_update_divergence
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_update_divergence
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_update_divergence
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gascalculate1 (Dop/gascalculate)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gascalculate1 = `run("opadd -e -n -v gascalculate gascalculate1")`
+oplocate -x `$arg2 + 9.3973300000000002` -y `$arg3 + 2.5128599999999999` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gascalculate1
+opparm -V 17.0.416 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gascalculate1 fielddst ( tempdiv )
+opset -d off -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gascalculate1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gascalculate1
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gascalculate1
+
+# Node $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasintermittentsolve1 (Dop/gasintermittentsolve)
+set _obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasintermittentsolve1 = `run("opadd -e -n -v gasintermittentsolve gasintermittentsolve1")`
+oplocate -x `$arg2 + -1.11759e-08` -y `$arg3 + -3.1687400000000001` $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasintermittentsolve1
+opparm -V 17.0.416 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasintermittentsolve1 oncepertimestep ( on ) solverperobject ( on )
+opset -d on -r off -h off -f off -y off -t off -l off -s off -u off -F on -c on -e on -b off $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasintermittentsolve1
+opexprlanguage -s hscript $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasintermittentsolve1
+opuserdata -n '___Version___' -v '17.0.416' $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasintermittentsolve1
+oporder -e gasreduce1 merge1 gasmatchfield1 gasfieldvop1 extract_core create_temp_div merge2 update_divergence gascalculate1 gasintermittentsolve1 
+opcf ..
+opset -p on $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release
+
+opcf $arg1
+opcf $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release
+opwire -n -i 0 -0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge2 -1 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasmatchfield1 -2 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasreduce1 -3 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1 -4 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gascalculate1 -5 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge1
+opcf $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_add1 -0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind3 -0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_pow1 -1 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multi_burn_contribution -2 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_mulconst1 -3 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind2 -0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_add1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply1 -1 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_add1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply2 -2 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_add1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply3 -0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_pow1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_divide2 -1 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_pow1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind5 -0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply2
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multi_diff_contribution -1 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply2
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_pow1 -2 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply2
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_mulconst1 -3 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply2
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_bind4 -0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply3
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_mult_fuel_max -1 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_multiply3
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_divide1 -0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_mulconst1
+opwire -n -o 16 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_volumevopglobal1 -0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_divide1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_substeps -1 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_divide1
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_exp -0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_divide2
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_substeps -1 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasfieldvop1_divide2
+opcf ..
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_create_temp_div -0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge2
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_extract_core -1 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge2
+opwire -n $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_merge1 -0 $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release_gasintermittentsolve1
+opcf ..
+
+set oidx = 0
+if ($argc >= 9 && "$arg9" != "") then
+    set oidx = $arg9
+endif
+
+if ($argc >= 5 && "$arg4" != "") then
+    set output = $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release
+    opwire -n $output -$arg5 $arg4
+endif
+if ($argc >= 6 && "$arg6" != "") then
+    set input = $_obj_geo1_DOP_flexible_div_smoke_fuel_gas_release
     if ($arg8) then
         opwire -n -i $arg6 -0 $input
     else
