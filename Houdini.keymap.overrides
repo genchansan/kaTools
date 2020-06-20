@@ -1,0 +1,9 @@
+h.tool:connect	"ka Connect"	"Shelf Tool: ka Connect"	 F8
+h.tool:gotToCam	gotToCam	"Shelf Tool: gotToCam"	 F7
+h.pane.wsheet.align_vertical	"Align Nodes Vertically"	"Align the selected nodes vertically"	 F12
+h.tool:changeUpdateMode	changeUpdateMode	"Shelf Tool: changeUpdateMode"	 F9
+h.pane.wsheet.align_horizontal	"Align Nodes Horizontally"	"Align the selected nodes horizontally"	 F11
+h.pane.parms.copy_parm	"Copy Parameter"	"Copy parameter"	 Ctrl+Shift+C
+h.tool:createObjectMergeWithPass	"Create Object Merge With Pass"	"Shelf Tool: Create Object Merge With Pass"	 Alt+Ctrl+Shift+V
+h.pane.parms.paste_rel_refs	"Paste Copied Relative Refs"	"Paste copied relative refs"	 Ctrl+Shift+V
+h.tool:colorize	colorize	"Shelf Tool: colorize"	 F10

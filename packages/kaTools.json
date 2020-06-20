@@ -1,0 +1,27 @@
+{
+    "env":
+    [
+        {
+            "var" : "HOMEDIR",
+            "value" : 
+            [
+                "houdini18.0"
+            ]
+        },
+        {
+            "var" : "HOUDINI_PATH",
+            "value" : 
+            [
+                "$HOME/$HOMEDIR/kaTools",
+                "$HOME/$HOMEDIR/kaToolsExpressionPicker"
+            ]
+        },
+        {
+            "var" : "HOUDINI_PYTHON_PANEL_PATH",
+            "value" : 
+            [
+                "$HOME/$HOMEDIR/kaToolsExpressionPicker"
+            ]
+        }
+    ]
+}
